@@ -93,6 +93,8 @@ describe( "Assertion utilities" , function() {
 		if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
 		
 	} ) ;
+	
+	it( "doormen.equals()" ) ;
 } ) ;
 
 
@@ -218,6 +220,18 @@ describe( "Numbers meta types" , function() {
 		doormen.not( 'text' , { type: 'realNumber' } ) ;
 		doormen.not( {} , { type: 'realNumber' } ) ;
 		doormen.not( [] , { type: 'realNumber' } ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Common sanitizers" , function() {
+	
+	it( "should sanitize to 'number' accordingly" , function() {
+		doormen.equals( doormen( 0 , { sanitize: 'number' } ) , 0 ) ;
+		doormen.equals( doormen( '0' , { sanitize: 'number' } ) , 0 ) ;
+		doormen.equals( doormen( 1 , { sanitize: 'number' } ) , 1 ) ;
+		doormen.equals( doormen( '1' , { sanitize: 'number' } ) , 1 ) ;
 	} ) ;
 } ) ;
 
