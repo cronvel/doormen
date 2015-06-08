@@ -32,9 +32,46 @@ var expect = require( 'expect.js' ) ;
 
 
 
-describe( "" , function() {
+describe( "Assertion utilities" , function() {
 	
-	it( "" , function() {
+	it( "doormen.shouldThrow() should throw if the callback has not throw, and catch if it has throw" , function() {
+		
+		var throwed ;
+		
+		
+		throwed = false ;
+		
+		try {
+			doormen.shouldThrow( function() {} ) ;
+		}
+		catch ( error ) {
+			throwed = true ;
+		}
+		
+		if ( ! throwed ) { throw new Error( 'Has not thrown' ) ; }
+		
+		
+		throwed = false ;
+		
+		try {
+			doormen.shouldThrow( function() { throw new Error( 'Fatal error' ) ; } ) ;
+		}
+		catch ( error ) {
+			throwed = true ;
+		}
+		
+		if ( throwed ) { throw new Error( 'Has thrown' ) ; }
+		
+	} ) ;
+} ) ;
+
+
+
+describe( "Basic types" , function() {
+	
+	it( "should validate string" , function() {
+		doormen( 'toto' , { type: 'string' } ) ;
+		doormen.not( 1 , { type: 'string' } ) ;
 	} ) ;
 } ) ;
 
