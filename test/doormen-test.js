@@ -351,6 +351,33 @@ describe( "Built-in filters" , function() {
 		doormen.not( false , { "min-length": 3 , "max-length": 5 } ) ;
 	} ) ;
 	
+	it( "'in' filter should validate if the value is listed" , function() {
+		doormen.not( 10 , { in: [ 1,5,7 ] } ) ;
+		doormen( 5 , { in: [ 1,5,7 ] } ) ;
+		doormen( 1 , { in: [ 1,5,7 ] } ) ;
+		doormen.not( 0 , { in: [ 1,5,7 ] } ) ;
+		doormen.not( -10 , { in: [ 1,5,7 ] } ) ;
+		doormen.not( Infinity , { in: [ 1,5,7 ] } ) ;
+		doormen( Infinity , { in: [ 1,5,Infinity,7 ] } ) ;
+		doormen.not( -Infinity , { in: [ 1,5,7 ] } ) ;
+		doormen.not( NaN , { in: [ 1,5,7 ] } ) ;
+		doormen( NaN , { in: [ 1,5,NaN,7 ] } ) ;
+		
+		doormen( true , { in: [ 1,true,5,7 ] } ) ;
+		doormen.not( true , { in: [ 1,5,7 ] } ) ;
+		doormen( false , { in: [ 1,false,5,7 ] } ) ;
+		doormen.not( false , { in: [ 1,5,7 ] } ) ;
+		
+		doormen.not( "text" , { in: [ 1,5,7 ] } ) ;
+		doormen( "text" , { in: [ 1,"text",5,7 ] } ) ;
+		doormen( "text" , { in: [ "string", "text", "bob" ] } ) ;
+		doormen.not( "bobby" , { in: [ "string", "text", "bob" ] } ) ;
+		doormen( "" , { in: [ "string", "text", "" ] } ) ;
+		doormen.not( "" , { in: [ "string", "text", "bob" ] } ) ;
+	} ) ;
+	
+	it( "'in' filter and object" ) ;
+	
 } ) ;
 
 

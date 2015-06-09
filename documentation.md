@@ -20,7 +20,7 @@ Early alpha.
 * max
 * min-length
 * max-length
-* length
+* in
 * properties
 
 
