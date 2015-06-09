@@ -6,7 +6,7 @@ Validate, sanitize and assert.
 
 Early alpha.
 
-**/!\ This documentation is still a Work In Progress /!\**
+** /!\ This documentation is still a Work In Progress /!\ **
 
 
 
@@ -15,7 +15,6 @@ Early alpha.
 * sanitize `Array` of `string` the sanitizer's name to apply before any type checking
 * optional `boolean` if the data can be `null` or `undefined` as an alternative to the following type
 * type `string` the name of the type checker
-
 * min
 * max
 * min-length
@@ -23,6 +22,8 @@ Early alpha.
 * in
 * not-in
 * properties
+
+* only-properties
 
 
 
@@ -67,6 +68,7 @@ Common meta types:
    - [Basic types](#basic-types)
    - [Built-in types](#built-in-types)
    - [Built-in filters](#built-in-filters)
+   - [Recursive](#recursive)
    - [Numbers meta types](#numbers-meta-types)
    - [Common sanitizers](#common-sanitizers)
 <a name=""></a>
@@ -457,6 +459,25 @@ doormen.not( "text" , { "not-in": [ "string", "text", "bob" ] } ) ;
 doormen( "bobby" , { "not-in": [ "string", "text", "bob" ] } ) ;
 doormen.not( "" , { "not-in": [ "string", "text", "" ] } ) ;
 doormen( "" , { "not-in": [ "string", "text", "bob" ] } ) ;
+```
+
+<a name="recursive"></a>
+# Recursive
+'properties'.
+
+```js
+var schema = {
+	type: 'object',
+	properties: {
+		a: { type: 'number' },
+		b: { type: 'string' }
+	}
+} ;
+
+doormen( { a: 1, b: 'text' } , schema ) ;
+doormen.not( { a: 'text', b: 3 } , schema ) ;
+doormen.not( { b: 'text' } , schema ) ;
+doormen.not( { a: 1 } , schema ) ;
 ```
 
 <a name="numbers-meta-types"></a>

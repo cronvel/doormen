@@ -407,6 +407,28 @@ describe( "Built-in filters" , function() {
 
 
 
+describe( "Recursive" , function() {
+	
+	it( "'properties'" , function() {
+		var schema = {
+			type: 'object',
+			properties: {
+				a: { type: 'number' },
+				b: { type: 'string' }
+			}
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen.not( { a: 'text', b: 3 } , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
+		doormen.not( { a: 1 } , schema ) ;
+	} ) ;
+	
+	it( "'only-properties'" ) ;
+} ) ;
+
+
+
 describe( "Numbers meta types" , function() {
 	
 	it( "should validate real accordingly" , function() {

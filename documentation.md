@@ -6,7 +6,7 @@ Validate, sanitize and assert.
 
 Early alpha.
 
-**/!\ This documentation is still a Work In Progress /!\**
+** /!\ This documentation is still a Work In Progress /!\ **
 
 
 
@@ -15,7 +15,6 @@ Early alpha.
 * sanitize `Array` of `string` the sanitizer's name to apply before any type checking
 * optional `boolean` if the data can be `null` or `undefined` as an alternative to the following type
 * type `string` the name of the type checker
-
 * min
 * max
 * min-length
@@ -23,6 +22,8 @@ Early alpha.
 * in
 * not-in
 * properties
+
+* only-properties
 
 
 
