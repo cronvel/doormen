@@ -6,7 +6,7 @@ Validate, sanitize and assert.
 
 Early alpha.
 
-** /!\ This documentation is still a Work In Progress /!\ **
+**/!\\ This documentation is still a Work In Progress /!\\**
 
 
 
