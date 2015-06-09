@@ -369,6 +369,33 @@ doormen( "" , { in: [ "string", "text", "" ] } ) ;
 doormen.not( "" , { in: [ "string", "text", "bob" ] } ) ;
 ```
 
+'not-in' filter should validate if the value is listed.
+
+```js
+doormen( 10 , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( 5 , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( 1 , { "not-in": [ 1,5,7 ] } ) ;
+doormen( 0 , { "not-in": [ 1,5,7 ] } ) ;
+doormen( -10 , { "not-in": [ 1,5,7 ] } ) ;
+doormen( Infinity , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( Infinity , { "not-in": [ 1,5,Infinity,7 ] } ) ;
+doormen( -Infinity , { "not-in": [ 1,5,7 ] } ) ;
+doormen( NaN , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( NaN , { "not-in": [ 1,5,NaN,7 ] } ) ;
+
+doormen.not( true , { "not-in": [ 1,true,5,7 ] } ) ;
+doormen( true , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( false , { "not-in": [ 1,false,5,7 ] } ) ;
+doormen( false , { "not-in": [ 1,5,7 ] } ) ;
+
+doormen( "text" , { "not-in": [ 1,5,7 ] } ) ;
+doormen.not( "text" , { "not-in": [ 1,"text",5,7 ] } ) ;
+doormen.not( "text" , { "not-in": [ "string", "text", "bob" ] } ) ;
+doormen( "bobby" , { "not-in": [ "string", "text", "bob" ] } ) ;
+doormen.not( "" , { "not-in": [ "string", "text", "" ] } ) ;
+doormen( "" , { "not-in": [ "string", "text", "bob" ] } ) ;
+```
+
 <a name="numbers-meta-types"></a>
 # Numbers meta types
 should validate real accordingly.

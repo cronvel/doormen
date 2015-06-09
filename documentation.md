@@ -21,6 +21,7 @@ Early alpha.
 * min-length
 * max-length
 * in
+* not-in
 * properties
 
 
