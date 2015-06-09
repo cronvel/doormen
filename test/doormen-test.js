@@ -99,6 +99,26 @@ describe( "Assertion utilities" , function() {
 
 
 
+describe( "Optional and default data" , function() {
+	
+	it( "optional data should validate when null or undefined even if the type check would have failed" , function() {
+		
+		doormen.not( null , { type: 'string' } ) ;
+		doormen( null , { optional: true, type: 'string' } ) ;
+		doormen.not( undefined , { type: 'string' } ) ;
+		doormen( undefined , { optional: true, type: 'string' } ) ;
+		
+		doormen( 'text' , { type: 'string' } ) ;
+		doormen( 'text' , { optional: true, type: 'string' } ) ;
+		doormen.not( 1 , { type: 'string' } ) ;
+		doormen.not( 1 , { optional: true, type: 'string' } ) ;
+	} ) ;
+	
+	it( "default" ) ;
+} ) ;
+
+
+
 describe( "Basic types" , function() {
 	
 	it( "should validate undefined accordingly" , function() {
@@ -178,7 +198,10 @@ describe( "Basic types" , function() {
 		doormen.not( '' , { type: 'object' } ) ;
 		doormen.not( 'text' , { type: 'object' } ) ;
 		doormen( {} , { type: 'object' } ) ;
+		doormen( { a:1 , b:2 } , { type: 'object' } ) ;
 		doormen( [] , { type: 'object' } ) ;
+		doormen( [ 1,2,3 ] , { type: 'object' } ) ;
+		doormen( new Date() , { type: 'object' } ) ;
 		doormen.not( function(){} , { type: 'object' } ) ;
 	} ) ;
 	
@@ -196,30 +219,189 @@ describe( "Basic types" , function() {
 		doormen( function(){} , { type: 'function' } ) ;
 	} ) ;
 } ) ;
+	
+
+
+describe( "Built-in types" , function() {
+	
+	it( "should validate array accordingly" , function() {
+		doormen.not( undefined , { type: 'array' } ) ;
+		doormen.not( null , { type: 'array' } ) ;
+		doormen.not( false , { type: 'array' } ) ;
+		doormen.not( true , { type: 'array' } ) ;
+		doormen.not( 0 , { type: 'array' } ) ;
+		doormen.not( 1 , { type: 'array' } ) ;
+		doormen.not( '' , { type: 'array' } ) ;
+		doormen.not( 'text' , { type: 'array' } ) ;
+		doormen.not( {} , { type: 'array' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'array' } ) ;
+		doormen( [] , { type: 'array' } ) ;
+		doormen( [ 1,2,3 ] , { type: 'array' } ) ;
+		doormen.not( function(){} , { type: 'array' } ) ;
+	} ) ;
+	
+	it( "should validate date accordingly" , function() {
+		doormen( new Date() , { type: 'date' } ) ;
+		
+		doormen.not( undefined , { type: 'date' } ) ;
+		doormen.not( null , { type: 'date' } ) ;
+		doormen.not( false , { type: 'date' } ) ;
+		doormen.not( true , { type: 'date' } ) ;
+		doormen.not( 0 , { type: 'date' } ) ;
+		doormen.not( 1 , { type: 'date' } ) ;
+		doormen.not( '' , { type: 'date' } ) ;
+		doormen.not( 'text' , { type: 'date' } ) ;
+		doormen.not( {} , { type: 'date' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'date' } ) ;
+		doormen.not( [] , { type: 'date' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'date' } ) ;
+		doormen.not( function(){} , { type: 'date' } ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Built-in filters" , function() {
+	
+	it( "min filter should validate accordingly, non-number should throw" , function() {
+		doormen( 10 , { min: 3 } ) ;
+		doormen( 3 , { min: 3 } ) ;
+		doormen.not( 1 , { min: 3 } ) ;
+		doormen.not( 0 , { min: 3 } ) ;
+		doormen.not( -10 , { min: 3 } ) ;
+		doormen( Infinity , { min: 3 } ) ;
+		doormen.not( -Infinity , { min: 3 } ) ;
+		doormen.not( NaN , { min: 3 } ) ;
+		doormen.not( true , { min: 3 } ) ;
+		doormen.not( false , { min: 3 } ) ;
+		doormen.not( undefined , { min: 3 } ) ;
+		doormen.not( undefined , { min: 0 } ) ;
+		doormen.not( undefined , { min: -3 } ) ;
+		doormen.not( '10' , { min: 3 } ) ;
+	} ) ;
+	
+	it( "max filter should validate accordingly, non-number should throw" , function() {
+		doormen.not( 10 , { max: 3 } ) ;
+		doormen( 3 , { max: 3 } ) ;
+		doormen( 1 , { max: 3 } ) ;
+		doormen( 0 , { max: 3 } ) ;
+		doormen( -10 , { max: 3 } ) ;
+		doormen.not( Infinity , { max: 3 } ) ;
+		doormen( -Infinity , { max: 3 } ) ;
+		doormen.not( NaN , { max: 3 } ) ;
+		doormen.not( true , { max: 3 } ) ;
+		doormen.not( false , { max: 3 } ) ;
+		doormen.not( '1' , { max: 3 } ) ;
+	} ) ;
+	
+	it( "min + max filter should validate accordingly, non-number should throw" , function() {
+		doormen.not( 15 , { min: 3, max: 10 } ) ;
+		doormen( 10 , { min: 3, max: 10 } ) ;
+		doormen( 5 , { min: 3, max: 10 } ) ;
+		doormen( 3 , { min: 3, max: 10 } ) ;
+		doormen.not( 1 , { min: 3, max: 10 } ) ;
+		doormen.not( 0 , { min: 3, max: 10 } ) ;
+		doormen.not( -10 , { min: 3, max: 10 } ) ;
+		doormen.not( Infinity , { min: 3, max: 10 } ) ;
+		doormen.not( -Infinity , { min: 3, max: 10 } ) ;
+		doormen.not( NaN , { min: 3, max: 10 } ) ;
+		doormen.not( true , { min: 3, max: 10 } ) ;
+		doormen.not( false , { min: 3, max: 10 } ) ;
+		doormen.not( '6' , { min: 3, max: 10 } ) ;
+	} ) ;
+	
+	it( "min-length filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { "min-length": 3 } ) ;
+		doormen( "abcde" , { "min-length": 3 } ) ;
+		doormen.not( "ab" , { "min-length": 3 } ) ;
+		doormen.not( "" , { "min-length": 3 } ) ;
+		
+		doormen.not( 1 , { "min-length": 3 } ) ;
+		doormen.not( 1 , { "min-length": 0 } ) ;
+		doormen.not( NaN , { "min-length": 3 } ) ;
+		doormen.not( true , { "min-length": 3 } ) ;
+		doormen.not( false , { "min-length": 3 } ) ;
+	} ) ;
+	
+	it( "max-length filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { "max-length": 3 } ) ;
+		doormen.not( "abcde" , { "max-length": 3 } ) ;
+		doormen( "ab" , { "max-length": 3 } ) ;
+		doormen( "" , { "max-length": 3 } ) ;
+		
+		doormen.not( 1 , { "max-length": 3 } ) ;
+		doormen.not( 1 , { "max-length": 0 } ) ;
+		doormen.not( NaN , { "max-length": 3 } ) ;
+		doormen.not( true , { "max-length": 3 } ) ;
+		doormen.not( false , { "max-length": 3 } ) ;
+	} ) ;
+	
+	it( "min-length + max-length filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen( "abcd" , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen( "abcde" , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( "abcdef" , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( "ab" , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( "" , { "min-length": 3 , "max-length": 5 } ) ;
+		
+		doormen.not( 1 , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( 1 , { "max-length": 0 } ) ;
+		doormen.not( NaN , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( true , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( false , { "min-length": 3 , "max-length": 5 } ) ;
+	} ) ;
+	
+} ) ;
 
 
 
 describe( "Numbers meta types" , function() {
 	
-	it( "should validate realNumber accordingly" , function() {
-		doormen( 0 , { type: 'realNumber' } ) ;
-		doormen( 1 , { type: 'realNumber' } ) ;
-		doormen( -1 , { type: 'realNumber' } ) ;
-		doormen( 0.3 , { type: 'realNumber' } ) ;
-		doormen( 18.36 , { type: 'realNumber' } ) ;
-		doormen.not( 1/0 , { type: 'realNumber' } ) ;
-		doormen.not( Infinity , { type: 'realNumber' } ) ;
-		doormen.not( -Infinity , { type: 'realNumber' } ) ;
-		doormen.not( NaN , { type: 'realNumber' } ) ;
+	it( "should validate real accordingly" , function() {
+		doormen( 0 , { type: 'real' } ) ;
+		doormen( 1 , { type: 'real' } ) ;
+		doormen( -1 , { type: 'real' } ) ;
+		doormen( 0.3 , { type: 'real' } ) ;
+		doormen( 18.36 , { type: 'real' } ) ;
+		doormen.not( 1/0 , { type: 'real' } ) ;
+		doormen.not( Infinity , { type: 'real' } ) ;
+		doormen.not( -Infinity , { type: 'real' } ) ;
+		doormen.not( NaN , { type: 'real' } ) ;
 		
-		doormen.not( undefined , { type: 'realNumber' } ) ;
-		doormen.not( null , { type: 'realNumber' } ) ;
-		doormen.not( false , { type: 'realNumber' } ) ;
-		doormen.not( true , { type: 'realNumber' } ) ;
-		doormen.not( '' , { type: 'realNumber' } ) ;
-		doormen.not( 'text' , { type: 'realNumber' } ) ;
-		doormen.not( {} , { type: 'realNumber' } ) ;
-		doormen.not( [] , { type: 'realNumber' } ) ;
+		doormen.not( undefined , { type: 'real' } ) ;
+		doormen.not( null , { type: 'real' } ) ;
+		doormen.not( false , { type: 'real' } ) ;
+		doormen.not( true , { type: 'real' } ) ;
+		doormen.not( '' , { type: 'real' } ) ;
+		doormen.not( 'text' , { type: 'real' } ) ;
+		doormen.not( {} , { type: 'real' } ) ;
+		doormen.not( [] , { type: 'real' } ) ;
+	} ) ;
+	
+	it( "should validate integer accordingly" , function() {
+		doormen( 0 , { type: 'integer' } ) ;
+		doormen( 1 , { type: 'integer' } ) ;
+		doormen( 123456789 , { type: 'integer' } ) ;
+		doormen( -1 , { type: 'integer' } ) ;
+		doormen.not( 0.00001 , { type: 'integer' } ) ;
+		doormen.not( -0.00001 , { type: 'integer' } ) ;
+		doormen.not( 123456.00001 , { type: 'integer' } ) ;
+		doormen.not( 123456.99999 , { type: 'integer' } ) ;
+		doormen.not( 0.3 , { type: 'integer' } ) ;
+		doormen.not( 18.36 , { type: 'integer' } ) ;
+		doormen.not( 1/0 , { type: 'integer' } ) ;
+		doormen.not( Infinity , { type: 'integer' } ) ;
+		doormen.not( -Infinity , { type: 'integer' } ) ;
+		doormen.not( NaN , { type: 'integer' } ) ;
+		
+		doormen.not( undefined , { type: 'integer' } ) ;
+		doormen.not( null , { type: 'integer' } ) ;
+		doormen.not( false , { type: 'integer' } ) ;
+		doormen.not( true , { type: 'integer' } ) ;
+		doormen.not( '' , { type: 'integer' } ) ;
+		doormen.not( 'text' , { type: 'integer' } ) ;
+		doormen.not( {} , { type: 'integer' } ) ;
+		doormen.not( [] , { type: 'integer' } ) ;
 	} ) ;
 } ) ;
 
@@ -227,11 +409,11 @@ describe( "Numbers meta types" , function() {
 
 describe( "Common sanitizers" , function() {
 	
-	it( "should sanitize to 'number' accordingly" , function() {
-		doormen.equals( doormen( 0 , { sanitize: 'number' } ) , 0 ) ;
-		doormen.equals( doormen( '0' , { sanitize: 'number' } ) , 0 ) ;
-		doormen.equals( doormen( 1 , { sanitize: 'number' } ) , 1 ) ;
-		doormen.equals( doormen( '1' , { sanitize: 'number' } ) , 1 ) ;
+	it( "should sanitize to 'to-number' accordingly" , function() {
+		doormen.equals( doormen( 0 , { sanitize: 'to-number' } ) , 0 ) ;
+		doormen.equals( doormen( '0' , { sanitize: 'to-number' } ) , 0 ) ;
+		doormen.equals( doormen( 1 , { sanitize: 'to-number' } ) , 1 ) ;
+		doormen.equals( doormen( '1' , { sanitize: 'to-number' } ) , 1 ) ;
 	} ) ;
 } ) ;
 
