@@ -310,45 +310,45 @@ describe( "Built-in filters" , function() {
 		doormen.not( '6' , { min: 3, max: 10 } ) ;
 	} ) ;
 	
-	it( "min-length filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { "min-length": 3 } ) ;
-		doormen( "abcde" , { "min-length": 3 } ) ;
-		doormen.not( "ab" , { "min-length": 3 } ) ;
-		doormen.not( "" , { "min-length": 3 } ) ;
+	it( "minLength filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { minLength: 3 } ) ;
+		doormen( "abcde" , { minLength: 3 } ) ;
+		doormen.not( "ab" , { minLength: 3 } ) ;
+		doormen.not( "" , { minLength: 3 } ) ;
 		
-		doormen.not( 1 , { "min-length": 3 } ) ;
-		doormen.not( 1 , { "min-length": 0 } ) ;
-		doormen.not( NaN , { "min-length": 3 } ) ;
-		doormen.not( true , { "min-length": 3 } ) ;
-		doormen.not( false , { "min-length": 3 } ) ;
+		doormen.not( 1 , { minLength: 3 } ) ;
+		doormen.not( 1 , { minLength: 0 } ) ;
+		doormen.not( NaN , { minLength: 3 } ) ;
+		doormen.not( true , { minLength: 3 } ) ;
+		doormen.not( false , { minLength: 3 } ) ;
 	} ) ;
 	
-	it( "max-length filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { "max-length": 3 } ) ;
-		doormen.not( "abcde" , { "max-length": 3 } ) ;
-		doormen( "ab" , { "max-length": 3 } ) ;
-		doormen( "" , { "max-length": 3 } ) ;
+	it( "maxLength filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { maxLength: 3 } ) ;
+		doormen.not( "abcde" , { maxLength: 3 } ) ;
+		doormen( "ab" , { maxLength: 3 } ) ;
+		doormen( "" , { maxLength: 3 } ) ;
 		
-		doormen.not( 1 , { "max-length": 3 } ) ;
-		doormen.not( 1 , { "max-length": 0 } ) ;
-		doormen.not( NaN , { "max-length": 3 } ) ;
-		doormen.not( true , { "max-length": 3 } ) ;
-		doormen.not( false , { "max-length": 3 } ) ;
+		doormen.not( 1 , { maxLength: 3 } ) ;
+		doormen.not( 1 , { maxLength: 0 } ) ;
+		doormen.not( NaN , { maxLength: 3 } ) ;
+		doormen.not( true , { maxLength: 3 } ) ;
+		doormen.not( false , { maxLength: 3 } ) ;
 	} ) ;
 	
-	it( "min-length + max-length filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen( "abcd" , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen( "abcde" , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( "abcdef" , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( "ab" , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( "" , { "min-length": 3 , "max-length": 5 } ) ;
+	it( "minLength + maxLength filter should validate accordingly, data that do not have a length should throw" , function() {
+		doormen( "abc" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen( "abcd" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen( "abcde" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( "abcdef" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( "ab" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( "" , { minLength: 3 , maxLength: 5 } ) ;
 		
-		doormen.not( 1 , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( 1 , { "max-length": 0 } ) ;
-		doormen.not( NaN , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( true , { "min-length": 3 , "max-length": 5 } ) ;
-		doormen.not( false , { "min-length": 3 , "max-length": 5 } ) ;
+		doormen.not( 1 , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( 1 , { maxLength: 0 } ) ;
+		doormen.not( NaN , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( true , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( false , { minLength: 3 , maxLength: 5 } ) ;
 	} ) ;
 	
 	it( "'in' filter should validate if the value is listed" , function() {
@@ -376,29 +376,29 @@ describe( "Built-in filters" , function() {
 		doormen.not( "" , { in: [ "string", "text", "bob" ] } ) ;
 	} ) ;
 	
-	it( "'not-in' filter should validate if the value is listed" , function() {
-		doormen( 10 , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( 5 , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( 1 , { "not-in": [ 1,5,7 ] } ) ;
-		doormen( 0 , { "not-in": [ 1,5,7 ] } ) ;
-		doormen( -10 , { "not-in": [ 1,5,7 ] } ) ;
-		doormen( Infinity , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( Infinity , { "not-in": [ 1,5,Infinity,7 ] } ) ;
-		doormen( -Infinity , { "not-in": [ 1,5,7 ] } ) ;
-		doormen( NaN , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( NaN , { "not-in": [ 1,5,NaN,7 ] } ) ;
+	it( "'notIn' filter should validate if the value is listed" , function() {
+		doormen( 10 , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( 5 , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( 1 , { notIn: [ 1,5,7 ] } ) ;
+		doormen( 0 , { notIn: [ 1,5,7 ] } ) ;
+		doormen( -10 , { notIn: [ 1,5,7 ] } ) ;
+		doormen( Infinity , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( Infinity , { notIn: [ 1,5,Infinity,7 ] } ) ;
+		doormen( -Infinity , { notIn: [ 1,5,7 ] } ) ;
+		doormen( NaN , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( NaN , { notIn: [ 1,5,NaN,7 ] } ) ;
 		
-		doormen.not( true , { "not-in": [ 1,true,5,7 ] } ) ;
-		doormen( true , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( false , { "not-in": [ 1,false,5,7 ] } ) ;
-		doormen( false , { "not-in": [ 1,5,7 ] } ) ;
+		doormen.not( true , { notIn: [ 1,true,5,7 ] } ) ;
+		doormen( true , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( false , { notIn: [ 1,false,5,7 ] } ) ;
+		doormen( false , { notIn: [ 1,5,7 ] } ) ;
 		
-		doormen( "text" , { "not-in": [ 1,5,7 ] } ) ;
-		doormen.not( "text" , { "not-in": [ 1,"text",5,7 ] } ) ;
-		doormen.not( "text" , { "not-in": [ "string", "text", "bob" ] } ) ;
-		doormen( "bobby" , { "not-in": [ "string", "text", "bob" ] } ) ;
-		doormen.not( "" , { "not-in": [ "string", "text", "" ] } ) ;
-		doormen( "" , { "not-in": [ "string", "text", "bob" ] } ) ;
+		doormen( "text" , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( "text" , { notIn: [ 1,"text",5,7 ] } ) ;
+		doormen.not( "text" , { notIn: [ "string", "text", "bob" ] } ) ;
+		doormen( "bobby" , { notIn: [ "string", "text", "bob" ] } ) ;
+		doormen.not( "" , { notIn: [ "string", "text", "" ] } ) ;
+		doormen( "" , { notIn: [ "string", "text", "bob" ] } ) ;
 	} ) ;
 	
 	it( "'in' filter and object" ) ;
@@ -541,11 +541,11 @@ describe( "Numbers meta types" , function() {
 
 describe( "Common sanitizers" , function() {
 	
-	it( "should sanitize to 'to-number' accordingly" , function() {
-		doormen.equals( doormen( 0 , { sanitize: 'to-number' } ) , 0 ) ;
-		doormen.equals( doormen( '0' , { sanitize: 'to-number' } ) , 0 ) ;
-		doormen.equals( doormen( 1 , { sanitize: 'to-number' } ) , 1 ) ;
-		doormen.equals( doormen( '1' , { sanitize: 'to-number' } ) , 1 ) ;
+	it( "should sanitize to 'toNumber' accordingly" , function() {
+		doormen.equals( doormen( 0 , { sanitize: 'toNumber' } ) , 0 ) ;
+		doormen.equals( doormen( '0' , { sanitize: 'toNumber' } ) , 0 ) ;
+		doormen.equals( doormen( 1 , { sanitize: 'toNumber' } ) , 1 ) ;
+		doormen.equals( doormen( '1' , { sanitize: 'toNumber' } ) , 1 ) ;
 	} ) ;
 } ) ;
 

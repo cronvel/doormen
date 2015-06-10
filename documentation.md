@@ -17,13 +17,13 @@ Early alpha.
 * type `string` the name of the type checker
 * min
 * max
-* min-length
-* max-length
+* minLength
+* maxLength
 * in
-* not-in
+* notIn
 * properties
 
-* only-properties
+* onlyProperties?
 
 
 
@@ -57,7 +57,7 @@ Common meta types:
 
 ## Sanitizers
 
-* to-number: try to convert a `string` to a `number`
+* toNumber: try to convert a `string` to a `number`
 
 
 
