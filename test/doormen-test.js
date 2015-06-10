@@ -257,6 +257,42 @@ describe( "Built-in types" , function() {
 		doormen.not( [ 1,2,3 ] , { type: 'date' } ) ;
 		doormen.not( function(){} , { type: 'date' } ) ;
 	} ) ;
+	
+	it( "should validate error accordingly" , function() {
+		doormen( new Error() , { type: 'error' } ) ;
+		
+		doormen.not( undefined , { type: 'error' } ) ;
+		doormen.not( null , { type: 'error' } ) ;
+		doormen.not( false , { type: 'error' } ) ;
+		doormen.not( true , { type: 'error' } ) ;
+		doormen.not( 0 , { type: 'error' } ) ;
+		doormen.not( 1 , { type: 'error' } ) ;
+		doormen.not( '' , { type: 'error' } ) ;
+		doormen.not( 'text' , { type: 'error' } ) ;
+		doormen.not( {} , { type: 'error' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'error' } ) ;
+		doormen.not( [] , { type: 'error' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'error' } ) ;
+		doormen.not( function(){} , { type: 'error' } ) ;
+	} ) ;
+	
+	it( "should validate arguments accordingly" , function() {
+		doormen( arguments , { type: 'arguments' } ) ;
+		
+		doormen.not( undefined , { type: 'arguments' } ) ;
+		doormen.not( null , { type: 'arguments' } ) ;
+		doormen.not( false , { type: 'arguments' } ) ;
+		doormen.not( true , { type: 'arguments' } ) ;
+		doormen.not( 0 , { type: 'arguments' } ) ;
+		doormen.not( 1 , { type: 'arguments' } ) ;
+		doormen.not( '' , { type: 'arguments' } ) ;
+		doormen.not( 'text' , { type: 'arguments' } ) ;
+		doormen.not( {} , { type: 'arguments' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'arguments' } ) ;
+		doormen.not( [] , { type: 'arguments' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
+		doormen.not( function(){} , { type: 'arguments' } ) ;
+	} ) ;
 } ) ;
 
 

@@ -45,6 +45,7 @@ Javascript primitive types:
 Javascript/Node.js built-in types:
 
 * array: the data should be an `Array`
+* error: the data should be an instance of `Error`
 * date: the data should be an instance of `Date`
 * buffer: the data should be a Node.js `Buffer`
                                         
