@@ -4,7 +4,7 @@
    - [Basic types](#basic-types)
    - [Built-in types](#built-in-types)
    - [Built-in filters](#built-in-filters)
-   - [Recursive](#recursive)
+   - [Properties and recursivity](#properties-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
    - [Common sanitizers](#common-sanitizers)
 <a name=""></a>
@@ -397,9 +397,24 @@ doormen.not( "" , { "not-in": [ "string", "text", "" ] } ) ;
 doormen( "" , { "not-in": [ "string", "text", "bob" ] } ) ;
 ```
 
-<a name="recursive"></a>
-# Recursive
-'properties'.
+<a name="properties-and-recursivity"></a>
+# Properties and recursivity
+when 'properties' is an array, it should check if the value has all listed properties.
+
+```js
+var schema = {
+	type: 'object',
+	properties: [ 'a' , 'b' ]
+} ;
+
+doormen( { a: 1, b: 'text' } , schema ) ;
+doormen( { a: 'text', b: 3 } , schema ) ;
+doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
+doormen.not( { b: 'text' } , schema ) ;
+doormen.not( { a: 1 } , schema ) ;
+```
+
+when 'properties' is an object, it performs the check recursively for each listed child.
 
 ```js
 var schema = {
@@ -412,6 +427,7 @@ var schema = {
 
 doormen( { a: 1, b: 'text' } , schema ) ;
 doormen.not( { a: 'text', b: 3 } , schema ) ;
+doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
 doormen.not( { b: 'text' } , schema ) ;
 doormen.not( { a: 1 } , schema ) ;
 ```

@@ -407,9 +407,22 @@ describe( "Built-in filters" , function() {
 
 
 
-describe( "Recursive" , function() {
+describe( "Properties and recursivity" , function() {
 	
-	it( "'properties'" , function() {
+	it( "when 'properties' is an array, it should check if the value has all listed properties" , function() {
+		var schema = {
+			type: 'object',
+			properties: [ 'a' , 'b' ]
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen( { a: 'text', b: 3 } , schema ) ;
+		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
+		doormen.not( { a: 1 } , schema ) ;
+	} ) ;
+	
+	it( "when 'properties' is an object, it performs the check recursively for each listed child" , function() {
 		var schema = {
 			type: 'object',
 			properties: {
@@ -420,6 +433,7 @@ describe( "Recursive" , function() {
 		
 		doormen( { a: 1, b: 'text' } , schema ) ;
 		doormen.not( { a: 'text', b: 3 } , schema ) ;
+		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
 		doormen.not( { b: 'text' } , schema ) ;
 		doormen.not( { a: 1 } , schema ) ;
 	} ) ;
