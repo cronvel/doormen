@@ -411,7 +411,6 @@ describe( "Properties and recursivity" , function() {
 	
 	it( "when 'properties' is an array, it should check if the value has all listed properties" , function() {
 		var schema = {
-			type: 'object',
 			properties: [ 'a' , 'b' ]
 		} ;
 		
@@ -420,11 +419,15 @@ describe( "Properties and recursivity" , function() {
 		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
 		doormen.not( { b: 'text' } , schema ) ;
 		doormen.not( { a: 1 } , schema ) ;
+		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
 	} ) ;
 	
 	it( "when 'properties' is an object, it performs the check recursively for each listed child" , function() {
 		var schema = {
-			type: 'object',
 			properties: {
 				a: { type: 'number' },
 				b: { type: 'string' }
@@ -436,9 +439,50 @@ describe( "Properties and recursivity" , function() {
 		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
 		doormen.not( { b: 'text' } , schema ) ;
 		doormen.not( { a: 1 } , schema ) ;
+		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
 	} ) ;
 	
-	it( "'only-properties'" ) ;
+	it( "when 'only-properties' is an array, it should check if the value has all and ONLY listed properties" , function() {
+		var schema = {
+			"only-properties": [ 'a' , 'b' ]
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen( { a: 'text', b: 3 } , schema ) ;
+		doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
+		doormen.not( { a: 1 } , schema ) ;
+		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
+	} ) ;
+	
+	it( "when 'properties' is an object, it performs the check recursively for each listed child" , function() {
+		var schema = {
+			"only-properties": {
+				a: { type: 'number' },
+				b: { type: 'string' }
+			}
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen.not( { a: 'text', b: 3 } , schema ) ;
+		doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
+		doormen.not( { a: 1 } , schema ) ;
+		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
+	} ) ;
+	
 } ) ;
 
 
