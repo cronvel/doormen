@@ -22,7 +22,8 @@ Early alpha.
 * in
 * notIn
 * properties
-* only `boolean` used in conjunction with *properties*, it validate that no properties other than those listed are present
+* only `boolean` used in conjunction with *properties*, it checks that no properties other than those listed are present
+* of `object` contains one schema that will check each elements of an array or each properties
 
 
 

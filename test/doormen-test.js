@@ -407,7 +407,34 @@ describe( "Built-in filters" , function() {
 
 
 
-describe( "Properties and recursivity" , function() {
+describe( "Children and recursivity" , function() {
+	
+	it( "'of' should perform the check recursively for each children, using the same given schema for all of them." , function() {
+		var schema = {
+			of: { type: 'string' }
+		} ;
+		
+		// Object
+		doormen( { b: 'text' } , schema ) ;
+		doormen.not( { a: 1 } , schema ) ;
+		doormen.not( { a: 1, b: 'text' } , schema ) ;
+		doormen.not( { a: 'text', b: 3 } , schema ) ;
+		doormen( { a: 'text', b: 'string' } , schema ) ;
+		doormen.not( { A: 'TEXT', b: 'text' , c: undefined } , schema ) ;
+		
+		// Array
+		doormen( [ 'text' ] , schema ) ;
+		doormen( [] , schema ) ;
+		doormen( [ 'text' , 'string' ] , schema ) ;
+		doormen.not( [ 'text' , 'string' , null ] , schema ) ;
+		doormen.not( [ 1 , 'text' , 'string' ] , schema ) ;
+		doormen.not( [ true ] , schema ) ;
+		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
+	} ) ;
 	
 	it( "when 'properties' is an array, it should check if the value has all listed properties" , function() {
 		var schema = {
@@ -479,6 +506,53 @@ describe( "Properties and recursivity" , function() {
 		doormen.not( { b: 'text' } , schema ) ;
 		doormen.not( { a: 1 } , schema ) ;
 		
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
+	} ) ;
+	
+	it( "'elements' should perform the check recursively for each children elements, using a specific schema for each one" , function() {
+		var schema = {
+			elements: [
+				{ type: 'string' },
+				{ type: 'number' },
+				{ type: 'boolean' }
+			]
+		} ;
+		
+		doormen( [ 'text' , 3 , false ] , schema ) ;
+		doormen( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
+		doormen.not( [] , schema ) ;
+		doormen.not( [ 'text' , 3 ] , schema ) ;
+		doormen.not( [ true ] , schema ) ;
+		
+		doormen.not( {} , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
+		doormen.not( 'text' , schema ) ;
+		doormen.not( 5 , schema ) ;
+		doormen.not( null , schema ) ;
+		doormen.not( undefined , schema ) ;
+	} ) ;
+	
+	it( "'elements' should perform the check recursively for each children elements, using a specific schema for each one" , function() {
+		var schema = {
+			elements: [
+				{ type: 'string' },
+				{ type: 'number' },
+				{ type: 'boolean' }
+			],
+			only: true
+		} ;
+		
+		doormen( [ 'text' , 3 , false ] , schema ) ;
+		doormen.not( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
+		doormen.not( [] , schema ) ;
+		doormen.not( [ 'text' , 3 ] , schema ) ;
+		doormen.not( [ true ] , schema ) ;
+		
+		doormen.not( {} , schema ) ;
+		doormen.not( { b: 'text' } , schema ) ;
 		doormen.not( 'text' , schema ) ;
 		doormen.not( 5 , schema ) ;
 		doormen.not( null , schema ) ;
