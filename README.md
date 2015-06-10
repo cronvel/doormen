@@ -22,8 +22,7 @@ Early alpha.
 * in
 * notIn
 * properties
-
-* onlyProperties?
+* only `boolean` used in conjunction with *properties*, it validate that no properties other than those listed are present
 
 
 
@@ -482,7 +481,7 @@ doormen.not( null , schema ) ;
 doormen.not( undefined , schema ) ;
 ```
 
-when 'properties' is an object, it performs the check recursively for each listed child.
+when 'properties' is an object, it should perform the check recursively for each listed child.
 
 ```js
 var schema = {
@@ -504,11 +503,12 @@ doormen.not( null , schema ) ;
 doormen.not( undefined , schema ) ;
 ```
 
-when 'only-properties' is an array, it should check if the value has all and ONLY listed properties.
+when 'properties' is an array and 'only' is truthy, it should check if the value has all and ONLY listed properties.
 
 ```js
 var schema = {
-	"only-properties": [ 'a' , 'b' ]
+	properties: [ 'a' , 'b' ],
+	only: true,
 } ;
 
 doormen( { a: 1, b: 'text' } , schema ) ;
@@ -523,14 +523,15 @@ doormen.not( null , schema ) ;
 doormen.not( undefined , schema ) ;
 ```
 
-when 'properties' is an object, it performs the check recursively for each listed child.
+when 'properties' is an object and 'only' is truthy, it should perform the check recursively for each listed child and check if the value has ONLY listed properties.
 
 ```js
 var schema = {
-	"only-properties": {
+	properties: {
 		a: { type: 'number' },
 		b: { type: 'string' }
-	}
+	},
+	only: true
 } ;
 
 doormen( { a: 1, b: 'text' } , schema ) ;

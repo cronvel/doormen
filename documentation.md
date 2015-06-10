@@ -22,8 +22,7 @@ Early alpha.
 * in
 * notIn
 * properties
-
-* onlyProperties?
+* only `boolean` used in conjunction with *properties*, it validate that no properties other than those listed are present
 
 
 

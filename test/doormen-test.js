@@ -426,7 +426,7 @@ describe( "Properties and recursivity" , function() {
 		doormen.not( undefined , schema ) ;
 	} ) ;
 	
-	it( "when 'properties' is an object, it performs the check recursively for each listed child" , function() {
+	it( "when 'properties' is an object, it should perform the check recursively for each listed child" , function() {
 		var schema = {
 			properties: {
 				a: { type: 'number' },
@@ -446,9 +446,10 @@ describe( "Properties and recursivity" , function() {
 		doormen.not( undefined , schema ) ;
 	} ) ;
 	
-	it( "when 'only-properties' is an array, it should check if the value has all and ONLY listed properties" , function() {
+	it( "when 'properties' is an array and 'only' is truthy, it should check if the value has all and ONLY listed properties" , function() {
 		var schema = {
-			"only-properties": [ 'a' , 'b' ]
+			properties: [ 'a' , 'b' ],
+			only: true,
 		} ;
 		
 		doormen( { a: 1, b: 'text' } , schema ) ;
@@ -463,12 +464,13 @@ describe( "Properties and recursivity" , function() {
 		doormen.not( undefined , schema ) ;
 	} ) ;
 	
-	it( "when 'properties' is an object, it performs the check recursively for each listed child" , function() {
+	it( "when 'properties' is an object and 'only' is truthy, it should perform the check recursively for each listed child and check if the value has ONLY listed properties" , function() {
 		var schema = {
-			"only-properties": {
+			properties: {
 				a: { type: 'number' },
 				b: { type: 'string' }
-			}
+			},
+			only: true
 		} ;
 		
 		doormen( { a: 1, b: 'text' } , schema ) ;
