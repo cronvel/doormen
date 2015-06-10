@@ -277,7 +277,11 @@ describe( "Built-in types" , function() {
 	} ) ;
 	
 	it( "should validate arguments accordingly" , function() {
-		doormen( arguments , { type: 'arguments' } ) ;
+		var fn = function() { doormen( arguments , { type: 'arguments' } ) ; }
+		
+		fn() ;
+		fn( 1 ) ;
+		fn( 1 , 2 , 3 ) ;
 		
 		doormen.not( undefined , { type: 'arguments' } ) ;
 		doormen.not( null , { type: 'arguments' } ) ;
@@ -385,6 +389,21 @@ describe( "Built-in filters" , function() {
 		doormen.not( NaN , { minLength: 3 , maxLength: 5 } ) ;
 		doormen.not( true , { minLength: 3 , maxLength: 5 } ) ;
 		doormen.not( false , { minLength: 3 , maxLength: 5 } ) ;
+	} ) ;
+	
+	it( "'match' filter should validate accordingly using a RegExp" , function() {
+		doormen( "" , { match: "^[a-f]*$" } ) ;
+		doormen.not( "" , { match: "^[a-f]+$" } ) ;
+		doormen( "abc" , { match: "^[a-f]*$" } ) ;
+		doormen( "abcdef" , { match: "^[a-f]*$" } ) ;
+		doormen.not( "ghi" , { match: "^[a-f]*$" } ) ;
+		doormen.not( "ghi" , { match: /^[a-f]*$/ } ) ;
+		
+		doormen.not( 1 , { match: "^[a-f]*$" } ) ;
+		doormen.not( 1 , { maxLength: 0 } ) ;
+		doormen.not( NaN , { match: "^[a-f]*$" } ) ;
+		doormen.not( true , { match: "^[a-f]*$" } ) ;
+		doormen.not( false , { match: "^[a-f]*$" } ) ;
 	} ) ;
 	
 	it( "'in' filter should validate if the value is listed" , function() {

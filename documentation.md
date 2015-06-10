@@ -19,6 +19,7 @@ Early alpha.
 * max
 * minLength
 * maxLength
+* match
 * in
 * notIn
 * properties `object` of schema, it iterates through each properties and checks that they all match their own schema
