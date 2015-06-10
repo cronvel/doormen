@@ -21,8 +21,9 @@ Early alpha.
 * maxLength
 * in
 * notIn
-* properties
-* only `boolean` used in conjunction with *properties*, it checks that no properties other than those listed are present
+* properties `object` of schema, it iterates through each properties and checks that they all match their own schema
+* elements `Array` same than properties but for arrays
+* only `boolean` used in conjunction with *properties* or *elements*, it checks that no properties other than those listed are present
 * of `object` contains one schema that will check each elements of an array or each properties
 
 
