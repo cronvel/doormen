@@ -241,6 +241,50 @@ doormen.not( [ 1,2,3 ] , { type: 'date' } ) ;
 doormen.not( function(){} , { type: 'date' } ) ;
 ```
 
+should validate error accordingly.
+
+```js
+doormen( new Error() , { type: 'error' } ) ;
+
+doormen.not( undefined , { type: 'error' } ) ;
+doormen.not( null , { type: 'error' } ) ;
+doormen.not( false , { type: 'error' } ) ;
+doormen.not( true , { type: 'error' } ) ;
+doormen.not( 0 , { type: 'error' } ) ;
+doormen.not( 1 , { type: 'error' } ) ;
+doormen.not( '' , { type: 'error' } ) ;
+doormen.not( 'text' , { type: 'error' } ) ;
+doormen.not( {} , { type: 'error' } ) ;
+doormen.not( { a:1 , b:2 } , { type: 'error' } ) ;
+doormen.not( [] , { type: 'error' } ) ;
+doormen.not( [ 1,2,3 ] , { type: 'error' } ) ;
+doormen.not( function(){} , { type: 'error' } ) ;
+```
+
+should validate arguments accordingly.
+
+```js
+var fn = function() { doormen( arguments , { type: 'arguments' } ) ; }
+
+fn() ;
+fn( 1 ) ;
+fn( 1 , 2 , 3 ) ;
+
+doormen.not( undefined , { type: 'arguments' } ) ;
+doormen.not( null , { type: 'arguments' } ) ;
+doormen.not( false , { type: 'arguments' } ) ;
+doormen.not( true , { type: 'arguments' } ) ;
+doormen.not( 0 , { type: 'arguments' } ) ;
+doormen.not( 1 , { type: 'arguments' } ) ;
+doormen.not( '' , { type: 'arguments' } ) ;
+doormen.not( 'text' , { type: 'arguments' } ) ;
+doormen.not( {} , { type: 'arguments' } ) ;
+doormen.not( { a:1 , b:2 } , { type: 'arguments' } ) ;
+doormen.not( [] , { type: 'arguments' } ) ;
+doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
+doormen.not( function(){} , { type: 'arguments' } ) ;
+```
+
 <a name="built-in-filters"></a>
 # Built-in filters
 min filter should validate accordingly, non-number should throw.
@@ -341,6 +385,23 @@ doormen.not( 1 , { maxLength: 0 } ) ;
 doormen.not( NaN , { minLength: 3 , maxLength: 5 } ) ;
 doormen.not( true , { minLength: 3 , maxLength: 5 } ) ;
 doormen.not( false , { minLength: 3 , maxLength: 5 } ) ;
+```
+
+'match' filter should validate accordingly using a RegExp.
+
+```js
+doormen( "" , { match: "^[a-f]*$" } ) ;
+doormen.not( "" , { match: "^[a-f]+$" } ) ;
+doormen( "abc" , { match: "^[a-f]*$" } ) ;
+doormen( "abcdef" , { match: "^[a-f]*$" } ) ;
+doormen.not( "ghi" , { match: "^[a-f]*$" } ) ;
+doormen.not( "ghi" , { match: /^[a-f]*$/ } ) ;
+
+doormen.not( 1 , { match: "^[a-f]*$" } ) ;
+doormen.not( 1 , { maxLength: 0 } ) ;
+doormen.not( NaN , { match: "^[a-f]*$" } ) ;
+doormen.not( true , { match: "^[a-f]*$" } ) ;
+doormen.not( false , { match: "^[a-f]*$" } ) ;
 ```
 
 'in' filter should validate if the value is listed.
