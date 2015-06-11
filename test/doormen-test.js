@@ -438,6 +438,14 @@ describe( "Built-in types" , function() {
 
 describe( "Top-level filters" , function() {
 	
+	it( "'instanceOf' should validate object accordingly" , function() {
+		doormen( new Date() , { instanceOf: Date } ) ;
+		doormen( new Array() , { instanceOf: Array } ) ;
+		function MyClass(){}
+		doormen( new MyClass() , { instanceOf: MyClass } ) ;
+		doormen( new MyClass() , { instanceOf: Object } ) ;
+	} ) ;
+	
 	it( "min filter should validate accordingly, non-number should throw" , function() {
 		doormen( 10 , { min: 3 } ) ;
 		doormen( 3 , { min: 3 } ) ;

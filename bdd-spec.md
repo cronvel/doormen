@@ -432,6 +432,16 @@ doormen.not( function(){} , { type: 'arguments' } ) ;
 
 <a name="top-level-filters"></a>
 # Top-level filters
+'instanceOf' should validate object accordingly.
+
+```js
+doormen( new Date() , { instanceOf: Date } ) ;
+doormen( new Array() , { instanceOf: Array } ) ;
+function MyClass(){}
+doormen( new MyClass() , { instanceOf: MyClass } ) ;
+doormen( new MyClass() , { instanceOf: Object } ) ;
+```
+
 min filter should validate accordingly, non-number should throw.
 
 ```js
