@@ -13,7 +13,8 @@ Early alpha.
 ## Basic validation
 
 * sanitize `Array` of `string` the sanitizer's name to apply before any type checking
-* optional `boolean` if the data can be `null` or `undefined` as an alternative to the following type
+* optional `boolean` the data can be `null` or `undefined`, if so the data validate immediately
+* default (anything) the data can be `null` or `undefined`, if so it is overwritten by the default value and it validates immediately
 * type `string` the name of the type checker
 * min
 * max
@@ -264,7 +265,7 @@ doormen.equals( a , b ) ;
 
 <a name="optional-and-default-data"></a>
 # Optional and default data
-optional data should validate when null or undefined even if the type check would have failed.
+data should validate when null or undefined if the optional flag is set.
 
 ```js
 doormen.not( null , { type: 'string' } ) ;
@@ -279,6 +280,24 @@ doormen.not( 1 , { optional: true, type: 'string' } ) ;
 
 doormen.not( {} , { properties: { a: { type: 'string' } } } ) ;
 doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+```
+
+data should validate when null or undefined if a default value is specified, the default should overwrite the original one.
+
+```js
+doormen.equals( doormen( null , { type: 'string' , "default": 'default!' } ) , 'default!' ) ;
+doormen.equals(
+	doormen(
+		{ a: null } ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } } } ) ,
+	{ a: 'default!' }
+) ;
+doormen.equals(
+	doormen(
+		{ a: null } ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+	{ a: 'default!' , b: { c: 5 } }
+) ;
 ```
 
 <a name="basic-types"></a>
@@ -667,6 +686,17 @@ doormen.not( "" , { notIn: [ "string", "text", "" ] } ) ;
 doormen( "" , { notIn: [ "string", "text", "bob" ] } ) ;
 ```
 
+'in' filter containing object and arrays.
+
+```js
+doormen( { a: 2 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
+doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
+doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } ) ;
+doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
+doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
+doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+```
+
 <a name="children-and-recursivity"></a>
 # Children and recursivity
 'of' should perform the check recursively for each children, using the same given schema for all of them..
@@ -914,5 +944,22 @@ sanitize should work recursively as well.
 
 ```js
 doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
+doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
+doormen.equals( doormen( { a: ' toto  ' , b: 'text  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' , b: 'text' } ) ;
+doormen.equals( doormen(
+		{ a: ' toto  ' , b: 'text  ' } ,
+		{ of: { sanitize: 'trim' } } ) ,
+	{ a: 'toto' , b: 'text' }
+) ;
+doormen.equals( doormen(
+		{ a: ' toto  ' , b: 'text  ' } ,
+		{ properties: { a: { sanitize: 'trim' } } } ) ,
+	{ a: 'toto' , b: 'text  ' }
+) ;
+doormen.equals( doormen(
+		{ a: ' toto  ' , b: 'text  ' } ,
+		{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
+	{ a: 'toto' , b: 'text' }
+) ;
 ```
 

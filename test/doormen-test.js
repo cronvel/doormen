@@ -219,7 +219,7 @@ describe( "Equality checker" , function() {
 
 describe( "Optional and default data" , function() {
 	
-	it( "optional data should validate when null or undefined even if the type check would have failed" , function() {
+	it( "data should validate when null or undefined if the optional flag is set" , function() {
 		
 		doormen.not( null , { type: 'string' } ) ;
 		doormen( null , { optional: true, type: 'string' } ) ;
@@ -235,7 +235,21 @@ describe( "Optional and default data" , function() {
 		doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
 	} ) ;
 	
-	it( "default" ) ;
+	it( "data should validate when null or undefined if a default value is specified, the default should overwrite the original one" , function() {
+		doormen.equals( doormen( null , { type: 'string' , "default": 'default!' } ) , 'default!' ) ;
+		doormen.equals(
+			doormen(
+				{ a: null } ,
+				{ properties: { a: { type: 'string' , "default": 'default!' } } } ) ,
+			{ a: 'default!' }
+		) ;
+		doormen.equals(
+			doormen(
+				{ a: null } ,
+				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+			{ a: 'default!' , b: { c: 5 } }
+		) ;
+	} ) ;
 } ) ;
 
 
@@ -590,8 +604,14 @@ describe( "Top-level filters" , function() {
 		doormen( "" , { notIn: [ "string", "text", "bob" ] } ) ;
 	} ) ;
 	
-	it( "'in' filter and object" ) ;
-	
+	it( "'in' filter containing object and arrays" , function() {
+		doormen( { a: 2 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
+		doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
+		doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } ) ;
+		doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
+		doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
+		doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+	} ) ;
 } ) ;
 
 
@@ -826,6 +846,23 @@ describe( "Sanitize" , function() {
 	
 	it( "sanitize should work recursively as well" , function() {
 		doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
+		doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
+		doormen.equals( doormen( { a: ' toto  ' , b: 'text  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' , b: 'text' } ) ;
+		doormen.equals( doormen(
+				{ a: ' toto  ' , b: 'text  ' } ,
+				{ of: { sanitize: 'trim' } } ) ,
+			{ a: 'toto' , b: 'text' }
+		) ;
+		doormen.equals( doormen(
+				{ a: ' toto  ' , b: 'text  ' } ,
+				{ properties: { a: { sanitize: 'trim' } } } ) ,
+			{ a: 'toto' , b: 'text  ' }
+		) ;
+		doormen.equals( doormen(
+				{ a: ' toto  ' , b: 'text  ' } ,
+				{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
+			{ a: 'toto' , b: 'text' }
+		) ;
 	} ) ;
 } ) ;
 	
