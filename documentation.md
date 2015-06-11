@@ -62,7 +62,7 @@ Common meta types:
 ## Sanitizers
 
 * toNumber: try to convert a `string` to a `number`
-
+* trim: trim a `string`, removing whitespace at the beginning and the end
 
 
 

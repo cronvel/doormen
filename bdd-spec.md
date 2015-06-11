@@ -1,12 +1,13 @@
 # TOC
    - [Assertion utilities](#assertion-utilities)
+   - [Equality checker](#equality-checker)
    - [Optional and default data](#optional-and-default-data)
    - [Basic types](#basic-types)
    - [Built-in types](#built-in-types)
-   - [Built-in filters](#built-in-filters)
+   - [Top-level filters](#top-level-filters)
    - [Children and recursivity](#children-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
-   - [Common sanitizers](#common-sanitizers)
+   - [Sanitize](#sanitize)
 <a name=""></a>
  
 <a name="assertion-utilities"></a>
@@ -71,6 +72,128 @@ catch ( error ) {
 if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
 ```
 
+<a name="equality-checker"></a>
+# Equality checker
+Equality of simple type.
+
+```js
+doormen.equals( undefined , undefined ) ;
+doormen.equals( null , null ) ;
+doormen.equals( true , true ) ;
+doormen.equals( false , false ) ;
+doormen.not.equals( undefined , null ) ;
+doormen.not.equals( true , false ) ;
+doormen.not.equals( null , false ) ;
+doormen.not.equals( undefined , false ) ;
+
+doormen.equals( NaN , NaN ) ;
+doormen.not.equals( NaN , null ) ;
+doormen.not.equals( NaN , undefined ) ;
+
+doormen.equals( Infinity , Infinity ) ;
+doormen.equals( -Infinity , -Infinity ) ;
+doormen.not.equals( Infinity , -Infinity ) ;
+
+doormen.equals( 0 , 0 ) ;
+doormen.equals( 123 , 123 ) ;
+doormen.equals( 0.123 , 0.123 ) ;
+
+doormen.equals( "" , "" ) ;
+doormen.equals( "abc" , "abc" ) ;
+doormen.equals( "   abc" , "   abc" ) ;
+doormen.equals( "abc  " , "abc  " ) ;
+doormen.equals( "     abc  " , "     abc  " ) ;
+
+doormen.not.equals( 0 , "" ) ;
+doormen.not.equals( false , "" ) ;
+```
+
+Equality of objects.
+
+```js
+var o = {} ;
+
+doormen.equals( {} , {} ) ;
+doormen.equals( o , o ) ;
+doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 } ) ;
+doormen.not.equals( { a: 2 , b: 6 } , { a: 2 , b: 5 } ) ;
+doormen.equals( { b: 5 , a: 2 } , { a: 2 , b: 5 } ) ;
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 } ) ;
+doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: undefined } ) ;
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , c: undefined } ) ;
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , d: undefined } ) ;
+doormen.not.equals( { a: 2 , b: 5 , c: null } , { a: 2 , b: 5 } ) ;
+doormen.not.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: null } ) ;
+
+doormen.not.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 } ) ;
+doormen.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 , c: {} } ) ;
+doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' } } ) ;
+doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
+doormen.not.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'toto' } } ) ;
+doormen.equals(
+	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } } ,
+	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } }
+) ;
+
+// Should test equality of object with different prototype
+```
+
+Equality of arrays.
+
+```js
+var o = [] ;
+
+doormen.equals( [] , [] ) ;
+doormen.equals( o , o ) ;
+doormen.equals( [ 1 ] , [ 1 ] ) ;
+doormen.not.equals( [ 1 , undefined ] , [ 1 ] ) ;
+doormen.not.equals( [ 1 ] , [ 1 , undefined ] ) ;
+doormen.not.equals( [ 1 ] , [ 2 ] ) ;
+doormen.equals( [ 1 , 2 , 3 ] , [ 1 , 2 , 3 ] ) ;
+doormen.equals( [ 1 , [] , 3 ] , [ 1 , [] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 ] , 3 ] , [ 1 , [ 2 ] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'a' ] , 3 ] ) ;
+doormen.not.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'b' ] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+doormen.not.equals( [ 1 , [ 2 , [ undefined ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+```
+
+Equality of nested and mixed objects and arrays.
+
+```js
+doormen.not.equals( {} , [] ) ;
+doormen.equals(
+	{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] } ,
+	{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] }
+) ;
+doormen.equals(
+	[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ] ,
+	[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ]
+) ;
+```
+
+Circular references: stop searching when both part have reached circular references.
+
+```js
+var a , b ;
+
+a = { a: 1, b: 2 } ;
+a.c = a ;
+
+b = { a: 1, b: 2 } ;
+b.c = b ;
+
+doormen.equals( a , b ) ;
+
+a = { a: 1, b: 2 , c: { a: 1, b: 2 } } ;
+a.c.c = a ;
+
+b = { a: 1, b: 2 } ;
+b.c = b ;
+
+doormen.equals( a , b ) ;
+```
+
 <a name="optional-and-default-data"></a>
 # Optional and default data
 optional data should validate when null or undefined even if the type check would have failed.
@@ -85,6 +208,9 @@ doormen( 'text' , { type: 'string' } ) ;
 doormen( 'text' , { optional: true, type: 'string' } ) ;
 doormen.not( 1 , { type: 'string' } ) ;
 doormen.not( 1 , { optional: true, type: 'string' } ) ;
+
+doormen.not( {} , { properties: { a: { type: 'string' } } } ) ;
+doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
 ```
 
 <a name="basic-types"></a>
@@ -285,8 +411,8 @@ doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
 doormen.not( function(){} , { type: 'arguments' } ) ;
 ```
 
-<a name="built-in-filters"></a>
-# Built-in filters
+<a name="top-level-filters"></a>
+# Top-level filters
 min filter should validate accordingly, non-number should throw.
 
 ```js
@@ -692,8 +818,8 @@ doormen.not( {} , { type: 'integer' } ) ;
 doormen.not( [] , { type: 'integer' } ) ;
 ```
 
-<a name="common-sanitizers"></a>
-# Common sanitizers
+<a name="sanitize"></a>
+# Sanitize
 should sanitize to 'toNumber' accordingly.
 
 ```js
@@ -701,5 +827,24 @@ doormen.equals( doormen( 0 , { sanitize: 'toNumber' } ) , 0 ) ;
 doormen.equals( doormen( '0' , { sanitize: 'toNumber' } ) , 0 ) ;
 doormen.equals( doormen( 1 , { sanitize: 'toNumber' } ) , 1 ) ;
 doormen.equals( doormen( '1' , { sanitize: 'toNumber' } ) , 1 ) ;
+```
+
+should trim a string accordingly.
+
+```js
+doormen.equals( doormen( 'a' , { sanitize: 'trim' } ) , 'a' ) ;
+doormen.equals( doormen( '  a' , { sanitize: 'trim' } ) , 'a' ) ;
+doormen.equals( doormen( 'a  ' , { sanitize: 'trim' } ) , 'a' ) ;
+doormen.equals( doormen( '  a  ' , { sanitize: 'trim' } ) , 'a' ) ;
+doormen.equals( doormen( 'ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+doormen.equals( doormen( '   ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+doormen.equals( doormen( 'ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+doormen.equals( doormen( '   ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+```
+
+sanitize should work recursively as well.
+
+```js
+doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
 ```
 
