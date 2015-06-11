@@ -844,6 +844,14 @@ describe( "Sanitize" , function() {
 		doormen.equals( doormen( '   ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
 	} ) ;
 	
+	it( "should sanitize to 'toUpperCase' accordingly" , function() {
+		doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toUpperCase' } ) , 'ABC DE F' ) ;
+	} ) ;
+	
+	it( "should sanitize to 'toLowerCase' accordingly" , function() {
+		doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
+	} ) ;
+	
 	it( "sanitize should work recursively as well" , function() {
 		doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
 		doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
@@ -862,6 +870,31 @@ describe( "Sanitize" , function() {
 				{ a: ' toto  ' , b: 'text  ' } ,
 				{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
 			{ a: 'toto' , b: 'text' }
+		) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Misc" , function() {
+	
+	it( "should support custom data in the schema for third party lib" , function() {
+		
+		doormen(
+			{ a: 1, b: 'text' } ,
+			{
+				custom: 'field',
+				another: { custom: 'field' },
+				properties: {
+					a: {
+						type: 'number',
+						yet: 'another custom field'
+					},
+					b: {
+						type: 'string'
+					}
+				}
+			}
 		) ;
 	} ) ;
 } ) ;

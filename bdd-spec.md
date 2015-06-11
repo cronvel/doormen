@@ -8,6 +8,7 @@
    - [Children and recursivity](#children-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
    - [Sanitize](#sanitize)
+   - [Misc](#misc)
 <a name=""></a>
  
 <a name="assertion-utilities"></a>
@@ -871,6 +872,18 @@ doormen.equals( doormen( 'ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
 doormen.equals( doormen( '   ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
 ```
 
+should sanitize to 'toUpperCase' accordingly.
+
+```js
+doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toUpperCase' } ) , 'ABC DE F' ) ;
+```
+
+should sanitize to 'toLowerCase' accordingly.
+
+```js
+doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
+```
+
 sanitize should work recursively as well.
 
 ```js
@@ -891,6 +904,29 @@ doormen.equals( doormen(
 		{ a: ' toto  ' , b: 'text  ' } ,
 		{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
 	{ a: 'toto' , b: 'text' }
+) ;
+```
+
+<a name="misc"></a>
+# Misc
+should support custom data in the schema for third party lib.
+
+```js
+doormen(
+	{ a: 1, b: 'text' } ,
+	{
+		custom: 'field',
+		another: { custom: 'field' },
+		properties: {
+			a: {
+				type: 'number',
+				yet: 'another custom field'
+			},
+			b: {
+				type: 'string'
+			}
+		}
+	}
 ) ;
 ```
 
