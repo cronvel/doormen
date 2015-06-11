@@ -17,6 +17,7 @@ Early alpha.
 * type `string` the name of the type checker
 * min
 * max
+* length
 * minLength
 * maxLength
 * match
@@ -405,6 +406,21 @@ doormen.not( NaN , { min: 3, max: 10 } ) ;
 doormen.not( true , { min: 3, max: 10 } ) ;
 doormen.not( false , { min: 3, max: 10 } ) ;
 doormen.not( '6' , { min: 3, max: 10 } ) ;
+```
+
+'length' filter should validate accordingly, data that do not have a length should throw.
+
+```js
+doormen( "abc" , { length: 3 } ) ;
+doormen.not( "abcde" , { length: 3 } ) ;
+doormen.not( "ab" , { length: 3 } ) ;
+doormen.not( "" , { length: 3 } ) ;
+
+doormen.not( 1 , { length: 3 } ) ;
+doormen.not( 1 , { length: 0 } ) ;
+doormen.not( NaN , { length: 3 } ) ;
+doormen.not( true , { length: 3 } ) ;
+doormen.not( false , { length: 3 } ) ;
 ```
 
 minLength filter should validate accordingly, data that do not have a length should throw.
