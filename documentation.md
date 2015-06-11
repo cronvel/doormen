@@ -17,6 +17,7 @@ Early alpha.
 * type `string` the name of the type checker
 * min
 * max
+* length
 * minLength
 * maxLength
 * match
