@@ -884,6 +884,36 @@ describe( "Sanitize" , function() {
 
 
 
+describe( "Schema as a sentence" , function() {
+	
+	it( "..." , function() {
+		
+		console.log( doormen.sentence( 'array' ) ) ;
+		console.log( doormen.sentence( 'Array' ) ) ;
+		console.log( doormen.sentence( 'it should be an array' ) ) ;
+		console.log( doormen.sentence( 'it should be an Array' ) ) ;
+		console.log( doormen.sentence( 'it should be an Array of string' ) ) ;
+		console.log( doormen.sentence( 'it should be an Array of Array of string' ) ) ;
+		console.log( doormen.sentence( 'it should be a number at least 5 and at most 7' ) ) ;
+		console.log( doormen.sentence( 'it should be a number at least 5, at most 7' ) ) ;
+		console.log( doormen.sentence( 'it should be a number between 3 and 11' ) ) ;
+		console.log( doormen.sentence( 'it should be a string and it should have a length of 6' ) ) ;
+		console.log( doormen.sentence( 'it should be a string and it should have a length of at least 8' ) ) ;
+		console.log( doormen.sentence( 'it should be a string and it should have a length of at most 18' ) ) ;
+		console.log( doormen.sentence( 'it should be a string and it should have a length of at least 9 and at most 17' ) ) ;
+		console.log( doormen.sentence( 'it should be a string and it should have a length between 4 and 7' ) ) ;
+		console.log( doormen.sentence( 'it should have between 4 and 7 letters' ) ) ;
+		console.log( doormen.sentence( 'it should be a number at least 5, at most 7' ) ) ;
+		console.log( doormen.sentence( 'it should be a number greater than or equal to 4' ) ) ;
+		console.log( doormen.sentence( 'after trim, it should be a string between 5 and 8 chars' ) ) ;
+		console.log( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ) ;
+		console.log( doormen.sentence( 'after trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ) ;
+		//console.log( doormen.sentence( 'it should be bob bob' ) ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Misc" , function() {
 	
 	it( "should support custom data in the schema for third party lib" , function() {

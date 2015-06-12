@@ -16,6 +16,7 @@ Early alpha.
 * optional `boolean` the data can be `null` or `undefined`, if so the data validate immediately
 * default (anything) the data can be `null` or `undefined`, if so it is overwritten by the default value and it validates immediately
 * type `string` the name of the type checker
+* instanceOf
 * min
 * max
 * length
@@ -67,6 +68,36 @@ Common meta types:
 
 
 
+{ type: 'array' }
+{ instanceOf: 'Array' }
+{ type: 'array' }
+{ instanceOf: 'Array' }
+{ instanceOf: 'Array', of: { type: 'string' } }
+{ instanceOf: 'Array',
+  of: { instanceOf: 'Array', of: { type: 'string' } } }
+{ type: 'number', min: 5, max: 7 }
+{ type: 'number', min: 5, max: 7 }
+{ type: 'number', min: 3, max: 11 }
+{ type: 'string', length: 6 }
+{ type: 'string', minLength: 8 }
+{ type: 'string', maxLength: 18 }
+{ type: 'string', minLength: 9, maxLength: 17 }
+{ type: 'string', minLength: 4, maxLength: 7 }
+{ minLength: 4, maxLength: 7 }
+{ type: 'number', min: 5, max: 7 }
+{ type: 'number', min: 4 }
+{ sanitize: [ 'trim' ],
+  type: 'string',
+  minLength: 5,
+  maxLength: 8 }
+{ sanitize: [ 'trim', 'toUpperCase' ],
+  type: 'string',
+  minLength: 5,
+  maxLength: 8 }
+{ sanitize: [ 'trim', 'toUpperCase' ],
+  type: 'string',
+  minLength: 5,
+  maxLength: 8 }
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -77,6 +108,7 @@ Common meta types:
    - [Children and recursivity](#children-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
    - [Sanitize](#sanitize)
+   - [Schema as a sentence](#schema-as-a-sentence)
    - [Misc](#misc)
 <a name=""></a>
  
@@ -984,6 +1016,34 @@ doormen.equals( doormen(
 		{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
 	{ a: 'toto' , b: 'text' }
 ) ;
+```
+
+<a name="schema-as-a-sentence"></a>
+# Schema as a sentence
+....
+
+```js
+console.log( doormen.sentence( 'array' ) ) ;
+console.log( doormen.sentence( 'Array' ) ) ;
+console.log( doormen.sentence( 'it should be an array' ) ) ;
+console.log( doormen.sentence( 'it should be an Array' ) ) ;
+console.log( doormen.sentence( 'it should be an Array of string' ) ) ;
+console.log( doormen.sentence( 'it should be an Array of Array of string' ) ) ;
+console.log( doormen.sentence( 'it should be a number at least 5 and at most 7' ) ) ;
+console.log( doormen.sentence( 'it should be a number at least 5, at most 7' ) ) ;
+console.log( doormen.sentence( 'it should be a number between 3 and 11' ) ) ;
+console.log( doormen.sentence( 'it should be a string and it should have a length of 6' ) ) ;
+console.log( doormen.sentence( 'it should be a string and it should have a length of at least 8' ) ) ;
+console.log( doormen.sentence( 'it should be a string and it should have a length of at most 18' ) ) ;
+console.log( doormen.sentence( 'it should be a string and it should have a length of at least 9 and at most 17' ) ) ;
+console.log( doormen.sentence( 'it should be a string and it should have a length between 4 and 7' ) ) ;
+console.log( doormen.sentence( 'it should have between 4 and 7 letters' ) ) ;
+console.log( doormen.sentence( 'it should be a number at least 5, at most 7' ) ) ;
+console.log( doormen.sentence( 'it should be a number greater than or equal to 4' ) ) ;
+console.log( doormen.sentence( 'after trim, it should be a string between 5 and 8 chars' ) ) ;
+console.log( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ) ;
+console.log( doormen.sentence( 'after trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ) ;
+//console.log( doormen.sentence( 'it should be bob bob' ) ) ;
 ```
 
 <a name="misc"></a>

@@ -16,6 +16,7 @@ Early alpha.
 * optional `boolean` the data can be `null` or `undefined`, if so the data validate immediately
 * default (anything) the data can be `null` or `undefined`, if so it is overwritten by the default value and it validates immediately
 * type `string` the name of the type checker
+* instanceOf
 * min
 * max
 * length
