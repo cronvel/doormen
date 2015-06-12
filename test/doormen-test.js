@@ -860,6 +860,11 @@ describe( "Sanitize" , function() {
 		doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
 	} ) ;
 	
+	it( "should sanitize to 'dashToCamelCase' accordingly" , function() {
+		doormen.equals( doormen( 'to-upper-case' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+		doormen.equals( doormen( 'toUpperCase' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+	} ) ;
+	
 	it( "sanitize should work recursively as well" , function() {
 		doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
 		doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
