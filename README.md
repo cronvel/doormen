@@ -77,6 +77,7 @@ Common meta types:
    - [Top-level filters](#top-level-filters)
    - [Children and recursivity](#children-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
+   - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Schema as a sentence](#schema-as-a-sentence)
    - [Misc](#misc)
@@ -929,6 +930,30 @@ doormen.not( {} , { type: 'integer' } ) ;
 doormen.not( [] , { type: 'integer' } ) ;
 ```
 
+<a name="strings-meta-types"></a>
+# Strings meta types
+should validate email accordingly.
+
+```js
+doormen( 'bob@gmail.com' , { type: 'email' } ) ;
+doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
+doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
+```
+
+should validate url accordingly.
+
+```js
+doormen( 'http://google.com' , { type: 'url' } ) ;
+doormen( 'http://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'url' } ) ;
+doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'url' } ) ;
+doormen( 'http://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
+doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'url' } ) ;
+doormen.not( 'google.com' , { type: 'url' } ) ;
+```
+
 <a name="sanitize"></a>
 # Sanitize
 should sanitize to 'toNumber' accordingly.
@@ -965,6 +990,13 @@ should sanitize to 'toLowerCase' accordingly.
 doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
 ```
 
+should sanitize to 'dashToCamelCase' accordingly.
+
+```js
+doormen.equals( doormen( 'to-upper-case' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+doormen.equals( doormen( 'toUpperCase' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+```
+
 sanitize should work recursively as well.
 
 ```js
@@ -996,7 +1028,11 @@ should transform a sentence into a schema.
 doormen.equals( doormen.sentence( 'array' ) , { type: 'array' } ) ;
 doormen.equals( doormen.sentence( 'Array' ) , { instanceOf: 'Array' } ) ;
 doormen.equals( doormen.sentence( 'it should be an array' ) , { type: 'array' } ) ;
+doormen.equals( doormen.sentence( 'it should have type of array' ) , { type: 'array' } ) ;
+doormen.equals( doormen.sentence( 'it should have type of Uppercasetype' ) , { type: 'Uppercasetype' } ) ;
 doormen.equals( doormen.sentence( 'it should be an Array' ) , { instanceOf: 'Array' } ) ;
+doormen.equals( doormen.sentence( 'it should be an instance of Array' ) , { instanceOf: 'Array' } ) ;
+doormen.equals( doormen.sentence( 'it should be an instance of lowercaseclass' ) , { instanceOf: 'lowercaseclass' } ) ;
 
 doormen.equals( doormen.sentence( 'it should be an Array of string' ) ,
 	{ instanceOf: 'Array' , of: { type: 'string' } }
@@ -1030,23 +1066,35 @@ doormen.equals( doormen.sentence( 'it should be a number greater than or equal t
 	{ type: 'number', min: 4 }
 ) ;
 
+// equals is required
+doormen.shouldThrow( function() { doormen.sentence( 'it should be a number greater than 4' ) } ) ;
 
+
+
+doormen.equals( doormen.sentence( 'it should be an empty string' ) ,
+	{ type: 'string', length: 0 }
+) ;
 
 doormen.equals( doormen.sentence( 'it should be a string and it should have a length of 6' ) ,
 	{ type: 'string', length: 6 }
 ) ;
+
 doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 8' ) ,
 	{ type: 'string', minLength: 8 }
 ) ;
+
 doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at most 18' ) ,
 	{ type: 'string', maxLength: 18 }
 ) ;
+
 doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 9 and at most 17' ) ,
 	{ type: 'string', minLength: 9, maxLength: 17 }
 ) ;
+
 doormen.equals( doormen.sentence( 'it should be a string and it should have a length between 4 and 7' ) ,
 	{ type: 'string', minLength: 4, maxLength: 7 }
 ) ;
+
 doormen.equals( doormen.sentence( 'it should have between 4 and 7 letters' ) ,
 	{ minLength: 4, maxLength: 7 }
 ) ;
@@ -1056,12 +1104,34 @@ doormen.equals( doormen.sentence( 'it should have between 4 and 7 letters' ) ,
 doormen.equals( doormen.sentence( 'after trim, it should be a string between 5 and 8 chars' ) ,
 	{ sanitize: [ 'trim' ] , type: 'string', minLength: 5, maxLength: 8 }
 ) ;
+
 doormen.equals( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ,
 	{ sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string', minLength: 5, maxLength: 8 }
 ) ;
+
 doormen.equals( doormen.sentence( 'after trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
 	{ sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string', minLength: 5, maxLength: 8 }
 ) ;
+
+doormen.equals( doormen.sentence( 'after sanitizers: trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
+	{ sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string', minLength: 5, maxLength: 8 }
+) ;
+```
+
+should accept a sentence instead of a schema.
+
+```js
+doormen( "" , 'should be a string' ) ;
+doormen( "" , 'should be an empty string' ) ;
+doormen( "one two three" , 'should be a string' ) ;
+doormen.not( "one two three" , 'should be an empty string' ) ;
+doormen( "   " , 'after trim, it should be an empty string' ) ;
+doormen.not( " !  " , 'after trim, it should be an empty string' ) ;
+
+doormen( [] , 'should be an array' ) ;
+doormen( [] , 'should be an empty array' ) ;
+doormen.not( [ 1 , 2 , 3 ] , 'should be an empty array' ) ;
+doormen( [ 1 , 2 , 3 ] , 'should be an array' ) ;
 ```
 
 <a name="misc"></a>
