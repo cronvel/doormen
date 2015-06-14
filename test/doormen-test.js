@@ -645,6 +645,7 @@ describe( "Children and recursivity" , function() {
 		doormen( [ 'text' , 'string' ] , schema ) ;
 		doormen.not( [ 'text' , 'string' , null ] , schema ) ;
 		doormen.not( [ 1 , 'text' , 'string' ] , schema ) ;
+		doormen.not( [ 'text' , 'string' , null ] , schema ) ;
 		doormen.not( [ true ] , schema ) ;
 		
 		doormen.not( 'text' , schema ) ;
@@ -1019,7 +1020,9 @@ describe( "Schema as a sentence" , function() {
 		doormen.not( " !  " , 'after trim, it should be an empty string' ) ;
 		
 		doormen( [] , 'should be an array' ) ;
+		doormen( [] , 'should be an Array' ) ;
 		doormen( [] , 'should be an empty array' ) ;
+		doormen( [] , 'should be an empty Array' ) ;
 		doormen.not( [ 1 , 2 , 3 ] , 'should be an empty array' ) ;
 		doormen( [ 1 , 2 , 3 ] , 'should be an array' ) ;
 	} ) ;
