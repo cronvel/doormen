@@ -913,6 +913,48 @@ describe( "Sanitize" , function() {
 
 
 
+describe( "Full report mode" , function() {
+	
+	it( "should return an object with all containing weither it valid or not, the sanitized data, and an array of errors" , function() {
+		
+		var report , schema ;
+		
+		schema = {
+			of: { type: 'string' , sanitize: 'trim' }
+		} ;
+		
+		report = doormen.fullReport( { a: 'abc', b: '  def  ' } , schema ) ;
+		//console.log( report ) ;
+		doormen.equals( report.validate , true ) ;
+		doormen.equals( report.sanitized , { a: 'abc', b: 'def' } ) ;
+		doormen.equals( report.errors.length , 0 ) ;
+		
+		report = doormen.fullReport( { a: true, b: 3 } , schema ) ;
+		//console.log( report ) ;
+		doormen.equals( report.validate , false ) ;
+		doormen.equals( report.sanitized , { a: true, b: 3 } ) ;
+		doormen.equals( report.errors.length , 2 ) ;
+		
+		schema = {
+			properties: {
+				a: { type: 'string' , sanitize: 'trim' } ,
+				b: { type: 'string' , sanitize: 'trim' } ,
+				c: { of: { type: 'string' , sanitize: 'trim' } }
+			}
+		} ;
+		
+		report = doormen.fullReport( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , schema ) ;
+		//console.log( report ) ;
+		doormen.equals( report.validate , false ) ;
+		doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
+		doormen.equals( report.errors.length , 2 ) ;
+	} ) ;
+	
+	it( "Check error messages" ) ;
+} ) ;
+
+
+
 describe( "Schema as a sentence" , function() {
 	
 	it( "should transform a sentence into a schema" , function() {
