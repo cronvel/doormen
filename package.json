@@ -8,9 +8,11 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "browserify": "^10.2.4",
     "expect.js": "^0.3.1",
     "jshint": "^2.5.6",
-    "mocha": "^1.21.4"
+    "mocha": "^1.21.4",
+    "testling": "^1.7.1"
   },
   "scripts": {
     "test": "mocha"

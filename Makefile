@@ -5,13 +5,16 @@
 
 # The first rule is the default rule, when invoking "make" without argument...
 # Build every buildable things
-all: install doc
+all: install doc browser
 
 # Just install things so it works, basicaly: it just performs a "npm install --production" ATM
 install: log/npm-install.log
 
 # Just install things so it works, basicaly: it just performs a "npm install" ATM
 dev-install: log/npm-dev-install.log
+
+# Build the browser lib
+browser: log/browser.log
 
 # This run the JsHint & Mocha BDD test, display it to STDOUT & save it to log/mocha.log and log/jshint.log
 test: log/jshint.log log/mocha.log
@@ -26,7 +29,7 @@ unit: log/mocha.log
 doc: README.md
 
 # This publish to NPM and push to Github, if we are on master branch only
-publish: log/npm-publish.log log/github-push.log
+publish: browser README.md log/npm-publish.log log/github-push.log
 
 # Clean temporary things, or things that can be automatically regenerated
 clean: clean-all
@@ -35,12 +38,17 @@ clean: clean-all
 
 # Variables
 
-MOCHA=../node_modules/mocha/bin/mocha
-JSHINT=./node_modules/jshint/bin/jshint --verbose
+MOCHA=./node_modules/.bin/mocha
+JSHINT=./node_modules/.bin/jshint --verbose
+BROWSERIFY=./node_modules/.bin/browserify
 
 
 
 # Files rules
+
+# Build the browser lib
+log/browser.log: lib/*.js
+	${BROWSERIFY} lib/doormen.js -s doormen -o build/browser/doormen.js | tee log/browser.log ; exit $${PIPESTATUS[0]}
 
 # JsHint STDOUT test
 log/jshint.log: log/npm-dev-install.log lib/*.js test/*.js
@@ -48,7 +56,7 @@ log/jshint.log: log/npm-dev-install.log lib/*.js test/*.js
 
 # Mocha BDD STDOUT test
 log/mocha.log: log/npm-dev-install.log lib/*.js test/*.js
-	cd test ; ${MOCHA} *.js -R spec | tee ../log/mocha.log ; exit $${PIPESTATUS[0]}
+	${MOCHA} test/*.js -R spec | tee log/mocha.log ; exit $${PIPESTATUS[0]}
 
 # README
 README.md: documentation.md bdd-spec.md
@@ -56,7 +64,7 @@ README.md: documentation.md bdd-spec.md
 
 # Mocha Markdown BDD spec
 bdd-spec.md: log/npm-dev-install.log lib/*.js test/*.js
-	cd test ; ${MOCHA} *.js -R markdown > ../bdd-spec.md
+	${MOCHA} test/*.js -R markdown > bdd-spec.md
 
 # Upgrade version in package.json
 log/upgrade-package.log: lib/*.js test/*.js documentation.md
