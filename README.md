@@ -4,6 +4,8 @@
 
 Validate, sanitize and assert.
 
+[![browser support](https://ci.testling.com/cronvel/doormen.png)](https://ci.testling.com/cronvel/doormen)
+
 Early alpha.
 
 **/!\\ This documentation is still a Work In Progress /!\\**
