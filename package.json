@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Validate, sanitize and assert",
   "main": "lib/doormen.js",
   "directories": {
@@ -19,8 +19,13 @@
     "files": "test/*.js",
     "browsers": [
       "ie/8..latest",
-      "chrome/latest",
-      "firefox/latest"
+      "chrome/35..latest",
+      "firefox/35..latest",
+      "safari/latest",
+      "opera/11.0..latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
     ]
   },
   "scripts": {
