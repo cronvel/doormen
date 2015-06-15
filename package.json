@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Validate, sanitize and assert",
   "main": "lib/doormen.js",
   "directories": {
