@@ -466,6 +466,7 @@ describe( "Top-level filters" , function() {
 		doormen.not( 0 , { min: 3 } ) ;
 		doormen.not( -10 , { min: 3 } ) ;
 		doormen( Infinity , { min: 3 } ) ;
+		doormen( Infinity , { min: Infinity } ) ;
 		doormen.not( -Infinity , { min: 3 } ) ;
 		doormen.not( NaN , { min: 3 } ) ;
 		doormen.not( true , { min: 3 } ) ;
@@ -484,6 +485,7 @@ describe( "Top-level filters" , function() {
 		doormen( -10 , { max: 3 } ) ;
 		doormen.not( Infinity , { max: 3 } ) ;
 		doormen( -Infinity , { max: 3 } ) ;
+		doormen( -Infinity , { max: -Infinity } ) ;
 		doormen.not( NaN , { max: 3 } ) ;
 		doormen.not( true , { max: 3 } ) ;
 		doormen.not( false , { max: 3 } ) ;
@@ -632,6 +634,46 @@ describe( "Top-level filters" , function() {
 		doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
 		doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
 		doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Filters" , function() {
+	
+	it( "'greaterThan' and aliases ('gt' and '>') filter should validate accordingly, non-number should throw" , function() {
+		doormen( 10 , { filter: { greaterThan: 3 } } ) ;
+		doormen( 3.0001 , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( 3 , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( 1 , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( 0 , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( -10 , { filter: { greaterThan: 3 } } ) ;
+		doormen( Infinity , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( Infinity , { filter: { greaterThan: Infinity } } ) ;
+		doormen.not( -Infinity , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( NaN , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( true , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( false , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( undefined , { filter: { greaterThan: 3 } } ) ;
+		doormen.not( undefined , { filter: { greaterThan: 0 } } ) ;
+		doormen.not( undefined , { filter: { greaterThan: -3 } } ) ;
+		doormen.not( '10' , { filter: { greaterThan: 3 } } ) ;
+	} ) ;
+	
+	it( "'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw" , function() {
+		doormen.not( 10 , { filter: { lesserThan: 3 } } ) ;
+		doormen( 2.999 , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( 3 , { filter: { lesserThan: 3 } } ) ;
+		doormen( 1 , { filter: { lesserThan: 3 } } ) ;
+		doormen( 0 , { filter: { lesserThan: 3 } } ) ;
+		doormen( -10 , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( Infinity , { filter: { lesserThan: 3 } } ) ;
+		doormen( -Infinity , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( -Infinity , { filter: { lesserThan: -Infinity } } ) ;
+		doormen.not( NaN , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( true , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( false , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( '1' , { filter: { lesserThan: 3 } } ) ;
 	} ) ;
 } ) ;
 
@@ -970,13 +1012,6 @@ describe( "Full report mode" , function() {
 
 describe( "Schema as a sentence" , function() {
 	
-	it( "tmp" , function() {
-		doormen.equals( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ,
-			{ sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string', minLength: 5, maxLength: 8 }
-		) ;
-		
-	} ) ;
-		
 	it( "should transform a sentence into a schema" , function() {
 		
 		doormen.equals( doormen.sentence( 'array' ) , { type: 'array' } ) ;

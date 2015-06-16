@@ -2,7 +2,7 @@
 
 # Doormen
 
-Validate, sanitize and assert.
+Validate, sanitize and assert: the silver bullet of data!
 
 [![browser support](https://ci.testling.com/cronvel/doormen.png)](https://ci.testling.com/cronvel/doormen)
 
