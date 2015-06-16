@@ -52,7 +52,7 @@ TESTLING=./node_modules/.bin/testling
 
 # Build the browser lib
 log/browser.log: lib/*.js
-	${BROWSERIFY} lib/browser.js -u buffer -s doormen -o build/browser/doormen.js | tee log/browser.log ; exit $${PIPESTATUS[0]}
+	${BROWSERIFY} lib/browser.js -u buffer -u punycode -s doormen -o build/browser/doormen.js | tee log/browser.log ; exit $${PIPESTATUS[0]}
 
 # JsHint STDOUT test
 log/jshint.log: log/npm-dev-install.log lib/*.js test/*.js

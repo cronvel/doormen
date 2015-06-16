@@ -912,11 +912,35 @@ describe( "Strings meta types" , function() {
 	
 	it( "should validate url accordingly" , function() {
 		doormen( 'http://google.com' , { type: 'url' } ) ;
-		doormen( 'http://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'url' } ) ;
+		doormen( 'http://google.com/' , { type: 'url' } ) ;
+		doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'url' } ) ;
 		doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'url' } ) ;
-		doormen( 'http://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
+		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
 		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'url' } ) ;
+		doormen( 'http://127.0.0.1/' , { type: 'url' } ) ;
+		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'url' } ) ;
+		doormen.not( 'http://127.0.0/' , { type: 'url' } ) ;
+		doormen.not( 'http://192.168.0.256/' , { type: 'url' } ) ;
+		doormen.not( 'http://19.16.33.25.6/' , { type: 'url' } ) ;
+		doormen( 'file:///home/toto/TODO.txt' , { type: 'url' } ) ;
+		doormen.not( 'http:///google.com/' , { type: 'url' } ) ;
 		doormen.not( 'google.com' , { type: 'url' } ) ;
+	} ) ;
+	
+	it( "should validate web url accordingly" , function() {
+		doormen( 'http://google.com' , { type: 'weburl' } ) ;
+		doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'weburl' } ) ;
+		doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'weburl' } ) ;
+		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'weburl' } ) ;
+		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'weburl' } ) ;
+		doormen( 'http://127.0.0.1/#!/massive_attack' , { type: 'weburl' } ) ;
+		doormen( 'http://127.0.0.1/' , { type: 'weburl' } ) ;
+		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'weburl' } ) ;
+		doormen.not( 'http://127.0.0/' , { type: 'weburl' } ) ;
+		doormen.not( 'http://192.168.0.256/' , { type: 'weburl' } ) ;
+		doormen.not( 'http://19.16.33.25.6/' , { type: 'weburl' } ) ;
+		doormen.not( 'file:///home/toto/TODO.txt' , { type: 'weburl' } ) ;
+		doormen.not( 'google.com' , { type: 'weburl' } ) ;
 	} ) ;
 } ) ;
 
