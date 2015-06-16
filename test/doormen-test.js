@@ -27,7 +27,20 @@
 
 
 
-var doormen = require( '../lib/doormen.js' ) ;
+var doormen ;
+
+if ( process.argv.length )
+{
+	// We are running in Node.js
+	doormen = require( '../lib/doormen.js' ) ;
+}
+else
+{
+	// We are running in a browser
+	//console.log( 'Running browser version' ) ;
+	doormen = require( '../lib/browser.js' ) ;
+}
+
 var expect = require( 'expect.js' ) ;
 
 
@@ -412,7 +425,7 @@ describe( "Built-in types" , function() {
 	} ) ;
 	
 	it( "should validate arguments accordingly" , function() {
-		var fn = function() { doormen( arguments , { type: 'arguments' } ) ; }
+		var fn = function() { doormen( arguments , { type: 'arguments' } ) ; } ;
 		
 		fn() ;
 		fn( 1 ) ;
@@ -440,7 +453,7 @@ describe( "Top-level filters" , function() {
 	
 	it( "'instanceOf' should validate object accordingly" , function() {
 		doormen( new Date() , { instanceOf: Date } ) ;
-		doormen( new Array() , { instanceOf: Array } ) ;
+		doormen( new Array() , { instanceOf: Array } ) ;	// jshint ignore:line
 		function MyClass(){}
 		doormen( new MyClass() , { instanceOf: MyClass } ) ;
 		doormen( new MyClass() , { instanceOf: Object } ) ;
@@ -1001,7 +1014,7 @@ describe( "Schema as a sentence" , function() {
 		) ;
 		
 		// equals is required
-		doormen.shouldThrow( function() { doormen.sentence( 'it should be a number greater than 4' ) } ) ;
+		doormen.shouldThrow( function() { doormen.sentence( 'it should be a number greater than 4' ) ; } ) ;
 		
 		
 		
