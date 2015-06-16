@@ -5,6 +5,7 @@
    - [Basic types](#basic-types)
    - [Built-in types](#built-in-types)
    - [Top-level filters](#top-level-filters)
+   - [Filters](#filters)
    - [Children and recursivity](#children-and-recursivity)
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
@@ -412,7 +413,7 @@ doormen.not( function(){} , { type: 'error' } ) ;
 should validate arguments accordingly.
 
 ```js
-var fn = function() { doormen( arguments , { type: 'arguments' } ) ; }
+var fn = function() { doormen( arguments , { type: 'arguments' } ) ; } ;
 
 fn() ;
 fn( 1 ) ;
@@ -439,7 +440,7 @@ doormen.not( function(){} , { type: 'arguments' } ) ;
 
 ```js
 doormen( new Date() , { instanceOf: Date } ) ;
-doormen( new Array() , { instanceOf: Array } ) ;
+doormen( new Array() , { instanceOf: Array } ) ;	// jshint ignore:line
 function MyClass(){}
 doormen( new MyClass() , { instanceOf: MyClass } ) ;
 doormen( new MyClass() , { instanceOf: Object } ) ;
@@ -454,6 +455,7 @@ doormen.not( 1 , { min: 3 } ) ;
 doormen.not( 0 , { min: 3 } ) ;
 doormen.not( -10 , { min: 3 } ) ;
 doormen( Infinity , { min: 3 } ) ;
+doormen( Infinity , { min: Infinity } ) ;
 doormen.not( -Infinity , { min: 3 } ) ;
 doormen.not( NaN , { min: 3 } ) ;
 doormen.not( true , { min: 3 } ) ;
@@ -474,6 +476,7 @@ doormen( 0 , { max: 3 } ) ;
 doormen( -10 , { max: 3 } ) ;
 doormen.not( Infinity , { max: 3 } ) ;
 doormen( -Infinity , { max: 3 } ) ;
+doormen( -Infinity , { max: -Infinity } ) ;
 doormen.not( NaN , { max: 3 } ) ;
 doormen.not( true , { max: 3 } ) ;
 doormen.not( false , { max: 3 } ) ;
@@ -640,6 +643,57 @@ doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } ) ;
 doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
 doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
 doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+```
+
+<a name="filters"></a>
+# Filters
+'greaterThan' and aliases ('gt' and '>') filter should validate accordingly, non-number should throw.
+
+```js
+doormen( 10 , { filter: { greaterThan: 3 } } ) ;
+doormen( 3.0001 , { filter: { greaterThan: 3 } } ) ;
+doormen.not( 3 , { filter: { greaterThan: 3 } } ) ;
+doormen.not( 1 , { filter: { greaterThan: 3 } } ) ;
+doormen.not( 0 , { filter: { greaterThan: 3 } } ) ;
+doormen.not( -10 , { filter: { greaterThan: 3 } } ) ;
+doormen( Infinity , { filter: { greaterThan: 3 } } ) ;
+doormen.not( Infinity , { filter: { greaterThan: Infinity } } ) ;
+doormen.not( -Infinity , { filter: { greaterThan: 3 } } ) ;
+doormen.not( NaN , { filter: { greaterThan: 3 } } ) ;
+doormen.not( true , { filter: { greaterThan: 3 } } ) ;
+doormen.not( false , { filter: { greaterThan: 3 } } ) ;
+doormen.not( undefined , { filter: { greaterThan: 3 } } ) ;
+doormen.not( undefined , { filter: { greaterThan: 0 } } ) ;
+doormen.not( undefined , { filter: { greaterThan: -3 } } ) ;
+doormen.not( '10' , { filter: { greaterThan: 3 } } ) ;
+
+doormen( 3.0001 , { filter: { gt: 3 } } ) ;
+doormen.not( 3 , { filter: { gt: 3 } } ) ;
+doormen( 3.0001 , { filter: { '>': 3 } } ) ;
+doormen.not( 3 , { filter: { '>': 3 } } ) ;
+```
+
+'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw.
+
+```js
+doormen.not( 10 , { filter: { lesserThan: 3 } } ) ;
+doormen( 2.999 , { filter: { lesserThan: 3 } } ) ;
+doormen.not( 3 , { filter: { lesserThan: 3 } } ) ;
+doormen( 1 , { filter: { lesserThan: 3 } } ) ;
+doormen( 0 , { filter: { lesserThan: 3 } } ) ;
+doormen( -10 , { filter: { lesserThan: 3 } } ) ;
+doormen.not( Infinity , { filter: { lesserThan: 3 } } ) ;
+doormen( -Infinity , { filter: { lesserThan: 3 } } ) ;
+doormen.not( -Infinity , { filter: { lesserThan: -Infinity } } ) ;
+doormen.not( NaN , { filter: { lesserThan: 3 } } ) ;
+doormen.not( true , { filter: { lesserThan: 3 } } ) ;
+doormen.not( false , { filter: { lesserThan: 3 } } ) ;
+doormen.not( '1' , { filter: { lesserThan: 3 } } ) ;
+
+doormen( 2.999 , { filter: { lt: 3 } } ) ;
+doormen.not( 3 , { filter: { lt: 3 } } ) ;
+doormen( 2.999 , { filter: { '<': 3 } } ) ;
+doormen.not( 3 , { filter: { '<': 3 } } ) ;
 ```
 
 <a name="children-and-recursivity"></a>
@@ -820,6 +874,7 @@ doormen( -1 , { type: 'real' } ) ;
 doormen( 0.3 , { type: 'real' } ) ;
 doormen( 18.36 , { type: 'real' } ) ;
 doormen.not( 1/0 , { type: 'real' } ) ;
+doormen.not( -1/0 , { type: 'real' } ) ;
 doormen.not( Infinity , { type: 'real' } ) ;
 doormen.not( -Infinity , { type: 'real' } ) ;
 doormen.not( NaN , { type: 'real' } ) ;
@@ -1037,7 +1092,7 @@ doormen.equals( doormen.sentence( 'it should be a number greater than or equal t
 ) ;
 
 // equals is required
-doormen.shouldThrow( function() { doormen.sentence( 'it should be a number greater than 4' ) } ) ;
+doormen.shouldThrow( function() { doormen.sentence( 'it should be a number greater than 4' ) ; } ) ;
 
 
 
@@ -1127,5 +1182,61 @@ doormen(
 		}
 	}
 ) ;
+```
+
+real world use case.
+
+```js
+doormen.typeChecker.password = function( data ) {
+	if ( typeof data !== 'string' ) { return false ; }
+	if ( data.length < 8 ) { return false ; }
+	if ( ! data.match( /[a-z]/ ) || ! data.match( /[A-Z]/ ) || ! data.match( /[0-9.,;!?*%$#+-]/ ) ) { return false ; }
+	return true ;
+} ;
+
+var userSchema = {
+	type: 'object',
+	properties: {
+		id: { type: 'string' },
+		name: {
+			type: 'string',
+			minLength: 2,
+			maxLength: 50
+		},
+		email: { type: 'email' },
+		password: { type: 'password' },
+		contact: {
+			optional: true,
+			type: 'object',
+			properties: {
+				address: { optional: true, type: 'string' },
+				phone: { optional: true, type: 'string' },
+				fax: { optional: true, type: 'string' }
+			}
+		},
+		custom: {
+			optional: true,
+			type: 'object',
+			of: { type: 'string' }
+		}
+	}
+} ;
+
+doormen( {
+	id: 'alacon',
+	name: 'Doug',
+	email: 'doug@java.net',
+	password: 'myJavaCodeIsFasterThanYourC!',
+} , userSchema ) ;
+
+doormen( {
+	id: 'alanoix',
+	name: 'Étienne Jabert',
+	email: 'etienne-jabert@java.net',
+	password: 'superJabert!',
+	contact: {
+		fax: '0142559833'
+	}
+} , userSchema ) ;
 ```
 

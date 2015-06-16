@@ -113,7 +113,9 @@ doormen.isEqual = require( './isEqual.js' ) ;
 doormen.typeChecker = require( './typeChecker.js' ) ;
 doormen.sanitizer = require( './sanitizer.js' ) ;
 doormen.filter = require( './filter.js' ) ;
+doormen.keywords = require( './keywords.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
+doormen.expect = require( './expect.js' ) ;
 
 
 
@@ -178,8 +180,27 @@ function check( data , schema , element )
 		}
 	}
 	
+	// 5) check filters
+	if ( schema.filter )
+	{
+		if ( typeof schema.filter !== 'object' )
+		{
+			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'filter' should be an object." ) ;
+		}
+		
+		for ( key in schema.filter )
+		{
+			if ( ! doormen.filter[ key ] )
+			{
+				throw new doormen.SchemaError( "Bad schema (at " + element.path + "), unexistant filter '" + key + "'." ) ;
+			}
+			
+			doormen.filter[ key ].call( this , data , schema.filter[ key ] , element ) ;
+		}
+	}
 	
-	// 5) Recursivity
+	
+	// 6) Recursivity
 	
 	if ( schema.of !== undefined )
 	{
@@ -392,7 +413,279 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-},{"./filter.js":3,"./isEqual.js":4,"./sanitizer.js":5,"./sentence.js":6,"./typeChecker.js":7}],3:[function(require,module,exports){
+},{"./expect.js":3,"./filter.js":4,"./isEqual.js":5,"./keywords.js":6,"./sanitizer.js":7,"./sentence.js":8,"./typeChecker.js":9}],3:[function(require,module,exports){
+/*
+	Copyright (c) 2015 Cédric Ronvel 
+	
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+
+
+var doormen = require( './doormen.js' ) ;
+
+
+
+function expect( data )
+{
+	var context = Object.create( Object.prototype , {
+		data: { value: data } ,
+		schema: { value: {} }
+	} ) ;
+	
+	var carryOver = [] ;
+	var action = {} ;
+	
+	var apply = apply.bind( context , action ) ;
+	
+	populate( apply , context , carryOver ) ;
+	
+	return apply ;
+}
+
+
+
+function apply( action )
+{
+	return doormen( this.data , this.schema ) ;
+}
+
+
+
+function populate( fn , context , carryOver )
+{
+	var key ;
+	
+	for ( key in doormen.keywords )
+	{
+		lazyLoad( fn , key , context , carryOver.slice() ) ;
+	}
+}
+
+function lazyLoad( parent , key , context , carryOver )
+{
+	carryOver.push( key ) ;
+	
+	Object.defineProperty( fn , key , {
+		configurable: true,
+		//enumerable: true,
+		get: function() {
+			updateAction( context.schema , carryOver ) ;
+			var fn = apply.bind( context , carryOver ) ;
+			populate( fn , context , carryOver ) ;
+			Object.defineProperty( fn , key , { value: fn } ) ;
+			return fn ;
+		}
+	} ) ;
+}
+
+function updateAction( schema , carryOver )
+{
+	
+}
+
+
+
+function sentence( str )
+{
+	var i , word , wordList , expected , lastExpected , schema , pointer , stack , nextActions ,
+		keywordsOverride , noOverride , lastOverride ,
+		needKeyword , needKeywordFor ;
+	
+	wordList = str.split( / +|(?=[,;.:])/ ) ;
+	//console.log( wordList ) ;
+	
+	schema = {} ;
+	pointer = schema ;
+	stack = [ schema ] ;
+	
+	nextActions = [] ;
+	noOverride = {} ;
+	keywordsOverride = lastOverride = noOverride ;
+	
+	lastExpected = null ;
+	expected = [ 'typeOrClass' ] ;
+	
+	needKeyword = null ;
+	needKeywordFor = null ;
+	
+	
+	
+	var applyAction = function applyAction( action , word ) {
+	
+		var key ;
+		
+		if ( action.reset )
+		{
+			nextActions = [] ;
+			keywordsOverride = lastOverride = noOverride ;
+			lastExpected = null ;
+			expected = [ 'typeOrClass' ] ;
+			needKeyword = null ;
+			needKeywordFor = null ;
+		}
+		
+		if ( action.toChild )
+		{
+			pointer[ action.toChild ] = {} ;
+			stack.push( pointer[ action.toChild ] ) ;
+			pointer = pointer[ action.toChild ] ;
+		}
+		
+		if ( action.expected )
+		{
+			expected = Array.isArray( action.expected ) ? action.expected.slice() : [ action.expected ] ;
+			needKeyword = null ;
+		}
+		
+		if ( action.needKeyword ) { needKeyword = action.needKeyword ; needKeywordFor = word ; }
+		else if ( needKeyword && needKeyword === word ) { needKeyword = null ; needKeywordFor = null ; }
+		
+		if ( action.set )
+		{
+			for ( key in action.set ) { pointer[ key ] = action.set[ key ] ; }
+		}
+		
+		if ( action.flag ) { pointer[ action.flag ] = true ; }
+		
+		if ( action.override ) { keywordsOverride = action.override ; }
+		
+		if ( action.restoreOverride ) { keywordsOverride = lastOverride ; }
+		
+		if ( action.restoreExpected && ! expected.length ) { expected.unshift( lastExpected ) ; }
+		
+		if ( action.nextActions ) { nextActions = action.nextActions.slice() ; }
+		
+		if ( action.minMaxAreLength )
+		{
+			if ( 'min' in pointer ) { pointer.minLength = pointer.min ; delete pointer.min ; }
+			if ( 'max' in pointer ) { pointer.maxLength = pointer.max ; delete pointer.max ; }
+		}
+		
+		if ( action.next && nextActions.length ) { applyAction( nextActions.shift() ) ; }
+	} ;
+	
+	
+	
+	for ( i = 0 ; i < wordList.length ; i ++ )
+	{
+		word = wordList[ i ] ;
+		//console.log( 'word:' , word , '- expected:' , expected ) ;
+		
+		if ( keywordsOverride[ word ] || doormen.keywords[ word ] )
+		{
+			applyAction( keywordsOverride[ word ] || doormen.keywords[ word ] , word ) ;
+		}
+		else if ( ! expected.length )
+		{
+			throw new Error(
+				"Can't understand the word #" + i + " '" + word + "'" +
+				( i > 0 ? ", just after '" + wordList[ i - 1 ] + "'" : '' ) +
+				", in the sentence '" + str + "'."
+			) ;
+		}
+		else if ( needKeyword )
+		{
+			throw new Error(
+				"Keyword '" + needKeyword + "' is required after keyword '" + needKeywordFor + "'" +
+				", in the sentence '" + str + "'."
+			) ;
+		}
+		else
+		{
+			word = doormen.sanitizer.dashToCamelCase( word ) ;
+			
+			switch ( expected[ 0 ] )
+			{
+				case 'type' :
+					pointer.type = word ;
+					break ;
+				case 'class' :
+					pointer.instanceOf = word ;
+					break ;
+				case 'typeOrClass' :
+					if ( word[ 0 ].toLowerCase() === word[ 0 ] ) { pointer.type = word ; }
+					else { pointer.instanceOf = word ; }
+					break ;
+				case 'sanitizer' :
+					if ( ! pointer.sanitize ) { pointer.sanitize = [] ; }
+					pointer.sanitize.push( word ) ;
+					break ;
+				case 'minValue' :
+					pointer.min = parseInt( word , 10 ) ;
+					break ;
+				case 'maxValue' :
+					pointer.max = parseInt( word , 10 ) ;
+					break ;
+				case 'lengthValue' :
+					pointer.length = parseInt( word , 10 ) ;
+					break ;
+				case 'minLengthValue' :
+					pointer.minLength = parseInt( word , 10 ) ;
+					break ;
+				case 'maxLengthValue' :
+					pointer.maxLength = parseInt( word , 10 ) ;
+					break ;
+				/*
+				case 'matchValue' :
+				case 'inValues' :
+				case 'notInValues' :
+				case 'properties' :
+				case 'elements' :
+					break ;
+				case 'default' :
+					pointer.default = 
+					expected = null ;
+					break ;
+				*/
+			}
+			
+			lastExpected = expected.shift() ;
+			//expected = null ;
+			
+			if ( ! nextActions.length )
+			{
+				if ( keywordsOverride !== noOverride )
+				{
+					lastOverride = keywordsOverride ;
+					keywordsOverride = noOverride ;
+				}
+				else
+				{
+					lastOverride = noOverride ;
+				}
+			}
+		}
+	}
+	
+	return schema ;
+}
+
+
+
+module.exports = expect ;
+
+
+
+},{"./doormen.js":2}],4:[function(require,module,exports){
 (function (global){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -425,167 +718,216 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-module.exports = {
+var filter = {} ;
+module.exports = filter ;
+
+
+
+filter.instanceOf = function instanceOf( data , params , element )
+{
+	if ( typeof params === 'string' ) { params = global[ params ] ; }
 	
+	if ( typeof params !== 'function' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'instanceOf' should be a function." ) ;
+	}
 	
-	instanceOf: function instanceOf( data , params , element ) {
-		
-		if ( typeof params === 'string' ) { params = global[ params ] ; }
-		
-		if ( typeof params !== 'function' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'instanceOf' should be a function." ) ;
-		}
-		
-		if ( ! ( data instanceof params ) )
-		{
-			this.validatorError( element.path + " is not an instance of " + params + "." , element ) ;
-		}
-	} ,
-	
-	min: function min( data , params , element ) {
-		
-		if ( typeof params !== 'number' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'min' should be a number." ) ;
-		}
-		
-		// Negative test here, because of NaN
-		if ( typeof data !== 'number' || ! ( data >= params ) )	// jshint ignore:line
-		{
-			this.validatorError( element.path + " is not greater than or equal to " + params + "." , element ) ;
-		}
-	} ,
-	
-	max: function max( data , params , element ) {
-		
-		if ( typeof params !== 'number' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'max' should be a number." ) ;
-		}
-		
-		// Negative test here, because of NaN
-		if ( typeof data !== 'number' || ! ( data <= params ) )	// jshint ignore:line
-		{
-			this.validatorError( element.path + " is not lesser than or equal to " + params + "." , element ) ;
-		}
-	} ,
-	
-	length: function length( data , params , element ) {
-		
-		if ( typeof params !== 'number' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'length' should be a number." ) ;
-		}
-		
-		// Nasty tricks ;)
-		try {
-			if ( ! ( data.length === params ) ) { throw true ; }	// jshint ignore:line
-		}
-		catch ( error ) {
-			this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
-		}
-	} ,
-	
-	minLength: function minLength( data , params , element ) {
-		
-		if ( typeof params !== 'number' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'minLength' should be a number." ) ;
-		}
-		
-		// Nasty tricks ;)
-		try {
-			if ( ! ( data.length >= params ) ) { throw true ; }	// jshint ignore:line
-		}
-		catch ( error ) {
-			this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
-		}
-	} ,
-	
-	maxLength: function maxLength( data , params , element ) {
-		
-		if ( typeof params !== 'number' )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'maxLength' should be a number." ) ;
-		}
-		
-		// Nasty tricks ;)
-		try {
-			if ( ! ( data.length <= params ) ) { throw true ; }	// jshint ignore:line
-		}
-		catch ( error ) {
-			this.validatorError( element.path + " has not a length lesser than or equal to " + params + "." , element ) ;
-		}
-	} ,
-	
-	match: function match( data , params , element ) {
-		
-		if ( typeof params !== 'string' && ! ( params instanceof RegExp ) )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'match' should be a RegExp or a string." ) ;
-		}
-		
-		if ( params instanceof RegExp )
-		{
-			if ( typeof data !== 'string' || ! data.match( params ) )
-			{
-				this.validatorError( element.path + " does not match " + params + " ." , element ) ;
-			}
-		}
-		else
-		{
-			if ( typeof data !== 'string' || ! data.match( new RegExp( params ) ) )
-			{
-				this.validatorError( element.path + " does not match /" + params + "/ ." , element ) ;
-			}
-		}
-	} ,
-	
-	in: function in_( data , params , element ) {
-		
-		var i , found = false ;
-		
-		if ( ! Array.isArray( params ) )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'in' should be an array." ) ;
-		}
-		
-		for ( i = 0 ; i < params.length ; i ++ )
-		{
-			if ( doormen.isEqual( data , params[ i ] ) ) { found = true ; break ; }
-		}
-		
-		if ( ! found )
-		{
-			this.validatorError( element.path + " should be in " + JSON.stringify( params ) + "." , element ) ;
-		}
-	} ,
-	
-	notIn: function notIn( data , params , element ) {
-		
-		var i ;
-		
-		if ( ! Array.isArray( params ) )
-		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'not-in' should be an array." ) ;
-		}
-		
-		for ( i = 0 ; i < params.length ; i ++ )
-		{
-			if ( doormen.isEqual( data , params[ i ] ) )
-			{
-				this.validatorError( element.path + " should not be in " + JSON.stringify( params ) + "." , element ) ;
-			}
-		}
-	} ,
-	
+	if ( ! ( data instanceof params ) )
+	{
+		this.validatorError( element.path + " is not an instance of " + params + "." , element ) ;
+	}
 } ;
 
 
 
+filter.min = filter.gte = filter.greaterThanOrEqual = filter[ '>=' ] = function min( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'min' should be a number." ) ;
+	}
+	
+	// Negative test here, because of NaN
+	if ( typeof data !== 'number' || ! ( data >= params ) )	// jshint ignore:line
+	{
+		this.validatorError( element.path + " is not greater than or equal to " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.max = filter.lte = filter.lesserThanOrEqual = filter[ '<=' ] = function max( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'max' should be a number." ) ;
+	}
+	
+	// Negative test here, because of NaN
+	if ( typeof data !== 'number' || ! ( data <= params ) )	// jshint ignore:line
+	{
+		this.validatorError( element.path + " is not lesser than or equal to " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.gt = filter.greaterThan = filter[ '>' ] = function greaterThan( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'greaterThan' should be a number." ) ;
+	}
+	
+	// Negative test here, because of NaN
+	if ( typeof data !== 'number' || ! ( data > params ) )	// jshint ignore:line
+	{
+		this.validatorError( element.path + " is not greater than " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.lt = filter.lesserThan = filter[ '<' ] = function lesserThan( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'lesserThan' should be a number." ) ;
+	}
+	
+	// Negative test here, because of NaN
+	if ( typeof data !== 'number' || ! ( data < params ) )	// jshint ignore:line
+	{
+		this.validatorError( element.path + " is not lesser than " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.length = function length( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'length' should be a number." ) ;
+	}
+	
+	// Nasty tricks ;)
+	try {
+		if ( ! ( data.length === params ) ) { throw true ; }	// jshint ignore:line
+	}
+	catch ( error ) {
+		this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.minLength = function minLength( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'minLength' should be a number." ) ;
+	}
+	
+	// Nasty tricks ;)
+	try {
+		if ( ! ( data.length >= params ) ) { throw true ; }	// jshint ignore:line
+	}
+	catch ( error ) {
+		this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.maxLength = function maxLength( data , params , element )
+{
+	if ( typeof params !== 'number' )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'maxLength' should be a number." ) ;
+	}
+	
+	// Nasty tricks ;)
+	try {
+		if ( ! ( data.length <= params ) ) { throw true ; }	// jshint ignore:line
+	}
+	catch ( error ) {
+		this.validatorError( element.path + " has not a length lesser than or equal to " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.match = function match( data , params , element )
+{
+	if ( typeof params !== 'string' && ! ( params instanceof RegExp ) )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'match' should be a RegExp or a string." ) ;
+	}
+	
+	if ( params instanceof RegExp )
+	{
+		if ( typeof data !== 'string' || ! data.match( params ) )
+		{
+			this.validatorError( element.path + " does not match " + params + " ." , element ) ;
+		}
+	}
+	else
+	{
+		if ( typeof data !== 'string' || ! data.match( new RegExp( params ) ) )
+		{
+			this.validatorError( element.path + " does not match /" + params + "/ ." , element ) ;
+		}
+	}
+} ;
+
+
+
+filter.in = function in_( data , params , element )
+{
+	var i , found = false ;
+	
+	if ( ! Array.isArray( params ) )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'in' should be an array." ) ;
+	}
+	
+	for ( i = 0 ; i < params.length ; i ++ )
+	{
+		if ( doormen.isEqual( data , params[ i ] ) ) { found = true ; break ; }
+	}
+	
+	if ( ! found )
+	{
+		this.validatorError( element.path + " should be in " + JSON.stringify( params ) + "." , element ) ;
+	}
+} ;
+
+
+
+filter.notIn = function notIn( data , params , element )
+{
+	var i ;
+	
+	if ( ! Array.isArray( params ) )
+	{
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'not-in' should be an array." ) ;
+	}
+	
+	for ( i = 0 ; i < params.length ; i ++ )
+	{
+		if ( doormen.isEqual( data , params[ i ] ) )
+		{
+			this.validatorError( element.path + " should not be in " + JSON.stringify( params ) + "." , element ) ;
+		}
+	}
+} ;
+
+
+
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":2}],4:[function(require,module,exports){
+},{"./doormen.js":2}],5:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -723,7 +1065,95 @@ module.exports = isEqual ;
 
 
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+/*
+	Copyright (c) 2015 Cédric Ronvel 
+	
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+
+
+module.exports = {
+	it: { filler: true },
+	its: { filler: true },
+	a: { filler: true },
+	an: { filler: true },
+	the: { filler: true },
+	to: { filler: true },
+	that: { filler: true },
+	has: { filler: true },
+	have: { filler: true },
+	having: { filler: true },
+	at: { filler: true },
+	with: { filler: true },
+	than: { filler: true },
+	or: { filler: true },
+	equal: { filler: true },
+	":": { filler: true },
+	should: { reset: true },
+	expect: { reset: true },
+	expected: { reset: true },
+	be: { expected: 'typeOrClass' },
+	is: { expected: 'typeOrClass' },
+	instance: { expected: 'class', override: { of: { filler: true } } },
+	type: { expected: 'type', override: { of: { filler: true } } },
+	optional: { flag: true },
+	empty: { set: { length: 0 } },
+	after: { expected: 'sanitizer' },
+	sanitize: { expected: 'sanitizer' },
+	sanitizer: { expected: 'sanitizer' },
+	sanitizers: { expected: 'sanitizer' },
+	sanitizing: { expected: 'sanitizer' },
+	least: { expected: 'minValue' },
+	greater: { expected: 'minValue' , needKeyword: 'equal' },
+	">=": { expected: 'minValue' },
+	gte: { expected: 'minValue' },
+	most: { expected: 'maxValue' },
+	"<=": { expected: 'maxValue' },
+	lte: { expected: 'maxValue' },
+	lower: { expected: 'maxValue' , needKeyword: 'equal' },
+	lesser: { expected: 'maxValue' , needKeyword: 'equal' },
+	between: { expected: [ 'minValue', 'maxValue' ] },
+	within: { expected: [ 'minValue', 'maxValue' ] },
+	and: { next: true, restoreOverride: true, restoreExpected: true },
+	',': { next: true, restoreOverride: true, restoreExpected: true },
+	';': { reset: true },
+	'.': { reset: true },
+	length: { expected: 'lengthValue' , override: {
+		of: { filler: true },
+		least: { expected: 'minLengthValue' },
+		most: { expected: 'maxLengthValue' },
+		between: { expected: [ 'minLengthValue' , 'maxLengthValue' ] },
+	} },
+	letter: { minMaxAreLength: true },
+	letters: { minMaxAreLength: true },
+	char: { minMaxAreLength: true },
+	chars: { minMaxAreLength: true },
+	character: { minMaxAreLength: true },
+	characters: { minMaxAreLength: true },
+	of: { expected: 'typeOrClass' , toChild: 'of' },
+} ;
+
+},{}],7:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -785,7 +1215,7 @@ module.exports = {
 
 
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -816,74 +1246,11 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-var keyWords = {
-	it: {},
-	its: {},
-	a: {},
-	an: {},
-	the: {},
-	to: {},
-	that: {},
-	has: {},
-	have: {},
-	having: {},
-	at: {},
-	with: {},
-	than: {},
-	or: {},
-	equal: {},
-	":": {},
-	should: { reset: true },
-	expect: { reset: true },
-	expected: { reset: true },
-	be: { expected: 'typeOrClass' },
-	is: { expected: 'typeOrClass' },
-	instance: { expected: 'class', override: { of: {} } },
-	type: { expected: 'type', override: { of: {} } },
-	optional: { flag: true },
-	empty: { set: { length: 0 } },
-	after: { expected: 'sanitizer' },
-	sanitize: { expected: 'sanitizer' },
-	sanitizer: { expected: 'sanitizer' },
-	sanitizers: { expected: 'sanitizer' },
-	sanitizing: { expected: 'sanitizer' },
-	least: { expected: 'minValue' },
-	greater: { expected: 'minValue' , needKeyWord: 'equal' },
-	">=": { expected: 'minValue' },
-	gte: { expected: 'minValue' },
-	most: { expected: 'maxValue' },
-	"<=": { expected: 'maxValue' },
-	lte: { expected: 'maxValue' },
-	lower: { expected: 'maxValue' , needKeyWord: 'equal' },
-	lesser: { expected: 'maxValue' , needKeyWord: 'equal' },
-	between: { expected: 'minValue', nextActions: [ { expected: 'maxValue' } ] },
-	within: { expected: 'minValue', nextActions: [ { expected: 'maxValue' } ] },
-	and: { next: true, restoreOverride: true, restoreExpected: true },
-	',': { next: true, restoreOverride: true, restoreExpected: true },
-	';': { reset: true },
-	'.': { reset: true },
-	length: { expected: 'lengthValue' , override: {
-		of: {},
-		least: { expected: 'minLengthValue' },
-		most: { expected: 'maxLengthValue' },
-		between: { expected: 'minLengthValue', nextActions: [ { expected: 'maxLengthValue' } ] },
-	} },
-	letter: { minMaxAreLength: true },
-	letters: { minMaxAreLength: true },
-	char: { minMaxAreLength: true },
-	chars: { minMaxAreLength: true },
-	character: { minMaxAreLength: true },
-	characters: { minMaxAreLength: true },
-	of: { expected: 'typeOrClass' , toChild: 'of' },
-} ;
-
-
-
 function sentence( str )
 {
 	var i , word , wordList , expected , lastExpected , schema , pointer , stack , nextActions ,
-		keyWordsOverride , noOverride , lastOverride ,
-		needKeyWord , needKeyWordFor ;
+		keywordsOverride , noOverride , lastOverride ,
+		needKeyword , needKeywordFor ;
 	
 	wordList = str.split( / +|(?=[,;.:])/ ) ;
 	//console.log( wordList ) ;
@@ -894,13 +1261,13 @@ function sentence( str )
 	
 	nextActions = [] ;
 	noOverride = {} ;
-	keyWordsOverride = lastOverride = noOverride ;
+	keywordsOverride = lastOverride = noOverride ;
 	
 	lastExpected = null ;
-	expected = 'typeOrClass' ;
+	expected = [ 'typeOrClass' ] ;
 	
-	needKeyWord = null ;
-	needKeyWordFor = null ;
+	needKeyword = null ;
+	needKeywordFor = null ;
 	
 	
 	
@@ -911,11 +1278,11 @@ function sentence( str )
 		if ( action.reset )
 		{
 			nextActions = [] ;
-			keyWordsOverride = lastOverride = noOverride ;
+			keywordsOverride = lastOverride = noOverride ;
 			lastExpected = null ;
-			expected = 'typeOrClass' ;
-			needKeyWord = null ;
-			needKeyWordFor = null ;
+			expected = [ 'typeOrClass' ] ;
+			needKeyword = null ;
+			needKeywordFor = null ;
 		}
 		
 		if ( action.toChild )
@@ -927,12 +1294,12 @@ function sentence( str )
 		
 		if ( action.expected )
 		{
-			expected = action.expected ;
-			needKeyWord = null ;
+			expected = Array.isArray( action.expected ) ? action.expected.slice() : [ action.expected ] ;
+			needKeyword = null ;
 		}
 		
-		if ( action.needKeyWord ) { needKeyWord = action.needKeyWord ; needKeyWordFor = word ; }
-		else if ( needKeyWord && needKeyWord === word ) { needKeyWord = null ; needKeyWordFor = null ; }
+		if ( action.needKeyword ) { needKeyword = action.needKeyword ; needKeywordFor = word ; }
+		else if ( needKeyword && needKeyword === word ) { needKeyword = null ; needKeywordFor = null ; }
 		
 		if ( action.set )
 		{
@@ -941,11 +1308,11 @@ function sentence( str )
 		
 		if ( action.flag ) { pointer[ action.flag ] = true ; }
 		
-		if ( action.override ) { keyWordsOverride = action.override ; }
+		if ( action.override ) { keywordsOverride = action.override ; }
 		
-		if ( action.restoreOverride ) { keyWordsOverride = lastOverride ; }
+		if ( action.restoreOverride ) { keywordsOverride = lastOverride ; }
 		
-		if ( action.restoreExpected ) { expected = lastExpected ; }
+		if ( action.restoreExpected && ! expected.length ) { expected.unshift( lastExpected ) ; }
 		
 		if ( action.nextActions ) { nextActions = action.nextActions.slice() ; }
 		
@@ -963,12 +1330,13 @@ function sentence( str )
 	for ( i = 0 ; i < wordList.length ; i ++ )
 	{
 		word = wordList[ i ] ;
+		//console.log( 'word:' , word , '- expected:' , expected ) ;
 		
-		if ( keyWordsOverride[ word ] || keyWords[ word ] )
+		if ( keywordsOverride[ word ] || doormen.keywords[ word ] )
 		{
-			applyAction( keyWordsOverride[ word ] || keyWords[ word ] , word ) ;
+			applyAction( keywordsOverride[ word ] || doormen.keywords[ word ] , word ) ;
 		}
-		else if ( ! expected )
+		else if ( ! expected.length )
 		{
 			throw new Error(
 				"Can't understand the word #" + i + " '" + word + "'" +
@@ -976,10 +1344,10 @@ function sentence( str )
 				", in the sentence '" + str + "'."
 			) ;
 		}
-		else if ( needKeyWord )
+		else if ( needKeyword )
 		{
 			throw new Error(
-				"Keyword '" + needKeyWord + "' is required after keyword '" + needKeyWordFor + "'" +
+				"Keyword '" + needKeyword + "' is required after keyword '" + needKeywordFor + "'" +
 				", in the sentence '" + str + "'."
 			) ;
 		}
@@ -987,7 +1355,7 @@ function sentence( str )
 		{
 			word = doormen.sanitizer.dashToCamelCase( word ) ;
 			
-			switch ( expected )
+			switch ( expected[ 0 ] )
 			{
 				case 'type' :
 					pointer.type = word ;
@@ -1032,15 +1400,15 @@ function sentence( str )
 				*/
 			}
 			
-			lastExpected = expected ;
-			expected = null ;
+			lastExpected = expected.shift() ;
+			//expected = null ;
 			
 			if ( ! nextActions.length )
 			{
-				if ( keyWordsOverride !== noOverride )
+				if ( keywordsOverride !== noOverride )
 				{
-					lastOverride = keyWordsOverride ;
-					keyWordsOverride = noOverride ;
+					lastOverride = keywordsOverride ;
+					keywordsOverride = noOverride ;
 				}
 				else
 				{
@@ -1056,11 +1424,10 @@ function sentence( str )
 
 
 module.exports = sentence ;
-sentence.keyWords = keyWords ;
 
 
 
-},{"./doormen.js":2}],7:[function(require,module,exports){
+},{"./doormen.js":2}],9:[function(require,module,exports){
 (function (Buffer){
 /*
 	Copyright (c) 2015 Cédric Ronvel 

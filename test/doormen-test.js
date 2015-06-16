@@ -679,6 +679,11 @@ describe( "Filters" , function() {
 		doormen.not( true , { filter: { lesserThan: 3 } } ) ;
 		doormen.not( false , { filter: { lesserThan: 3 } } ) ;
 		doormen.not( '1' , { filter: { lesserThan: 3 } } ) ;
+		
+		doormen( 2.999 , { filter: { lt: 3 } } ) ;
+		doormen.not( 3 , { filter: { lt: 3 } } ) ;
+		doormen( 2.999 , { filter: { '<': 3 } } ) ;
+		doormen.not( 3 , { filter: { '<': 3 } } ) ;
 	} ) ;
 } ) ;
 
@@ -850,6 +855,7 @@ describe( "Numbers meta types" , function() {
 		doormen( 0.3 , { type: 'real' } ) ;
 		doormen( 18.36 , { type: 'real' } ) ;
 		doormen.not( 1/0 , { type: 'real' } ) ;
+		doormen.not( -1/0 , { type: 'real' } ) ;
 		doormen.not( Infinity , { type: 'real' } ) ;
 		doormen.not( -Infinity , { type: 'real' } ) ;
 		doormen.not( NaN , { type: 'real' } ) ;
@@ -1153,6 +1159,61 @@ describe( "Misc" , function() {
 				}
 			}
 		) ;
+	} ) ;
+	
+	it( "real world use case" , function() {
+		
+		doormen.typeChecker.password = function( data ) {
+			if ( typeof data !== 'string' ) { return false ; }
+			if ( data.length < 8 ) { return false ; }
+			if ( ! data.match( /[a-z]/ ) || ! data.match( /[A-Z]/ ) || ! data.match( /[0-9.,;!?*%$#+-]/ ) ) { return false ; }
+			return true ;
+		} ;
+		
+		var userSchema = {
+			type: 'object',
+			properties: {
+				id: { type: 'string' },
+				name: {
+					type: 'string',
+					minLength: 2,
+					maxLength: 50
+				},
+				email: { type: 'email' },
+				password: { type: 'password' },
+				contact: {
+					optional: true,
+					type: 'object',
+					properties: {
+						address: { optional: true, type: 'string' },
+						phone: { optional: true, type: 'string' },
+						fax: { optional: true, type: 'string' }
+					}
+				},
+				custom: {
+					optional: true,
+					type: 'object',
+					of: { type: 'string' }
+				}
+			}
+		} ;
+		
+		doormen( {
+			id: 'alacon',
+			name: 'Doug',
+			email: 'doug@java.net',
+			password: 'myJavaCodeIsFasterThanYourC!',
+		} , userSchema ) ;
+		
+		doormen( {
+			id: 'alanoix',
+			name: 'Étienne Jabert',
+			email: 'etienne-jabert@java.net',
+			password: 'superJabert!',
+			contact: {
+				fax: '0142559833'
+			}
+		} , userSchema ) ;
 	} ) ;
 } ) ;
 	
