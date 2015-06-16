@@ -658,6 +658,11 @@ describe( "Filters" , function() {
 		doormen.not( undefined , { filter: { greaterThan: 0 } } ) ;
 		doormen.not( undefined , { filter: { greaterThan: -3 } } ) ;
 		doormen.not( '10' , { filter: { greaterThan: 3 } } ) ;
+		
+		doormen( 3.0001 , { filter: { gt: 3 } } ) ;
+		doormen.not( 3 , { filter: { gt: 3 } } ) ;
+		doormen( 3.0001 , { filter: { '>': 3 } } ) ;
+		doormen.not( 3 , { filter: { '>': 3 } } ) ;
 	} ) ;
 	
 	it( "'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw" , function() {
