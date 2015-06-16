@@ -970,6 +970,13 @@ describe( "Full report mode" , function() {
 
 describe( "Schema as a sentence" , function() {
 	
+	it( "tmp" , function() {
+		doormen.equals( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ,
+			{ sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string', minLength: 5, maxLength: 8 }
+		) ;
+		
+	} ) ;
+		
 	it( "should transform a sentence into a schema" , function() {
 		
 		doormen.equals( doormen.sentence( 'array' ) , { type: 'array' } ) ;
