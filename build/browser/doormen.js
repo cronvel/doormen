@@ -1670,7 +1670,7 @@ check.email = function checkEmail( data )
 	
 	if ( matches[ 1 ].length > 64 ) { return false ; }
 	
-	parts = data.split( '.' ) ;
+	parts = matches[ 1 ].split( '.' ) ;
 	
 	for ( i = 0 ; i < parts.length ; i ++ )
 	{
