@@ -277,7 +277,7 @@ function check( data , schema , element )
 			hashmap = schema.properties ;
 		}
 		
-		if ( schema.only )
+		if ( ! schema.extraProperties )
 		{
 			for ( key in data )
 			{
@@ -311,7 +311,7 @@ function check( data , schema , element )
 			} ) ;
 		}
 		
-		if ( schema.only && data.length > schema.elements.length )
+		if ( ! schema.extraElements && data.length > schema.elements.length )
 		{
 			this.validatorError( element.path + " has extra elements (" +
 				data.length + " instead of " + schema.elements.length + ")." ,
@@ -1181,6 +1181,9 @@ module.exports = {
 
 
 module.exports = {
+	
+	removeExtraProperties: function( data ) {
+	} ,
 	
 	toNumber: function( data ) {
 		if ( typeof data === 'number' ) { return data ; }
