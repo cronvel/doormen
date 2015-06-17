@@ -52,7 +52,7 @@ TESTLING=./node_modules/.bin/testling
 
 # Build the browser lib
 log/browser.log: lib/*.js
-	${BROWSERIFY} lib/browser.js -u buffer -u punycode -s doormen -o build/browser/doormen.js | tee log/browser.log ; exit $${PIPESTATUS[0]}
+	${BROWSERIFY} lib/browser.js -u buffer -u punycode -s doormen -o browser/doormen.js | tee log/browser.log ; exit $${PIPESTATUS[0]}
 
 # JsHint STDOUT test
 log/jshint.log: log/npm-dev-install.log lib/*.js test/*.js
@@ -63,7 +63,7 @@ log/mocha.log: log/npm-dev-install.log lib/*.js test/*.js
 	${MOCHA} test/*.js -R spec | tee log/mocha.log ; exit $${PIPESTATUS[0]}
 
 # Testling: Browser-side Mocha
-log/testling.log: log/npm-dev-install.log log/browser.log build/browser/*.js test/*.js
+log/testling.log: log/npm-dev-install.log log/browser.log browser/*.js test/*.js
 	@echo -ne "\x1b[33mReminder: On linux, Xvfb should be installed!\x1b[0m\n"
 	killall Xvfb ; sleep 1
 	${TESTLING} | tee log/testling.log ; exit $${PIPESTATUS[0]}
