@@ -112,5 +112,9 @@ clean-all:
 check-if-master-branch:
 	git branch | grep  "^* master$$"
 
+# This will fail if there are change not commited (grep exit 1 if nothing found)
+check-if-commited:
+	git status | grep  "^nothing to commit$"
+
 
 
