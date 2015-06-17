@@ -32,7 +32,7 @@ browser-test: log/testling.log
 doc: README.md
 
 # This publish to NPM and push to Github, if we are on master branch only
-publish: browser README.md log/npm-publish.log log/github-push.log
+publish: check-if-commited browser README.md build-commit log/npm-publish.log log/github-push.log
 
 # Clean temporary things, or things that can be automatically regenerated
 clean: clean-all
@@ -114,7 +114,8 @@ check-if-master-branch:
 
 # This will fail if there are change not commited (grep exit 1 if nothing found)
 check-if-commited:
-	git status | grep  "^nothing to commit"
+	git status | grep  "^nothing to commit" || ( echo -ne "\x1b[31mYou should commit first!\x1b[0m\n" ; exit 1 )
+	
 
 
 
