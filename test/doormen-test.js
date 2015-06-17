@@ -27,6 +27,8 @@
 
 
 
+var tree = require( 'tree-kit' ) ;
+
 var doormen ;
 
 if ( process.argv.length )
@@ -1165,6 +1167,101 @@ describe( "Full report mode" , function() {
 	} ) ;
 	
 	it( "Check error messages" ) ;
+} ) ;
+
+
+
+describe( "Export mode" , function() {
+	
+	it( ".export() and 'of'" , function() {
+		
+		var data , schema , returned ;
+		
+		schema = {
+			of: { type: 'string' , sanitize: 'trim' }
+		} ;
+		
+		data = { a: 'abc', b: '  def  ' } ;
+		returned = doormen.export( data , schema ) ;
+		doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
+		doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
+		
+		returned = doormen( data , schema ) ;
+		doormen.equals( data , { a: 'abc', b: 'def' } ) ;
+		doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
+	} ) ;
+	
+	it( ".export() and 'properties'" , function() {
+		
+		var data , schema , returned ;
+		
+		schema = {
+			properties: {
+				a: { type: 'string' , sanitize: 'toUpperCase' },
+				b: { type: 'string' , sanitize: 'trim' }
+			}
+		} ;
+		
+		data = { a: 'abc', b: '  def  ' } ;
+		returned = doormen.export( data , schema ) ;
+		doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
+		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+		
+		returned = doormen( data , schema ) ;
+		doormen.equals( data , { a: 'ABC', b: 'def' } ) ;
+		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+		
+		data = { a: 'abc', b: '  def  ', c: 'toto' } ;
+		doormen.shouldThrow( function() {
+			returned = doormen.export( data , schema ) ;
+		} ) ;
+		
+		schema.extraProperties = true ;
+		data = { a: 'abc', b: '  def  ', c: 'toto' } ;
+		returned = doormen.export( data , schema ) ;
+		doormen.equals( data , { a: 'abc', b: '  def  ', c: 'toto' } ) ;
+		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+		
+		returned = doormen( data , schema ) ;
+		doormen.equals( data , { a: 'ABC', b: 'def', c: 'toto' } ) ;
+		doormen.equals( returned , { a: 'ABC', b: 'def', c: 'toto' } ) ;
+	} ) ;
+	
+	it( ".export() and 'elements'" , function() {
+		
+		var data , schema , returned ;
+		
+		schema = {
+			elements: [
+				{ type: 'string' , sanitize: 'toUpperCase' },
+				{ type: 'string' , sanitize: 'trim' }
+			]
+		} ;
+		
+		data = [ 'abc', '  def  ' ] ;
+		returned = doormen.export( data , schema ) ;
+		doormen.equals( data , [ 'abc', '  def  ' ] ) ;
+		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+		
+		returned = doormen( data , schema ) ;
+		doormen.equals( data , [ 'ABC', 'def' ] ) ;
+		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+		
+		data = [ 'abc', '  def  ', 'toto' ] ;
+		doormen.shouldThrow( function() {
+			returned = doormen.export( data , schema ) ;
+		} ) ;
+		
+		schema.extraElements = true ;
+		data = [ 'abc', '  def  ', 'toto' ] ;
+		returned = doormen.export( data , schema ) ;
+		doormen.equals( data , [ 'abc', '  def  ', 'toto' ] ) ;
+		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+		
+		returned = doormen( data , schema ) ;
+		doormen.equals( data , [ 'ABC', 'def', 'toto' ] ) ;
+		doormen.equals( returned , [ 'ABC', 'def', 'toto' ] ) ;
+	} ) ;
 } ) ;
 
 

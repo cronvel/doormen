@@ -11,6 +11,7 @@
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
+   - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
    - [Misc](#misc)
 <a name=""></a>
@@ -1191,6 +1192,101 @@ report = doormen.fullReport( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } 
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
 doormen.equals( report.errors.length , 2 ) ;
+```
+
+<a name="export-mode"></a>
+# Export mode
+.export() and 'of'.
+
+```js
+var data , schema , returned ;
+
+schema = {
+	of: { type: 'string' , sanitize: 'trim' }
+} ;
+
+data = { a: 'abc', b: '  def  ' } ;
+returned = doormen.export( data , schema ) ;
+doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
+doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
+
+returned = doormen( data , schema ) ;
+doormen.equals( data , { a: 'abc', b: 'def' } ) ;
+doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
+```
+
+.export() and 'properties'.
+
+```js
+var data , schema , returned ;
+
+schema = {
+	properties: {
+		a: { type: 'string' , sanitize: 'toUpperCase' },
+		b: { type: 'string' , sanitize: 'trim' }
+	}
+} ;
+
+data = { a: 'abc', b: '  def  ' } ;
+returned = doormen.export( data , schema ) ;
+doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
+doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+
+returned = doormen( data , schema ) ;
+doormen.equals( data , { a: 'ABC', b: 'def' } ) ;
+doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+
+data = { a: 'abc', b: '  def  ', c: 'toto' } ;
+doormen.shouldThrow( function() {
+	returned = doormen.export( data , schema ) ;
+} ) ;
+
+schema.extraProperties = true ;
+data = { a: 'abc', b: '  def  ', c: 'toto' } ;
+returned = doormen.export( data , schema ) ;
+doormen.equals( data , { a: 'abc', b: '  def  ', c: 'toto' } ) ;
+doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
+
+returned = doormen( data , schema ) ;
+doormen.equals( data , { a: 'ABC', b: 'def', c: 'toto' } ) ;
+doormen.equals( returned , { a: 'ABC', b: 'def', c: 'toto' } ) ;
+```
+
+.export() and 'elements'.
+
+```js
+var data , schema , returned ;
+
+schema = {
+	elements: [
+		{ type: 'string' , sanitize: 'toUpperCase' },
+		{ type: 'string' , sanitize: 'trim' }
+	]
+} ;
+
+data = [ 'abc', '  def  ' ] ;
+returned = doormen.export( data , schema ) ;
+doormen.equals( data , [ 'abc', '  def  ' ] ) ;
+doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+
+returned = doormen( data , schema ) ;
+doormen.equals( data , [ 'ABC', 'def' ] ) ;
+doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+
+data = [ 'abc', '  def  ', 'toto' ] ;
+doormen.shouldThrow( function() {
+	returned = doormen.export( data , schema ) ;
+} ) ;
+
+schema.extraElements = true ;
+data = [ 'abc', '  def  ', 'toto' ] ;
+returned = doormen.export( data , schema ) ;
+doormen.equals( data , [ 'abc', '  def  ', 'toto' ] ) ;
+doormen.equals( returned , [ 'ABC', 'def' ] ) ;
+
+returned = doormen( data , schema ) ;
+doormen.equals( data , [ 'ABC', 'def', 'toto' ] ) ;
+doormen.equals( returned , [ 'ABC', 'def', 'toto' ] ) ;
 ```
 
 <a name="schema-as-a-sentence"></a>
