@@ -1038,6 +1038,7 @@ describe( "Sanitize" , function() {
 	it( "should sanitize to 'toArray' accordingly" , function() {
 		doormen.equals( doormen( [] , { sanitize: 'toArray' } ) , [] ) ;
 		doormen.equals( doormen( [ 1,2,3 ] , { sanitize: 'toArray' } ) , [ 1,2,3 ] ) ;
+		doormen.equals( doormen( { a: 'Ah!' , b: 'bee' } , { sanitize: 'toArray' } ) , [ { a: 'Ah!' , b: 'bee' } ] ) ;
 		doormen.equals( doormen( 0 , { sanitize: 'toArray' } ) , [ 0 ] ) ;
 		doormen.equals( doormen( 'a' , { sanitize: 'toArray' } ) , [ 'a' ] ) ;
 		
@@ -1047,6 +1048,35 @@ describe( "Sanitize" , function() {
 		doormen.equals( fn( { yeepee: 'yaa' } , 'yeah' , true ) , [ { yeepee: 'yaa' } , 'yeah' , true ] ) ;
 		doormen.equals( Array.isArray( fn( 1,2,3 ) ) , true ) ;
 		doormen.equals( Array.isArray( arguments ) , false ) ;
+	} ) ;
+	
+	it( "should remove extra properties accordingly" , function() {
+		
+		var schema ;
+		
+		schema = {
+			sanitize: 'removeExtraProperties',
+			properties: [ 'a' , 'b' ]
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen( { a: 'text', b: 3 } , schema ) ;
+		doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+		doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+		
+		
+		schema = {
+			sanitize: 'removeExtraProperties',
+			properties: {
+				a: { type: 'number' },
+				b: { type: 'string' }
+			}
+		} ;
+		
+		doormen( { a: 1, b: 'text' } , schema ) ;
+		doormen.not( { a: 'text', b: 3 } , schema ) ;
+		doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+		doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
 	} ) ;
 	
 	it( "should trim a string accordingly" , function() {
