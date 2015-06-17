@@ -85,7 +85,7 @@ log/npm-publish.log: check-if-master-branch log/upgrade-package.log
 	npm publish | tee log/npm-publish.log ; exit $${PIPESTATUS[0]}
 
 # Push to Github/master
-log/github-push.log: lib/*.js test/*.js package.json
+log/github-push.log: check-if-master lib/*.js test/*.js package.json
 	#'npm version patch' create the git tag by itself... 
 	#git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
 	git push origin master --tags | tee log/github-push.log ; exit $${PIPESTATUS[0]}
@@ -102,7 +102,7 @@ log/npm-dev-install.log: package.json
 
 # PHONY rules
 
-.PHONY: clean-all check-if-master-branch
+.PHONY: clean-all check-if-master-branch check-if-commited build-commit
 
 # Delete files, mostly log and non-versioned files
 clean-all:
@@ -116,6 +116,10 @@ check-if-master-branch:
 check-if-commited:
 	git status | grep  "^nothing to commit" || ( echo -ne "\x1b[31mYou should commit first!\x1b[0m\n" ; exit 1 )
 	
+# Commit an automatic build
+build-commit:
+	git commit -am "Build"
+
 
 
 
