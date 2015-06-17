@@ -76,12 +76,8 @@ README.md: documentation.md bdd-spec.md
 bdd-spec.md: log/npm-dev-install.log lib/*.js test/*.js
 	${MOCHA} test/*.js -R markdown > bdd-spec.md
 
-# Upgrade version in package.json
-log/upgrade-package.log: lib/*.js test/*.js documentation.md
-	npm version patch -m "Upgrade package.json version to %s" | tee log/upgrade-package.log ; exit $${PIPESTATUS[0]}
-
 # Publish to NPM
-log/npm-publish.log: check-if-master-branch log/upgrade-package.log
+log/npm-publish.log: check-if-master-branch upgrade-package-version
 	npm publish | tee log/npm-publish.log ; exit $${PIPESTATUS[0]}
 
 # Push to Github/master
@@ -102,7 +98,7 @@ log/npm-dev-install.log: package.json
 
 # PHONY rules
 
-.PHONY: clean-all check-if-master-branch check-if-commited build-commit
+.PHONY: clean-all check-if-master-branch check-if-commited build-commit upgrade-package-version
 
 # Delete files, mostly log and non-versioned files
 clean-all:
@@ -119,6 +115,10 @@ check-if-commited:
 # Commit an automatic build
 build-commit:
 	git commit -am "Build" || exit 0
+
+# Upgrade version in package.json
+upgrade-package-version:
+	npm version patch -m "Upgrade package.json version to %s"
 
 
 
