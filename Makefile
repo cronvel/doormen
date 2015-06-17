@@ -114,7 +114,7 @@ check-if-master-branch:
 
 # This will fail if there are change not commited (grep exit 1 if nothing found)
 check-if-commited:
-	git status | grep  "^nothing to commit$"
+	git status | grep  "^nothing to commit"
 
 
 
