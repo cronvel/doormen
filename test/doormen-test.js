@@ -1035,6 +1035,20 @@ describe( "Sanitize" , function() {
 		doormen.equals( doormen( '1' , { sanitize: 'toNumber' } ) , 1 ) ;
 	} ) ;
 	
+	it( "should sanitize to 'toArray' accordingly" , function() {
+		doormen.equals( doormen( [] , { sanitize: 'toArray' } ) , [] ) ;
+		doormen.equals( doormen( [ 1,2,3 ] , { sanitize: 'toArray' } ) , [ 1,2,3 ] ) ;
+		doormen.equals( doormen( 0 , { sanitize: 'toArray' } ) , [ 0 ] ) ;
+		doormen.equals( doormen( 'a' , { sanitize: 'toArray' } ) , [ 'a' ] ) ;
+		
+		var fn = function() { return doormen( arguments , { sanitize: 'toArray' } ) ; } ;
+		doormen.equals( fn() , [] ) ;
+		doormen.equals( fn( 1,2,3 ) , [ 1,2,3 ] ) ;
+		doormen.equals( fn( { yeepee: 'yaa' } , 'yeah' , true ) , [ { yeepee: 'yaa' } , 'yeah' , true ] ) ;
+		doormen.equals( Array.isArray( fn( 1,2,3 ) ) , true ) ;
+		doormen.equals( Array.isArray( arguments ) , false ) ;
+	} ) ;
+	
 	it( "should trim a string accordingly" , function() {
 		doormen.equals( doormen( 'a' , { sanitize: 'trim' } ) , 'a' ) ;
 		doormen.equals( doormen( '  a' , { sanitize: 'trim' } ) , 'a' ) ;
