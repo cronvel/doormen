@@ -118,7 +118,7 @@ check-if-commited:
 	
 # Commit an automatic build
 build-commit:
-	git commit -am "Build"
+	git commit -am "Build" || exit 0
 
 
 
