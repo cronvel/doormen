@@ -151,7 +151,7 @@ function check( data , schema , element )
 				throw new doormen.SchemaError( "Bad schema (at " + element.path + "), unexistant sanitizer '" + sanitizerList[ i ] + "'." ) ;
 			}
 			
-			data = doormen.sanitizer[ sanitizerList[ i ] ].call( this , data ) ;
+			data = doormen.sanitizer[ sanitizerList[ i ] ].call( this , data , schema ) ;
 		}
 	}
 	
@@ -1190,9 +1190,7 @@ module.exports = sanitizer ;
 
 
 
-sanitizer.removeExtraProperties = function( data )
-{
-} ;
+			/* Cast sanitizers */
 
 
 
@@ -1216,6 +1214,42 @@ sanitizer.toArray = function toArray( data )
 	}
 	
 	return [ data ] ;
+} ;
+
+
+
+			/* Object sanitizers */
+
+
+
+sanitizer.removeExtraProperties = function( data , schema )
+{
+	var key ;
+	
+	if (
+		! data || ( typeof data !== 'object' && typeof data !== 'function' ) ||
+		! schema.properties || typeof schema.properties !== 'object'
+	)
+	{
+		return data ;
+	}
+	
+	if ( Array.isArray( schema.properties ) )
+	{
+		for ( key in data )
+		{
+			if ( schema.properties.indexOf( key ) === -1 ) { delete data[ key ] ; }
+		}
+	}
+	else
+	{
+		for ( key in data )
+		{
+			if ( ! ( key in schema.properties ) ) { delete data[ key ] ; }
+		}
+	}
+	
+	return data ;
 } ;
 
 
