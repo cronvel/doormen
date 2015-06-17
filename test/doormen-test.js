@@ -910,6 +910,66 @@ describe( "Strings meta types" , function() {
 		doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
 	} ) ;
 	
+	it( "should validate ipv4 accordingly" , function() {
+		doormen( '127.0.0.1' , { type: 'ipv4' } ) ;
+		doormen( '127.000.00.001' , { type: 'ipv4' } ) ;
+		doormen.not( '127.0000.00.001' , { type: 'ipv4' } ) ;
+		doormen.not( '0127.000.00.001' , { type: 'ipv4' } ) ;
+		doormen.not( '127.0.0.0001' , { type: 'ipv4' } ) ;
+		doormen.not( '127.0.0.' , { type: 'ipv4' } ) ;
+		doormen.not( '127.0.0.256' , { type: 'ipv4' } ) ;
+		doormen.not( '127.0.0.1.' , { type: 'ipv4' } ) ;
+		doormen.not( '.127.0.0.1' , { type: 'ipv4' } ) ;
+		doormen.not( '.127.0.0.' , { type: 'ipv4' } ) ;
+	} ) ;
+		
+	it( "should validate ipv6 accordingly" , function() {
+		
+		doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
+		doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
+		doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen( '2001:db8::ff00:0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( '2001:db8:::0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ipv6' } ) ;
+		doormen.not( '2001::ff00::0042:8329' , { type: 'ipv6' } ) ;
+		doormen( '::1' , { type: 'ipv6' } ) ;
+		doormen( '1::' , { type: 'ipv6' } ) ;
+	} ) ;
+	
+	it( "should validate ip accordingly" , function() {
+		
+		doormen( '127.0.0.1' , { type: 'ip' } ) ;
+		doormen( '127.000.00.001' , { type: 'ip' } ) ;
+		doormen.not( '127.0000.00.001' , { type: 'ip' } ) ;
+		doormen.not( '0127.000.00.001' , { type: 'ip' } ) ;
+		doormen.not( '127.0.0.0001' , { type: 'ip' } ) ;
+		doormen.not( '127.0.0.' , { type: 'ip' } ) ;
+		doormen.not( '127.0.0.256' , { type: 'ip' } ) ;
+		doormen.not( '127.0.0.1.' , { type: 'ip' } ) ;
+		doormen.not( '.127.0.0.1' , { type: 'ip' } ) ;
+		doormen.not( '.127.0.0.' , { type: 'ip' } ) ;
+		
+		doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
+		doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
+		doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen( '2001:db8::ff00:0042:8329' , { type: 'ip' } ) ;
+		doormen.not( '2001:db8:::0042:8329' , { type: 'ip' } ) ;
+		doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ip' } ) ;
+		doormen.not( '2001::ff00::0042:8329' , { type: 'ip' } ) ;
+		doormen( '::1' , { type: 'ip' } ) ;
+		doormen( '1::' , { type: 'ip' } ) ;
+	} ) ;
+		
+	it( "should validate hostname accordingly" ) ;
+	
 	it( "should validate url accordingly" , function() {
 		doormen( 'http://google.com' , { type: 'url' } ) ;
 		doormen( 'http://google.com/' , { type: 'url' } ) ;
@@ -917,7 +977,12 @@ describe( "Strings meta types" , function() {
 		doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'url' } ) ;
 		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
 		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'url' } ) ;
+		doormen( 'http://::1/#!/massive_attack' , { type: 'url' } ) ;
 		doormen( 'http://127.0.0.1/' , { type: 'url' } ) ;
+		doormen( 'http://localhost/' , { type: 'url' } ) ;
+		doormen( 'http://localhost:8080/' , { type: 'url' } ) ;
+		doormen( 'http://bob@localhost/' , { type: 'url' } ) ;
+		doormen( 'http://bob:pw@localhost/' , { type: 'url' } ) ;
 		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'url' } ) ;
 		doormen.not( 'http://127.0.0/' , { type: 'url' } ) ;
 		doormen.not( 'http://192.168.0.256/' , { type: 'url' } ) ;
@@ -934,6 +999,7 @@ describe( "Strings meta types" , function() {
 		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'weburl' } ) ;
 		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'weburl' } ) ;
 		doormen( 'http://127.0.0.1/#!/massive_attack' , { type: 'weburl' } ) ;
+		doormen( 'http://::1/#!/massive_attack' , { type: 'weburl' } ) ;
 		doormen( 'http://127.0.0.1/' , { type: 'weburl' } ) ;
 		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'weburl' } ) ;
 		doormen.not( 'http://127.0.0/' , { type: 'weburl' } ) ;
