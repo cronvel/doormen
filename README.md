@@ -991,17 +991,6 @@ doormen.not( [] , { type: 'integer' } ) ;
 
 <a name="strings-meta-types"></a>
 # Strings meta types
-should validate email accordingly.
-
-```js
-doormen( 'bob@gmail.com' , { type: 'email' } ) ;
-doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
-doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
-```
-
 should validate ipv4 accordingly.
 
 ```js
@@ -1105,6 +1094,24 @@ doormen.not( 'http://192.168.0.256/' , { type: 'weburl' } ) ;
 doormen.not( 'http://19.16.33.25.6/' , { type: 'weburl' } ) ;
 doormen.not( 'file:///home/toto/TODO.txt' , { type: 'weburl' } ) ;
 doormen.not( 'google.com' , { type: 'weburl' } ) ;
+```
+
+should validate email accordingly.
+
+```js
+doormen( 'bob@gmail.com' , { type: 'email' } ) ;
+doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
+doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
+doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
+doormen.not( 'bob.@gmail.com' , { type: 'email' } ) ;
+doormen.not( '.bob@gmail.com' , { type: 'email' } ) ;
+doormen.not( 'bob..bob@gmail.com' , { type: 'email' } ) ;
+doormen( 'bob.a.bob@gmail.com' , { type: 'email' } ) ;
+doormen.not( 'bob @gmail.com' , { type: 'email' } ) ;
+doormen.not( ' bob@gmail.com' , { type: 'email' } ) ;
+doormen.not( 'b b@gmail.com' , { type: 'email' } ) ;
 ```
 
 <a name="sanitize"></a>

@@ -901,15 +901,6 @@ describe( "Numbers meta types" , function() {
 
 describe( "Strings meta types" , function() {
 	
-	it( "should validate email accordingly" , function() {
-		doormen( 'bob@gmail.com' , { type: 'email' } ) ;
-		doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
-		doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
-	} ) ;
-	
 	it( "should validate ipv4 accordingly" , function() {
 		doormen( '127.0.0.1' , { type: 'ipv4' } ) ;
 		doormen( '127.000.00.001' , { type: 'ipv4' } ) ;
@@ -1007,6 +998,22 @@ describe( "Strings meta types" , function() {
 		doormen.not( 'http://19.16.33.25.6/' , { type: 'weburl' } ) ;
 		doormen.not( 'file:///home/toto/TODO.txt' , { type: 'weburl' } ) ;
 		doormen.not( 'google.com' , { type: 'weburl' } ) ;
+	} ) ;
+	
+	it( "should validate email accordingly" , function() {
+		doormen( 'bob@gmail.com' , { type: 'email' } ) ;
+		doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
+		doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
+		doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
+		doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
+		doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
+		doormen.not( 'bob.@gmail.com' , { type: 'email' } ) ;
+		doormen.not( '.bob@gmail.com' , { type: 'email' } ) ;
+		doormen.not( 'bob..bob@gmail.com' , { type: 'email' } ) ;
+		doormen( 'bob.a.bob@gmail.com' , { type: 'email' } ) ;
+		doormen.not( 'bob @gmail.com' , { type: 'email' } ) ;
+		doormen.not( ' bob@gmail.com' , { type: 'email' } ) ;
+		doormen.not( 'b b@gmail.com' , { type: 'email' } ) ;
 	} ) ;
 } ) ;
 
