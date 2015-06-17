@@ -1180,45 +1180,86 @@ module.exports = {
 
 
 
-module.exports = {
-	
-	removeExtraProperties: function( data ) {
-	} ,
-	
-	toNumber: function( data ) {
-		if ( typeof data === 'number' ) { return data ; }
-		else if ( ! data ) { return NaN ; }
-		else if ( typeof data === 'string' ) { return parseFloat( data ) ; }
-		else { return NaN ; }
-	} ,
-	
-	trim: function( data ) {
-		if ( typeof data === 'string' ) { return data.trim() ; }
-		else { return data ; }
-	} ,
-	
-	toUpperCase: function( data ) {
-		if ( typeof data === 'string' ) { return data.toUpperCase() ; }
-		else { return data ; }
-	} ,
-	
-	toLowerCase: function( data ) {
-		if ( typeof data === 'string' ) { return data.toLowerCase() ; }
-		else { return data ; }
-	} ,
-	
-	dashToCamelCase: function( data ) {
-		if ( typeof data !== 'string' ) { return data ; }
-		
-		return data.replace( /-(.)/g , function( match , letter ) {
-			return letter.toUpperCase();
-		} ) ;
-	} ,
+// Load modules
+var doormen = require( './doormen.js' ) ;
+
+
+
+var sanitizer = {} ;
+module.exports = sanitizer ;
+
+
+
+sanitizer.removeExtraProperties = function( data )
+{
 } ;
 
 
 
-},{}],8:[function(require,module,exports){
+sanitizer.toNumber = function toNumber( data )
+{
+	if ( typeof data === 'number' ) { return data ; }
+	else if ( ! data ) { return NaN ; }
+	else if ( typeof data === 'string' ) { return parseFloat( data ) ; }
+	else { return NaN ; }
+} ;
+
+
+
+sanitizer.toArray = function toArray( data )
+{
+	if ( Array.isArray( data ) ) { return data ; }
+	
+	if ( data && typeof data === 'object' )
+	{
+		if ( doormen.typeChecker.arguments( data ) ) { return Array.prototype.slice.call( data ) ; }
+	}
+	
+	return [ data ] ;
+} ;
+
+
+
+			/* String sanitizers */
+
+
+
+sanitizer.trim = function trim( data )
+{
+	if ( typeof data === 'string' ) { return data.trim() ; }
+	else { return data ; }
+} ;
+
+
+
+sanitizer.toUpperCase = function toUpperCase( data )
+{
+	if ( typeof data === 'string' ) { return data.toUpperCase() ; }
+	else { return data ; }
+} ;
+
+
+
+sanitizer.toLowerCase = function toLowerCase( data )
+{
+	if ( typeof data === 'string' ) { return data.toLowerCase() ; }
+	else { return data ; }
+} ;
+
+
+
+sanitizer.dashToCamelCase = function dashToCamelCase( data )
+{
+	if ( typeof data !== 'string' ) { return data ; }
+	
+	return data.replace( /-(.)/g , function( match , letter ) {
+		return letter.toUpperCase();
+	} ) ;
+} ;
+
+
+
+},{"./doormen.js":2}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
