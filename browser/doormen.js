@@ -73,7 +73,8 @@ function doormen( data , schema , options )
 		errors: [] ,
 		check: check ,
 		validatorError: validatorError ,
-		fullReport: !! options.fullReport
+		fullReport: !! options.fullReport,
+		export: !! options.export
 	} ;
 	
 	var sanitized = context.check( data , schema , {
@@ -105,6 +106,7 @@ doormen.isBrowser = false ;
 
 // Shorthand
 doormen.fullReport = function fullReport( data , schema ) { return doormen( data , schema , { fullReport: true } ) ; } ;
+doormen.export = function export_( data , schema ) { return doormen( data , schema , { export: true } ) ; } ;
 
 
 
@@ -123,9 +125,9 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 
 
-function check( data , schema , element )
+function check( data_ , schema , element )
 {
-	var i , key , sanitizerList , hashmap ;
+	var i , key , sanitizerList , hashmap , data = data_ , src ;
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
@@ -151,7 +153,7 @@ function check( data , schema , element )
 				throw new doormen.SchemaError( "Bad schema (at " + element.path + "), unexistant sanitizer '" + sanitizerList[ i ] + "'." ) ;
 			}
 			
-			data = doormen.sanitizer[ sanitizerList[ i ] ].call( this , data , schema ) ;
+			data = doormen.sanitizer[ sanitizerList[ i ] ].call( this , data , schema , this.export && data === data_ ) ;
 		}
 	}
 	
@@ -216,22 +218,22 @@ function check( data , schema , element )
 		
 		if ( Array.isArray( data ) )
 		{
-			for ( i = 0 ; i < data.length ; i ++ )
+			if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
+			else { src = data ; }
+			
+			for ( i = 0 ; i < src.length ; i ++ )
 			{
-				data[ i ] = this.check( data[ i ] , schema.of , {
-					path: element.path + '#' + i ,
-					key: i
-				} ) ;
+				data[ i ] = this.check( src[ i ] , schema.of , { path: element.path + '#' + i , key: i } ) ;
 			}
 		}
 		else
 		{
-			for ( key in data )
+			if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
+			else { src = data ; }
+			
+			for ( key in src )
 			{
-				data[ key ] = this.check( data[ key ] , schema.of , {
-					path: element.path + '.' + key ,
-					key: key
-				} ) ;
+				data[ key ] = this.check( src[ key ] , schema.of , { path: element.path + '.' + key , key: key } ) ;
 			}
 		}
 	}
@@ -248,27 +250,34 @@ function check( data , schema , element )
 			this.validatorError( element.path + " can't have properties (not an object nor a function)." , element ) ;
 		}
 		
+		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
+		else { src = data ; }
+		
 		if ( Array.isArray( schema.properties ) )
 		{
 			hashmap = {} ;
 			
 			for ( i = 0 ; i < schema.properties.length ; i ++ )
 			{
-				if ( ! ( schema.properties[ i ] in data ) )
+				key = schema.properties[ i ] ;
+				
+				if ( ! ( key in src ) )
 				{
 					this.validatorError( element.path + " does not have all required properties (" +
 						JSON.stringify( schema.properties ) + ")." ,
 						element ) ;
 				}
 				
-				hashmap[ schema.properties[ i ] ] = true ;
+				data[ key ] = src[ key ] ;
+				
+				hashmap[ key ] = true ;
 			}
 		}
 		else
 		{
 			for ( key in schema.properties )
 			{
-				data[ key ] = this.check( data[ key ] , schema.properties[ key ] , {
+				data[ key ] = this.check( src[ key ] , schema.properties[ key ] , {
 					path: element.path + '.' + key ,
 					key: key
 				} ) ;
@@ -279,7 +288,7 @@ function check( data , schema , element )
 		
 		if ( ! schema.extraProperties )
 		{
-			for ( key in data )
+			for ( key in src )
 			{
 				if ( ! ( key in hashmap ) )
 				{
@@ -303,18 +312,21 @@ function check( data , schema , element )
 			this.validatorError( element.path + " can't have elements (not an array)." , element ) ;
 		}
 		
+		if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
+		else { src = data ; }
+		
 		for ( i = 0 ; i < schema.elements.length ; i ++ )
 		{
-			data[ i ] = this.check( data[ i ] , schema.elements[ i ] , {
+			data[ i ] = this.check( src[ i ] , schema.elements[ i ] , {
 				path: element.path + '#' + i ,
 				key: i
 			} ) ;
 		}
 		
-		if ( ! schema.extraElements && data.length > schema.elements.length )
+		if ( ! schema.extraElements && src.length > schema.elements.length )
 		{
 			this.validatorError( element.path + " has extra elements (" +
-				data.length + " instead of " + schema.elements.length + ")." ,
+				src.length + " instead of " + schema.elements.length + ")." ,
 				element ) ;
 		}
 	}
@@ -1222,9 +1234,9 @@ sanitizer.toArray = function toArray( data )
 
 
 
-sanitizer.removeExtraProperties = function( data , schema )
+sanitizer.removeExtraProperties = function( data , schema , clone )
 {
-	var key ;
+	var i , key , newData ;
 	
 	if (
 		! data || ( typeof data !== 'object' && typeof data !== 'function' ) ||
@@ -1234,22 +1246,47 @@ sanitizer.removeExtraProperties = function( data , schema )
 		return data ;
 	}
 	
-	if ( Array.isArray( schema.properties ) )
+	if ( clone )
 	{
-		for ( key in data )
+		newData = Array.isArray( data ) ? data.slice() : {} ;
+		
+		if ( Array.isArray( schema.properties ) )
 		{
-			if ( schema.properties.indexOf( key ) === -1 ) { delete data[ key ] ; }
+			for ( i = 0 ; i < schema.properties.length ; i ++ )
+			{
+				key = schema.properties[ i ] ;
+				if ( key in data ) { newData[ key ] = data[ key ] ; }
+			}
 		}
+		else
+		{
+			for ( key in schema.properties )
+			{
+				if ( key in data ) { newData[ key ] = data[ key ] ; }
+			}
+		}
+		
+		return newData ;
 	}
 	else
 	{
-		for ( key in data )
+		if ( Array.isArray( schema.properties ) )
 		{
-			if ( ! ( key in schema.properties ) ) { delete data[ key ] ; }
+			for ( key in data )
+			{
+				if ( schema.properties.indexOf( key ) === -1 ) { delete data[ key ] ; }
+			}
 		}
+		else
+		{
+			for ( key in data )
+			{
+				if ( ! ( key in schema.properties ) ) { delete data[ key ] ; }
+			}
+		}
+		
+		return data ;
 	}
-	
-	return data ;
 } ;
 
 
