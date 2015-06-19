@@ -451,6 +451,64 @@ describe( "Built-in types" , function() {
 
 
 
+describe( "Mixed types" , function() {
+	
+	it( "should validate 'strictObject' accordingly, i.e. objects that are *NOT* arrays" , function() {
+		doormen.not( undefined , { type: 'strictObject' } ) ;
+		doormen.not( null , { type: 'strictObject' } ) ;
+		doormen.not( false , { type: 'strictObject' } ) ;
+		doormen.not( true , { type: 'strictObject' } ) ;
+		doormen.not( 0 , { type: 'strictObject' } ) ;
+		doormen.not( 1 , { type: 'strictObject' } ) ;
+		doormen.not( '' , { type: 'strictObject' } ) ;
+		doormen.not( 'text' , { type: 'strictObject' } ) ;
+		doormen( {} , { type: 'strictObject' } ) ;
+		doormen( { a:1 , b:2 } , { type: 'strictObject' } ) ;
+		doormen.not( [] , { type: 'strictObject' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'strictObject' } ) ;
+		doormen.not( function(){} , { type: 'strictObject' } ) ;
+	} ) ;
+	
+	it( "should validate 'regexp' accordingly, i.e. RegExp instance or string convertible to RegExp" , function() {
+		doormen( /Random/ , { type: 'regexp' } ) ;
+		doormen( new RegExp( "Random" ) , { type: 'regexp' } ) ;
+		doormen( "Random" , { type: 'regexp' } ) ;
+		doormen.not( "(Random" , { type: 'regexp' } ) ;
+		doormen.not( undefined , { type: 'regexp' } ) ;
+		doormen.not( null , { type: 'regexp' } ) ;
+		doormen.not( false , { type: 'regexp' } ) ;
+		doormen.not( true , { type: 'regexp' } ) ;
+		doormen.not( 0 , { type: 'regexp' } ) ;
+		doormen.not( 1 , { type: 'regexp' } ) ;
+		doormen( '' , { type: 'regexp' } ) ;
+		doormen( 'text' , { type: 'regexp' } ) ;
+		doormen.not( {} , { type: 'regexp' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'regexp' } ) ;
+		doormen.not( [] , { type: 'regexp' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'regexp' } ) ;
+		doormen.not( function(){} , { type: 'regexp' } ) ;
+	} ) ;
+	
+	it( "should validate 'classId' accordingly, i.e. function (constructor) or non-empty string" , function() {
+		doormen.not( undefined , { type: 'classId' } ) ;
+		doormen.not( null , { type: 'classId' } ) ;
+		doormen.not( false , { type: 'classId' } ) ;
+		doormen.not( true , { type: 'classId' } ) ;
+		doormen.not( 0 , { type: 'classId' } ) ;
+		doormen.not( 1 , { type: 'classId' } ) ;
+		doormen.not( '' , { type: 'classId' } ) ;
+		doormen( 'text' , { type: 'classId' } ) ;
+		doormen.not( {} , { type: 'classId' } ) ;
+		doormen.not( { a:1 , b:2 } , { type: 'classId' } ) ;
+		doormen.not( [] , { type: 'classId' } ) ;
+		doormen.not( [ 1,2,3 ] , { type: 'classId' } ) ;
+		doormen( function(){} , { type: 'classId' } ) ;
+	} ) ;
+	
+} ) ;
+
+
+
 describe( "Top-level filters" , function() {
 	
 	it( "'instanceOf' should validate object accordingly" , function() {
@@ -1167,6 +1225,17 @@ describe( "Full report mode" , function() {
 	} ) ;
 	
 	it( "Check error messages" ) ;
+} ) ;
+
+
+
+describe( "Alternatives" , function() {
+	
+	it( "" , function() {
+		doormen( true , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+		doormen( 5 , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+		doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+	} ) ;
 } ) ;
 
 
