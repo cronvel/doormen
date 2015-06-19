@@ -1247,6 +1247,7 @@ describe( "Purify" , function() {
 	
 	it( "Purify a basic schema" , function() {
 		console.log( doormen.purifySchema( { type: 'string' } ) ) ;
+		console.log( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) ) ;
 	} ) ;
 	
 	it( "Purify needs more tests (alternatives, etc)" ) ;
