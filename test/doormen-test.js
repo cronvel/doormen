@@ -1139,13 +1139,13 @@ describe( "Full report mode" , function() {
 			of: { type: 'string' , sanitize: 'trim' }
 		} ;
 		
-		report = doormen.fullReport( { a: 'abc', b: '  def  ' } , schema ) ;
+		report = doormen.report( { a: 'abc', b: '  def  ' } , schema ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , true ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 'def' } ) ;
 		doormen.equals( report.errors.length , 0 ) ;
 		
-		report = doormen.fullReport( { a: true, b: 3 } , schema ) ;
+		report = doormen.report( { a: true, b: 3 } , schema ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: true, b: 3 } ) ;
@@ -1159,7 +1159,7 @@ describe( "Full report mode" , function() {
 			}
 		} ;
 		
-		report = doormen.fullReport( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , schema ) ;
+		report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , schema ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
