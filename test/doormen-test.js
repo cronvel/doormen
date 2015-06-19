@@ -909,6 +909,7 @@ describe( "Children and recursivity" , function() {
 		doormen.not( undefined , schema ) ;
 	} ) ;
 	
+	it( "Recursivity should not create optional properties." ) ;
 } ) ;
 
 
@@ -1231,11 +1232,24 @@ describe( "Full report mode" , function() {
 
 describe( "Alternatives" , function() {
 	
-	it( "" , function() {
+	it( "Basic schema alternatives" , function() {
 		doormen( true , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 		doormen( 5 , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 		doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 	} ) ;
+	
+	it( "Schema alternatives needs more tests" ) ;
+} ) ;
+
+
+
+describe( "Purify" , function() {
+	
+	it( "Purify a basic schema" , function() {
+		console.log( doormen.purifySchema( { type: 'string' } ) ) ;
+	} ) ;
+	
+	it( "Purify needs more tests (alternatives, etc)" ) ;
 } ) ;
 
 
