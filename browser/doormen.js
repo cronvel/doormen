@@ -961,6 +961,7 @@ var singleSchema = {
 	properties: {
 		type: { optional: true , type: 'string' } ,
 		optional: { optional: true , type: 'boolean' } ,
+		extraProperties: { optional: true , type: 'boolean' } ,
 		default: { optional: true } ,
 		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
 		filter: { optional: true , type: 'strictObject' } ,
@@ -972,7 +973,7 @@ var singleSchema = {
 		length: { optional: true , type: 'integer' } ,
 		minLength: { optional: true , type: 'integer' } ,
 		maxLength: { optional: true , type: 'integer' } ,
-		match: { optional: true , type: 'regexpCompatible' } ,
+		match: { optional: true , type: 'regexp' } ,
 		in: {
 			optional: true ,
 			type: 'array'
@@ -992,15 +993,22 @@ var doormenSchema = [
 // Recursivity
 singleSchema.properties.of = doormenSchema ;
 
-singleSchema.properties.properties = {
-	optional: true,
-	type: 'strictObject',
-	of: doormenSchema
-} ;
+singleSchema.properties.properties = [
+	{
+		optional: true,
+		type: 'strictObject',
+		of: doormenSchema
+	} ,
+	{
+		optional: true,
+		type: 'array',
+		of: { type: 'string' }
+	}
+] ;
 
 singleSchema.properties.elements = {
 	optional: true,
-	type: 'strictObject',
+	type: 'array',
 	of: doormenSchema
 } ;
 
