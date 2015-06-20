@@ -1341,20 +1341,34 @@ describe( "Purify" , function() {
 			{
 				properties: {
 					a: { optional: true , type: 'object' , of: { type: 'string' } },
-					b: { type: 'array' , sanitize: 'trim' , of: { type: 'integer' } },
+					b: { type: 'array' , sanitize: 'toArray' , of: { type: 'integer' , min: 4 , max: 7 , random: 'stuff' } },
 					c: { default: 'default' , type: 'string' },
 					d: { filter: { blah: 'blih' } },
-					//e: { properties: [ 'one' , 'two' , 'three' ] },
+					e: { properties: [ 'one' , 'two' , 'three' ] },
+					f: { random: 'stuff' , type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] },
+					g: { in: [ { some: 'data' } , { some: 'other data' } ] },
+					h: { notIn: [ { some: 'data' } , { some: 'other data' } ] },
+					i: { match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6 },
+					j: { match: "a regexp compatible string" },
+					k: { instanceOf: 'Date' },
+					l: { instanceOf: Date },
 				}
 			}
 			) ,
 			{
 				properties: {
 					a: { optional: true , type: 'object' , of: { type: 'string' } },
-					b: { type: 'array' , sanitize: [ 'trim' ] , of: { type: 'integer' } },
+					b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } },
 					c: { default: 'default' , type: 'string' },
 					d: { filter: { blah: 'blih' } },
-					//e: { properties: [ 'one' , 'two' , 'three' ] },
+					e: { properties: [ 'one' , 'two' , 'three' ] },
+					f: { type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] },
+					g: { in: [ { some: 'data' } , { some: 'other data' } ] },
+					h: { notIn: [ { some: 'data' } , { some: 'other data' } ] },
+					i: { match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6 },
+					j: { match: "a regexp compatible string" },
+					k: { instanceOf: 'Date' },
+					l: { instanceOf: Date },
 				}
 			}
 		) ;
