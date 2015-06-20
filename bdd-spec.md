@@ -1358,6 +1358,35 @@ doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 
 <a name="purify"></a>
 # Purify
+Purify a basic schema.
+
+```js
+doormen.equals( doormen.purifySchema( { type: 'string' } ) , { type: 'string' } ) ;
+doormen.equals( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) , { type: 'string' } ) ;
+
+doormen.equals( doormen.purifySchema(
+	{
+		properties: {
+			a: { optional: true , type: 'object' , of: { type: 'string' } },
+			b: { type: 'array' , sanitize: 'trim' , of: { type: 'integer' } },
+			c: { default: 'default' , type: 'string' },
+			d: { filter: { blah: 'blih' } },
+			//e: { properties: [ 'one' , 'two' , 'three' ] },
+		}
+	}
+	) ,
+	{
+		properties: {
+			a: { optional: true , type: 'object' , of: { type: 'string' } },
+			b: { type: 'array' , sanitize: [ 'trim' ] , of: { type: 'integer' } },
+			c: { default: 'default' , type: 'string' },
+			d: { filter: { blah: 'blih' } },
+			//e: { properties: [ 'one' , 'two' , 'three' ] },
+		}
+	}
+) ;
+```
+
 <a name="export-mode"></a>
 # Export mode
 .export() and 'of'.
