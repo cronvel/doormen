@@ -70,12 +70,15 @@ Common meta types:
 
 
 
+{ type: 'string' }
+{ type: 'string' }
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
    - [Optional and default data](#optional-and-default-data)
    - [Basic types](#basic-types)
    - [Built-in types](#built-in-types)
+   - [Mixed types](#mixed-types)
    - [Top-level filters](#top-level-filters)
    - [Filters](#filters)
    - [Children and recursivity](#children-and-recursivity)
@@ -83,6 +86,8 @@ Common meta types:
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
+   - [Alternatives](#alternatives)
+   - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
    - [Misc](#misc)
@@ -505,6 +510,66 @@ doormen.not( { a:1 , b:2 } , { type: 'arguments' } ) ;
 doormen.not( [] , { type: 'arguments' } ) ;
 doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
 doormen.not( function(){} , { type: 'arguments' } ) ;
+```
+
+<a name="mixed-types"></a>
+# Mixed types
+should validate 'strictObject' accordingly, i.e. objects that are *NOT* arrays.
+
+```js
+doormen.not( undefined , { type: 'strictObject' } ) ;
+doormen.not( null , { type: 'strictObject' } ) ;
+doormen.not( false , { type: 'strictObject' } ) ;
+doormen.not( true , { type: 'strictObject' } ) ;
+doormen.not( 0 , { type: 'strictObject' } ) ;
+doormen.not( 1 , { type: 'strictObject' } ) ;
+doormen.not( '' , { type: 'strictObject' } ) ;
+doormen.not( 'text' , { type: 'strictObject' } ) ;
+doormen( {} , { type: 'strictObject' } ) ;
+doormen( { a:1 , b:2 } , { type: 'strictObject' } ) ;
+doormen.not( [] , { type: 'strictObject' } ) ;
+doormen.not( [ 1,2,3 ] , { type: 'strictObject' } ) ;
+doormen.not( function(){} , { type: 'strictObject' } ) ;
+```
+
+should validate 'regexp' accordingly, i.e. RegExp instance or string convertible to RegExp.
+
+```js
+doormen( /Random/ , { type: 'regexp' } ) ;
+doormen( new RegExp( "Random" ) , { type: 'regexp' } ) ;
+doormen( "Random" , { type: 'regexp' } ) ;
+doormen.not( "(Random" , { type: 'regexp' } ) ;
+doormen.not( undefined , { type: 'regexp' } ) ;
+doormen.not( null , { type: 'regexp' } ) ;
+doormen.not( false , { type: 'regexp' } ) ;
+doormen.not( true , { type: 'regexp' } ) ;
+doormen.not( 0 , { type: 'regexp' } ) ;
+doormen.not( 1 , { type: 'regexp' } ) ;
+doormen( '' , { type: 'regexp' } ) ;
+doormen( 'text' , { type: 'regexp' } ) ;
+doormen.not( {} , { type: 'regexp' } ) ;
+doormen.not( { a:1 , b:2 } , { type: 'regexp' } ) ;
+doormen.not( [] , { type: 'regexp' } ) ;
+doormen.not( [ 1,2,3 ] , { type: 'regexp' } ) ;
+doormen.not( function(){} , { type: 'regexp' } ) ;
+```
+
+should validate 'classId' accordingly, i.e. function (constructor) or non-empty string.
+
+```js
+doormen.not( undefined , { type: 'classId' } ) ;
+doormen.not( null , { type: 'classId' } ) ;
+doormen.not( false , { type: 'classId' } ) ;
+doormen.not( true , { type: 'classId' } ) ;
+doormen.not( 0 , { type: 'classId' } ) ;
+doormen.not( 1 , { type: 'classId' } ) ;
+doormen.not( '' , { type: 'classId' } ) ;
+doormen( 'text' , { type: 'classId' } ) ;
+doormen.not( {} , { type: 'classId' } ) ;
+doormen.not( { a:1 , b:2 } , { type: 'classId' } ) ;
+doormen.not( [] , { type: 'classId' } ) ;
+doormen.not( [ 1,2,3 ] , { type: 'classId' } ) ;
+doormen( function(){} , { type: 'classId' } ) ;
 ```
 
 <a name="top-level-filters"></a>
@@ -1264,6 +1329,25 @@ report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , 
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
 doormen.equals( report.errors.length , 2 ) ;
+```
+
+<a name="alternatives"></a>
+# Alternatives
+Basic schema alternatives.
+
+```js
+doormen( true , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+doormen( 5 , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+```
+
+<a name="purify"></a>
+# Purify
+Purify a basic schema.
+
+```js
+console.log( doormen.purifySchema( { type: 'string' } ) ) ;
+console.log( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) ) ;
 ```
 
 <a name="export-mode"></a>
