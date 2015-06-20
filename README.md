@@ -70,8 +70,6 @@ Common meta types:
 
 
 
-{ type: 'string' }
-{ type: 'string' }
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -201,24 +199,27 @@ doormen.equals( o , o ) ;
 doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 } ) ;
 doormen.not.equals( { a: 2 , b: 6 } , { a: 2 , b: 5 } ) ;
 doormen.equals( { b: 5 , a: 2 } , { a: 2 , b: 5 } ) ;
-doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 } ) ;
-doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: undefined } ) ;
-doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , c: undefined } ) ;
-doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , d: undefined } ) ;
 doormen.not.equals( { a: 2 , b: 5 , c: null } , { a: 2 , b: 5 } ) ;
 doormen.not.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: null } ) ;
 
 doormen.not.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 } ) ;
 doormen.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 , c: {} } ) ;
 doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' } } ) ;
-doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
 doormen.not.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'toto' } } ) ;
 doormen.equals(
 	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } } ,
 	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } }
 ) ;
+```
 
-// Should test equality of object with different prototype
+when a property is undefined in the left-side and non-existant in the right-side, they should be equals.
+
+```js
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 } ) ;
+doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: undefined } ) ;
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , c: undefined } ) ;
+doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , d: undefined } ) ;
+doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
 ```
 
 Equality of arrays.
@@ -279,7 +280,7 @@ doormen.equals( a , b ) ;
 
 <a name="optional-and-default-data"></a>
 # Optional and default data
-data should validate when null or undefined if the optional flag is set.
+when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate.
 
 ```js
 doormen.not( null , { type: 'string' } ) ;
@@ -296,7 +297,87 @@ doormen.not( {} , { properties: { a: { type: 'string' } } } ) ;
 doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
 ```
 
-data should validate when null or undefined if a default value is specified, the default should overwrite the original one.
+missing optional properties should not be created (i.e. with undefined)..
+
+```js
+var result ;
+
+result = doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+
+// {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
+// that a key is not defined, so we have to check it explicitly
+
+doormen.equals( 'a' in result , false ) ;
+
+result = doormen( {} , {
+	properties: {
+		a: { optional: true, type: 'string' },
+		b: { optional: true, type: 'string' },
+		c: {
+			optional: true,
+			properties: {
+				d: { optional: true, type: 'string' }
+			}
+		}
+	}
+} ) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , false ) ;
+
+result = doormen( { c: undefined } , {
+	properties: {
+		a: { optional: true, type: 'string' },
+		b: { optional: true, type: 'string' },
+		c: {
+			optional: true,
+			properties: {
+				d: { optional: true, type: 'string' }
+			}
+		}
+	}
+} ) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( result.c , undefined ) ;
+
+result = doormen( { c: null } , {
+	properties: {
+		a: { optional: true, type: 'string' },
+		b: { optional: true, type: 'string' },
+		c: {
+			optional: true,
+			properties: {
+				d: { optional: true, type: 'string' }
+			}
+		}
+	}
+} ) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( result.c , null ) ;
+
+result = doormen( { c: {} } , {
+	properties: {
+		a: { optional: true, type: 'string' },
+		b: { optional: true, type: 'string' },
+		c: {
+			optional: true,
+			properties: {
+				d: { optional: true, type: 'string' }
+			}
+		}
+	}
+} ) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( 'd' in result.c , false ) ;
+```
+
+when a data is null, undefined or unexistant, and a default value is specified in the schema, that default value should overwrite the original one.
 
 ```js
 doormen.equals( doormen( null , { type: 'string' , "default": 'default!' } ) , 'default!' ) ;
@@ -308,7 +389,13 @@ doormen.equals(
 ) ;
 doormen.equals(
 	doormen(
-		{ a: null } ,
+		{ a: null, b: undefined } ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+	{ a: 'default!' , b: { c: 5 } }
+) ;
+doormen.equals(
+	doormen(
+		{} ,
 		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
 	{ a: 'default!' , b: { c: 5 } }
 ) ;
@@ -1346,8 +1433,8 @@ doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 Purify a basic schema.
 
 ```js
-console.log( doormen.purifySchema( { type: 'string' } ) ) ;
-console.log( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) ) ;
+doormen.equals( doormen.purifySchema( { type: 'string' } ) , { type: 'string' } ) ;
+doormen.equals( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) , { type: 'string' } ) ;
 ```
 
 <a name="export-mode"></a>
