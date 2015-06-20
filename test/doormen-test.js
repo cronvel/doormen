@@ -1344,7 +1344,7 @@ describe( "Purify" , function() {
 					b: { type: 'array' , sanitize: 'trim' , of: { type: 'integer' } },
 					c: { default: 'default' , type: 'string' },
 					d: { filter: { blah: 'blih' } },
-					e: { properties: [ 'one' , 'two' , 'three' ] },
+					//e: { properties: [ 'one' , 'two' , 'three' ] },
 				}
 			}
 			) ,
@@ -1354,7 +1354,7 @@ describe( "Purify" , function() {
 					b: { type: 'array' , sanitize: [ 'trim' ] , of: { type: 'integer' } },
 					c: { default: 'default' , type: 'string' },
 					d: { filter: { blah: 'blih' } },
-					e: { properties: [ 'one' , 'two' , 'three' ] },
+					//e: { properties: [ 'one' , 'two' , 'three' ] },
 				}
 			}
 		) ;

@@ -128,7 +128,7 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 function check( data_ , schema , element )
 {
-	var i , key , sanitizerList , hashmap , data = data_ , src , returnValue ;
+	var i , key , sanitizerList , hashmap , data = data_ , src , returnValue , alternativeErrors ;
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
@@ -138,19 +138,25 @@ function check( data_ , schema , element )
 	// 0) Arrays are alternatives
 	if ( Array.isArray( schema ) )
 	{
+		alternativeErrors = [] ;
+		
 		for ( i = 0 ; i < schema.length ; i ++ )
 		{
 			try {
-				data = doormen( data_ , schema[ i ] , element , { export: true } ) ;
+				data = doormen.export( data_ , schema[ i ] ) ;
 			}
 			catch( error ) {
+				alternativeErrors.push( error.message.replace( /\.$/ , '' ) ) ;
 				continue ;
 			}
 			
 			return data ;
 		}
 		
-		this.validatorError( element.path + " does not validate any schema alternatives." , element ) ;
+		this.validatorError(
+			element.path + " does not validate any schema alternatives: ( " + alternativeErrors.join( ' ; ' ) + " )." ,
+			element ) ;
+		
 		return ;
 	}
 	
@@ -948,7 +954,7 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-var doormenSchema = {
+var singleSchema = {
 	optional: true ,	// For recursivity...
 	type: 'strictObject' ,
 	extraProperties: true ,
@@ -956,7 +962,7 @@ var doormenSchema = {
 		type: { optional: true , type: 'string' } ,
 		optional: { optional: true , type: 'boolean' } ,
 		default: { optional: true } ,
-		sanitize: { optional: true , type: 'array' , of: { type: 'string' } } ,
+		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
 		filter: { optional: true , type: 'strictObject' } ,
 		
 		// Top-level filters
@@ -978,22 +984,25 @@ var doormenSchema = {
 	} ,
 } ;
 
+var doormenSchema = [
+	singleSchema ,
+	{ type: 'array', of: singleSchema }
+] ;
+
 // Recursivity
-doormenSchema.properties.of = doormenSchema ;
+singleSchema.properties.of = doormenSchema ;
 
-doormenSchema.properties.properties = {
+singleSchema.properties.properties = {
 	optional: true,
 	type: 'strictObject',
 	of: doormenSchema
 } ;
 
-doormenSchema.properties.elements = {
+singleSchema.properties.elements = {
 	optional: true,
 	type: 'strictObject',
 	of: doormenSchema
 } ;
-
-
 
 module.exports = function( schema ) 
 {

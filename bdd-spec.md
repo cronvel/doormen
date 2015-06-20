@@ -1358,13 +1358,6 @@ doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
 
 <a name="purify"></a>
 # Purify
-Purify a basic schema.
-
-```js
-doormen.equals( doormen.purifySchema( { type: 'string' } ) , { type: 'string' } ) ;
-doormen.equals( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) , { type: 'string' } ) ;
-```
-
 <a name="export-mode"></a>
 # Export mode
 .export() and 'of'.
