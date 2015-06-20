@@ -1339,6 +1339,7 @@ describe( "Purify" , function() {
 		
 		doormen.equals( doormen.purifySchema(
 			{
+				extraProperties: true,
 				properties: {
 					a: { optional: true , type: 'object' , of: { type: 'string' } },
 					b: { type: 'array' , sanitize: 'toArray' , of: { type: 'integer' , min: 4 , max: 7 , random: 'stuff' } },
@@ -1353,10 +1354,14 @@ describe( "Purify" , function() {
 					k: { instanceOf: 'Date' },
 					l: { instanceOf: Date },
 					m: { of: [ { type: 'array' } , { type: 'string' } ] },
+					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
+					o: { elements: [ { type: 'array' } , { type: 'string' } ] },
+					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 				}
 			}
 			) ,
 			{
+				extraProperties: true,
 				properties: {
 					a: { optional: true , type: 'object' , of: { type: 'string' } },
 					b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } },
@@ -1371,6 +1376,9 @@ describe( "Purify" , function() {
 					k: { instanceOf: 'Date' },
 					l: { instanceOf: Date },
 					m: { of: [ { type: 'array' } , { type: 'string' } ] },
+					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
+					o: { elements: [ { type: 'array' } , { type: 'string' } ] },
+					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 				}
 			}
 		) ;
