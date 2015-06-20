@@ -63,7 +63,7 @@ function doormen( data , schema , options )
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
-		throw new TypeError( 'Bad schema, it should be an object!' ) ;
+		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
 	
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
@@ -117,6 +117,7 @@ doormen.sanitizer = require( './sanitizer.js' ) ;
 doormen.filter = require( './filter.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
+doormen.purifySchema = require( './purifySchema.js' ) ;
 //doormen.expect = require( './expect.js' ) ;
 
 
@@ -127,11 +128,30 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 function check( data_ , schema , element )
 {
-	var i , key , sanitizerList , hashmap , data = data_ , src ;
+	var i , key , sanitizerList , hashmap , data = data_ , src , returnValue ;
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
-		throw new doormen.SchemaError( element.path + " is not a schema (not an object)." ) ;
+		throw new doormen.SchemaError( element.path + " is not a schema (not an object or an array of object)." ) ;
+	}
+	
+	// 0) Arrays are alternatives
+	if ( Array.isArray( schema ) )
+	{
+		for ( i = 0 ; i < schema.length ; i ++ )
+		{
+			try {
+				data = doormen( data_ , schema[ i ] , element , { export: true } ) ;
+			}
+			catch( error ) {
+				continue ;
+			}
+			
+			return data ;
+		}
+		
+		this.validatorError( element.path + " does not validate any schema alternatives." , element ) ;
+		return ;
 	}
 	
 	// 1) if the data has a default value or is optional, and it's value is null or undefined, it's ok!
@@ -277,10 +297,13 @@ function check( data_ , schema , element )
 		{
 			for ( key in schema.properties )
 			{
-				data[ key ] = this.check( src[ key ] , schema.properties[ key ] , {
+				returnValue = this.check( src[ key ] , schema.properties[ key ] , {
 					path: element.path + '.' + key ,
 					key: key
 				} ) ;
+				
+				// Do not create new properties with undefined
+				if ( returnValue !== undefined || key in data ) { data[ key ] = returnValue ; }
 			}
 			
 			hashmap = schema.properties ;
@@ -425,7 +448,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./sanitizer.js":6,"./sentence.js":7,"./typeChecker.js":8}],3:[function(require,module,exports){
+},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./purifySchema.js":6,"./sanitizer.js":7,"./sentence.js":8,"./typeChecker.js":9}],3:[function(require,module,exports){
 (function (global){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -925,6 +948,92 @@ var doormen = require( './doormen.js' ) ;
 
 
 
+var doormenSchema = {
+	optional: true ,	// For recursivity...
+	type: 'strictObject' ,
+	extraProperties: true ,
+	properties: {
+		type: { optional: true , type: 'string' } ,
+		optional: { optional: true , type: 'boolean' } ,
+		default: { optional: true } ,
+		sanitize: { optional: true , type: 'array' , of: { type: 'string' } } ,
+		filter: { optional: true , type: 'strictObject' } ,
+		
+		// Top-level filters
+		instanceOf: { optional: true , type: 'classId' } ,
+		min: { optional: true , type: 'integer' } ,
+		max: { optional: true , type: 'integer' } ,
+		length: { optional: true , type: 'integer' } ,
+		minLength: { optional: true , type: 'integer' } ,
+		maxLength: { optional: true , type: 'integer' } ,
+		match: { optional: true , type: 'regexpCompatible' } ,
+		in: {
+			optional: true ,
+			type: 'array'
+		} ,
+		notIn: {
+			optional: true ,
+			type: 'array'
+		} ,
+	} ,
+} ;
+
+// Recursivity
+doormenSchema.properties.of = doormenSchema ;
+
+doormenSchema.properties.properties = {
+	optional: true,
+	type: 'strictObject',
+	of: doormenSchema
+} ;
+
+doormenSchema.properties.elements = {
+	optional: true,
+	type: 'strictObject',
+	of: doormenSchema
+} ;
+
+
+
+module.exports = function( schema ) 
+{
+	return doormen.export( schema , doormenSchema ) ;
+} ;
+
+
+
+},{"./doormen.js":2}],7:[function(require,module,exports){
+/*
+	Copyright (c) 2015 Cédric Ronvel 
+	
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+
+
+// Load modules
+var doormen = require( './doormen.js' ) ;
+
+
+
 var sanitizer = {} ;
 module.exports = sanitizer ;
 
@@ -1058,7 +1167,7 @@ sanitizer.dashToCamelCase = function dashToCamelCase( data )
 
 
 
-},{"./doormen.js":2}],7:[function(require,module,exports){
+},{"./doormen.js":2}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -1270,7 +1379,7 @@ module.exports = sentence ;
 
 
 
-},{"./doormen.js":2}],8:[function(require,module,exports){
+},{"./doormen.js":2}],9:[function(require,module,exports){
 (function (Buffer){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -1318,7 +1427,6 @@ var check = {
 	array: function( data ) { return Array.isArray( data ) ; } ,
 	error: function( data ) { return data instanceof Error ; } ,
 	date: function( data ) { return data instanceof Date ; } ,
-	regexp: function( data ) { return data instanceof RegExp ; } ,
 	"arguments": function( data ) { return Object.prototype.toString.call( data ) === '[object Arguments]' ; } ,
 	
 	buffer: function( data )
@@ -1330,7 +1438,24 @@ var check = {
 		catch ( error ) {
 			return false ;
 		}
-	}
+	} ,
+	
+	// Mixed
+	"strictObject": function( data ) { return data && typeof data === 'object' && ! Array.isArray( data ) ; } ,
+	"classId": function( data ) { return typeof data === 'function' || ( typeof data === 'string' && data.length ) ; } ,
+	
+	regexp: function( data ) {
+		if ( data instanceof RegExp ) { return true ; }
+		if ( typeof data !== 'string' ) { return false ; }
+		
+		try {
+			new RegExp( data ) ;
+			return true ;
+		}
+		catch ( error ) {
+			return false ;
+		}
+	} ,
 } ;
 
 module.exports = check ;
@@ -1529,7 +1654,7 @@ check.email = function checkEmail( data )
 
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":9}],9:[function(require,module,exports){
+},{"buffer":10}],10:[function(require,module,exports){
 
 },{}]},{},[1])(1)
 });
