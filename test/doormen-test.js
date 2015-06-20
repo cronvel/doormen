@@ -1352,6 +1352,7 @@ describe( "Purify" , function() {
 					j: { match: "a regexp compatible string" },
 					k: { instanceOf: 'Date' },
 					l: { instanceOf: Date },
+					m: { of: [ { type: 'array' } , { type: 'string' } ] },
 				}
 			}
 			) ,
@@ -1369,6 +1370,7 @@ describe( "Purify" , function() {
 					j: { match: "a regexp compatible string" },
 					k: { instanceOf: 'Date' },
 					l: { instanceOf: Date },
+					m: { of: [ { type: 'array' } , { type: 'string' } ] },
 				}
 			}
 		) ;
