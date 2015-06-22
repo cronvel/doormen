@@ -494,11 +494,11 @@ module.exports = filter ;
 
 filter.instanceOf = function instanceOf( data , params , element )
 {
-	if ( typeof params === 'string' ) { params = global[ params ] ; }
+	if ( typeof params === 'string' ) { params = doormen.isBrowser ? window[ params ] : global[ params ] ; }
 	
 	if ( typeof params !== 'function' )
 	{
-		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'instanceOf' should be a function." ) ;
+		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'instanceOf' should be a function or a global function's name." ) ;
 	}
 	
 	if ( ! ( data instanceof params ) )
