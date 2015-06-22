@@ -664,11 +664,16 @@ doormen( function(){} , { type: 'classId' } ) ;
 'instanceOf' should validate object accordingly.
 
 ```js
+if ( doormen.isBrowser ) { window[ 'MyClass' ] = function MyClass(){} ; }
+else { global[ 'MyClass' ] = function MyClass(){} ; }
+
 doormen( new Date() , { instanceOf: Date } ) ;
 doormen( new Array() , { instanceOf: Array } ) ;	// jshint ignore:line
-function MyClass(){}
 doormen( new MyClass() , { instanceOf: MyClass } ) ;
 doormen( new MyClass() , { instanceOf: Object } ) ;
+
+doormen( new MyClass() , { instanceOf: 'MyClass' } ) ;
+doormen( new MyClass() , { instanceOf: 'Object' } ) ;
 ```
 
 min filter should validate accordingly, non-number should throw.
