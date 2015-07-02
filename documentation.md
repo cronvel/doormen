@@ -4,8 +4,6 @@
 
 Validate, sanitize and assert: the silver bullet of data!
 
-[![browser support](https://ci.testling.com/cronvel/doormen.png)](https://ci.testling.com/cronvel/doormen)
-
 Early alpha.
 
 **/!\\ This documentation is still a Work In Progress /!\\**
@@ -27,6 +25,7 @@ Early alpha.
 * match
 * in
 * notIn
+* when
 * properties `object` of schema, it iterates through each properties and checks that they all match their own schema
 * elements `Array` same than properties but for arrays
 * only `boolean` used in conjunction with *properties* or *elements*, it checks that no properties other than those listed are present
