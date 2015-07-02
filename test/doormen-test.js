@@ -1004,6 +1004,179 @@ describe( "Children and recursivity" , function() {
 	} ) ;
 } ) ;
 
+	
+
+describe( "Properties having 'when'" , function() {
+	
+	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
+		
+		var schema = {
+			properties: {
+				a: {
+					type: 'number'
+				},
+				b: {
+					type: 'string' ,
+					when: {
+						sibling: 'a',
+						verify: { in: [ 1 ] },
+						set: undefined
+					}
+				}
+			}
+		} ;
+		
+		doormen.equals(
+			doormen( { a: 0, b: 'text' } , schema ) ,
+			{ a: 0, b: 'text' }
+		) ;
+		
+		doormen.equals(
+			doormen( { a: 1, b: 'text' } , schema ) ,
+			{ a: 1 }
+		) ;
+		
+		doormen.not( { a: 0 } , schema ) ;
+		
+		doormen.equals(
+			doormen( { a: 1 } , schema ) ,
+			{ a: 1 }
+		) ;
+		
+		
+		var schema = {
+			properties: {
+				b: {
+					type: 'string' ,
+					when: {
+						sibling: 'a',
+						verify: { in: [ 1 ] },
+						set: undefined
+					}
+				},
+				a: {
+					type: 'number'
+				}
+			}
+		} ;
+		
+		doormen.equals(
+			doormen( { a: 0, b: 'text' } , schema ) ,
+			{ a: 0, b: 'text' }
+		) ;
+		
+		doormen.equals(
+			doormen( { a: 1, b: 'text' } , schema ) ,
+			{ a: 1 }
+		) ;
+		
+		doormen.not( { a: 0 } , schema ) ;
+		
+		doormen.equals(
+			doormen( { a: 1 } , schema ) ,
+			{ a: 1 }
+		) ;
+	} ) ;
+	
+	it( "complex dependencies tests" , function() {
+		
+		var schema = {
+			properties: {
+				c: {
+					type: 'string' ,
+					when: {
+						sibling: 'b',
+						verify: { in: [ undefined , 'text' ] },
+						set: undefined
+					}
+				},
+				b: {
+					type: 'string' ,
+					when: {
+						sibling: 'a',
+						verify: { in: [ 1 ] },
+						set: undefined
+					}
+				},
+				a: {
+					type: 'number'
+				}
+			}
+		} ;
+		
+		doormen.equals(
+			doormen( { a: 0, b: 'text', c: 'toto' } , schema ) ,
+			{ a: 0, b: 'text' }
+		) ;
+		
+		doormen.equals(
+			doormen( { a: 0, b: 'text' } , schema ) ,
+			{ a: 0, b: 'text' }
+		) ;
+		
+		doormen.equals(
+			doormen( { a: 1, b: 'text' } , schema ) ,
+			{ a: 1 }
+		) ;
+		
+		doormen.equals(
+			doormen( { a: 1, b: undefined } , schema ) ,
+			{ a: 1 }
+		) ;
+		
+		doormen.not( { a: 0, b: undefined } , schema ) ;
+		doormen.not( { a: 0 } , schema ) ;
+		
+		doormen.equals(
+			doormen( { a: 1 } , schema ) ,
+			{ a: 1 }
+		) ;
+	} ) ;
+	
+	it( "when circular 'when' properties exists, it should throw" , function() {
+		
+		var schema = {
+			properties: {
+				a: {
+					type: 'number',
+					when: {
+						sibling: 'b',
+						verify: { in: [ 'text' ] },
+						set: undefined
+					}
+				},
+				b: {
+					type: 'string' ,
+					when: {
+						sibling: 'a',
+						verify: { in: [ 1 ] },
+						set: undefined
+					}
+				}
+			}
+		} ;
+		
+		// Circular 'when' throw
+		doormen.not( { a: 0, b: 'text' } , schema ) ;
+		
+		var schema = {
+			properties: {
+				a: {
+					type: 'number',
+					when: {
+						sibling: 'a',
+						verify: { in: [ 1 ] },
+						set: undefined
+					}
+				}
+			}
+		} ;
+		
+		// Circular 'when' throw
+		doormen.not( { a: 0, b: 'text' } , schema ) ;
+	} ) ;
+} ) ;
+
 
 
 describe( "Numbers meta types" , function() {
