@@ -70,6 +70,62 @@ Common meta types:
 
 
 
+try
+catch
+try
+try
+catch
+try
+postpone: b
+try
+catch
+postpone: b
+try
+postpone: b
+try
+catch
+postpone: b
+try
+postpone: c
+postpone: b
+postpone: c
+try
+catch
+try
+postpone: c
+postpone: b
+postpone: c
+try
+catch
+try
+postpone: c
+postpone: b
+postpone: c
+try
+try
+postpone: c
+postpone: b
+postpone: c
+try
+try
+postpone: c
+postpone: b
+postpone: c
+try
+catch
+postpone: c
+postpone: b
+postpone: c
+try
+catch
+postpone: c
+postpone: b
+postpone: c
+try
+try
+postpone: a
+postpone: b
+postpone: a
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -80,6 +136,7 @@ Common meta types:
    - [Top-level filters](#top-level-filters)
    - [Filters](#filters)
    - [Children and recursivity](#children-and-recursivity)
+   - [Properties having 'when'](#properties-having-when)
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
@@ -1091,6 +1148,179 @@ doormen.not( 'text' , schema ) ;
 doormen.not( 5 , schema ) ;
 doormen.not( null , schema ) ;
 doormen.not( undefined , schema ) ;
+```
+
+<a name="properties-having-when"></a>
+# Properties having 'when'
+when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'.
+
+```js
+var schema = {
+	properties: {
+		a: {
+			type: 'number'
+		},
+		b: {
+			type: 'string' ,
+			when: {
+				sibling: 'a',
+				verify: { in: [ 1 ] },
+				set: undefined
+			}
+		}
+	}
+} ;
+
+doormen.equals(
+	doormen( { a: 0, b: 'text' } , schema ) ,
+	{ a: 0, b: 'text' }
+) ;
+
+doormen.equals(
+	doormen( { a: 1, b: 'text' } , schema ) ,
+	{ a: 1 }
+) ;
+
+doormen.not( { a: 0 } , schema ) ;
+
+doormen.equals(
+	doormen( { a: 1 } , schema ) ,
+	{ a: 1 }
+) ;
+
+
+var schema = {
+	properties: {
+		b: {
+			type: 'string' ,
+			when: {
+				sibling: 'a',
+				verify: { in: [ 1 ] },
+				set: undefined
+			}
+		},
+		a: {
+			type: 'number'
+		}
+	}
+} ;
+
+doormen.equals(
+	doormen( { a: 0, b: 'text' } , schema ) ,
+	{ a: 0, b: 'text' }
+) ;
+
+doormen.equals(
+	doormen( { a: 1, b: 'text' } , schema ) ,
+	{ a: 1 }
+) ;
+
+doormen.not( { a: 0 } , schema ) ;
+
+doormen.equals(
+	doormen( { a: 1 } , schema ) ,
+	{ a: 1 }
+) ;
+```
+
+complex dependencies tests.
+
+```js
+var schema = {
+	properties: {
+		c: {
+			type: 'string' ,
+			when: {
+				sibling: 'b',
+				verify: { in: [ undefined , 'text' ] },
+				set: undefined
+			}
+		},
+		b: {
+			type: 'string' ,
+			when: {
+				sibling: 'a',
+				verify: { in: [ 1 ] },
+				set: undefined
+			}
+		},
+		a: {
+			type: 'number'
+		}
+	}
+} ;
+
+doormen.equals(
+	doormen( { a: 0, b: 'text', c: 'toto' } , schema ) ,
+	{ a: 0, b: 'text' }
+) ;
+
+doormen.equals(
+	doormen( { a: 0, b: 'text' } , schema ) ,
+	{ a: 0, b: 'text' }
+) ;
+
+doormen.equals(
+	doormen( { a: 1, b: 'text' } , schema ) ,
+	{ a: 1 }
+) ;
+
+doormen.equals(
+	doormen( { a: 1, b: undefined } , schema ) ,
+	{ a: 1 }
+) ;
+
+doormen.not( { a: 0, b: undefined } , schema ) ;
+doormen.not( { a: 0 } , schema ) ;
+
+doormen.equals(
+	doormen( { a: 1 } , schema ) ,
+	{ a: 1 }
+) ;
+```
+
+when circular 'when' properties exists, it should throw.
+
+```js
+var schema = {
+	properties: {
+		a: {
+			type: 'number',
+			when: {
+				sibling: 'b',
+				verify: { in: [ 'text' ] },
+				set: undefined
+			}
+		},
+		b: {
+			type: 'string' ,
+			when: {
+				sibling: 'a',
+				verify: { in: [ 1 ] },
+				set: undefined
+			}
+		}
+	}
+} ;
+
+// Circular 'when' throw
+doormen.not( { a: 0, b: 'text' } , schema ) ;
+
+var schema = {
+	properties: {
+		a: {
+			type: 'number',
+			when: {
+				sibling: 'a',
+				verify: { in: [ 1 ] },
+				set: undefined
+			}
+		}
+	}
+} ;
+
+// Circular 'when' throw
+doormen.not( { a: 0, b: 'text' } , schema ) ;
 ```
 
 <a name="numbers-meta-types"></a>
