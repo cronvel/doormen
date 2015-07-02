@@ -332,8 +332,7 @@ function check( data_ , schema , element )
 						if (
 							typeof when !== 'object' ||
 							typeof when.sibling !== 'string' ||
-							! when.verify || typeof when.verify !== 'object' ||
-							! ( 'set' in when )
+							! when.verify || typeof when.verify !== 'object'
 						)
 						{
 							throw new doormen.SchemaError( element.path + '.' + key + ".when should be an object with a 'sibling' (string), 'verify' (schema object) and 'set' properties." ) ;
@@ -1047,6 +1046,15 @@ var singleSchema = {
 			optional: true ,
 			type: 'array'
 		} ,
+		when: {
+			optional: true ,
+			type: 'strictObject' ,
+			properties: {
+				sibling: { type: 'string' } ,
+				//verify: // recursive
+				set: { optional: true }
+			}
+		} ,
 	} ,
 } ;
 
@@ -1076,6 +1084,10 @@ singleSchema.properties.elements = {
 	type: 'array',
 	of: doormenSchema
 } ;
+
+singleSchema.properties.when.properties.verify = doormenSchema ;
+
+
 
 module.exports = function( schema ) 
 {

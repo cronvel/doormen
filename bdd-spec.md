@@ -1620,6 +1620,7 @@ doormen.equals( doormen.purifySchema(
 			o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
+			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
 		}
 	}
 	) ,
@@ -1643,6 +1644,7 @@ doormen.equals( doormen.purifySchema(
 			o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
+			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
 		}
 	}
 ) ;
