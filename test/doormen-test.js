@@ -835,24 +835,24 @@ describe( "Filters" , function() {
 	} ) ;
 	
 	it( "'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw" , function() {
-		doormen.not( 10 , { filter: { lesserThan: 3 } } ) ;
-		doormen( 2.999 , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( 3 , { filter: { lesserThan: 3 } } ) ;
-		doormen( 1 , { filter: { lesserThan: 3 } } ) ;
-		doormen( 0 , { filter: { lesserThan: 3 } } ) ;
-		doormen( -10 , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( Infinity , { filter: { lesserThan: 3 } } ) ;
-		doormen( -Infinity , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( -Infinity , { filter: { lesserThan: -Infinity } } ) ;
-		doormen.not( NaN , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( true , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( false , { filter: { lesserThan: 3 } } ) ;
-		doormen.not( '1' , { filter: { lesserThan: 3 } } ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , 10 ) ;
+		doormen( { filter: { lesserThan: 3 } } , 2.999 ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , 3 ) ;
+		doormen( { filter: { lesserThan: 3 } } , 1 ) ;
+		doormen( { filter: { lesserThan: 3 } } , 0 ) ;
+		doormen( { filter: { lesserThan: 3 } } , -10 ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , Infinity ) ;
+		doormen( { filter: { lesserThan: 3 } } , -Infinity ) ;
+		doormen.not( { filter: { lesserThan: -Infinity } } , -Infinity ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , NaN ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , true ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , false ) ;
+		doormen.not( { filter: { lesserThan: 3 } } , '1' ) ;
 		
-		doormen( 2.999 , { filter: { lt: 3 } } ) ;
-		doormen.not( 3 , { filter: { lt: 3 } } ) ;
-		doormen( 2.999 , { filter: { '<': 3 } } ) ;
-		doormen.not( 3 , { filter: { '<': 3 } } ) ;
+		doormen( { filter: { lt: 3 } } , 2.999 ) ;
+		doormen.not( { filter: { lt: 3 } } , 3 ) ;
+		doormen( { filter: { '<': 3 } } , 2.999 ) ;
+		doormen.not( { filter: { '<': 3 } } , 3 ) ;
 	} ) ;
 } ) ;
 
@@ -867,26 +867,26 @@ describe( "Children and recursivity" , function() {
 		} ;
 		
 		// Object
-		doormen( { b: 'text' } , schema ) ;
-		doormen.not( { a: 1 } , schema ) ;
-		doormen.not( { a: 1, b: 'text' } , schema ) ;
-		doormen.not( { a: 'text', b: 3 } , schema ) ;
-		doormen( { a: 'text', b: 'string' } , schema ) ;
-		doormen.not( { A: 'TEXT', b: 'text' , c: undefined } , schema ) ;
+		doormen( schema , { b: 'text' } ) ;
+		doormen.not( schema , { a: 1 } ) ;
+		doormen.not( schema , { a: 1, b: 'text' } ) ;
+		doormen.not( schema , { a: 'text', b: 3 } ) ;
+		doormen( schema , { a: 'text', b: 'string' } ) ;
+		doormen.not( schema , { A: 'TEXT', b: 'text' , c: undefined } ) ;
 		
 		// Array
-		doormen( [ 'text' ] , schema ) ;
-		doormen( [] , schema ) ;
-		doormen( [ 'text' , 'string' ] , schema ) ;
-		doormen.not( [ 'text' , 'string' , null ] , schema ) ;
-		doormen.not( [ 1 , 'text' , 'string' ] , schema ) ;
-		doormen.not( [ 'text' , 'string' , null ] , schema ) ;
-		doormen.not( [ true ] , schema ) ;
+		doormen( schema , [ 'text' ] ) ;
+		doormen( schema , [] ) ;
+		doormen( schema , [ 'text' , 'string' ] ) ;
+		doormen.not( schema , [ 'text' , 'string' , null ] ) ;
+		doormen.not( schema , [ 1 , 'text' , 'string' ] ) ;
+		doormen.not( schema , [ 'text' , 'string' , null ] ) ;
+		doormen.not( schema , [ true ] ) ;
 		
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "when 'properties' is an array, it should check if the value has all listed properties, no extra properties are allowed" , function() {
@@ -895,16 +895,16 @@ describe( "Children and recursivity" , function() {
 			properties: [ 'a' , 'b' ]
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen( { a: 'text', b: 3 } , schema ) ;
-		doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( { a: 1 } , schema ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen( schema , { a: 'text', b: 3 } ) ;
+		doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , { a: 1 } ) ;
 		
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "when 'properties' is an array and 'extraProperties' is set, it should allow non-listed extra-properties" , function() {
@@ -914,16 +914,16 @@ describe( "Children and recursivity" , function() {
 			extraProperties: true
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen( { a: 'text', b: 3 } , schema ) ;
-		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( { a: 1 } , schema ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen( schema , { a: 'text', b: 3 } ) ;
+		doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , { a: 1 } ) ;
 		
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "when 'properties' is an object, it should perform the check recursively for each listed child, no extra properties are allowed" , function() {
@@ -935,16 +935,16 @@ describe( "Children and recursivity" , function() {
 			}
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen.not( { a: 'text', b: 3 } , schema ) ;
-		doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( { a: 1 } , schema ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen.not( schema , { a: 'text', b: 3 } ) ;
+		doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , { a: 1 } ) ;
 		
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "when 'properties' is an object and 'extraProperties' is set, it should allow extra-properties" , function() {
@@ -957,16 +957,16 @@ describe( "Children and recursivity" , function() {
 			extraProperties: true
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen.not( { a: 'text', b: 3 } , schema ) ;
-		doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( { a: 1 } , schema ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen.not( schema , { a: 'text', b: 3 } ) ;
+		doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , { a: 1 } ) ;
 		
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "'elements' should perform the check recursively for each children elements, using a specific schema for each one, extra-element are not allowed" , function() {
@@ -979,18 +979,18 @@ describe( "Children and recursivity" , function() {
 			]
 		} ;
 		
-		doormen( [ 'text' , 3 , false ] , schema ) ;
-		doormen.not( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
-		doormen.not( [] , schema ) ;
-		doormen.not( [ 'text' , 3 ] , schema ) ;
-		doormen.not( [ true ] , schema ) ;
+		doormen( schema , [ 'text' , 3 , false ] ) ;
+		doormen.not( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
+		doormen.not( schema , [] ) ;
+		doormen.not( schema , [ 'text' , 3 ] ) ;
+		doormen.not( schema , [ true ] ) ;
 		
-		doormen.not( {} , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , {} ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 	
 	it( "when 'elements' is used in conjunction with 'extraElements', extra-elements are allowed" , function() {
@@ -1004,18 +1004,18 @@ describe( "Children and recursivity" , function() {
 			extraElements: true
 		} ;
 		
-		doormen( [ 'text' , 3 , false ] , schema ) ;
-		doormen( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
-		doormen.not( [] , schema ) ;
-		doormen.not( [ 'text' , 3 ] , schema ) ;
-		doormen.not( [ true ] , schema ) ;
+		doormen( schema , [ 'text' , 3 , false ] ) ;
+		doormen( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
+		doormen.not( schema , [] ) ;
+		doormen.not( schema , [ 'text' , 3 ] ) ;
+		doormen.not( schema , [ true ] ) ;
 		
-		doormen.not( {} , schema ) ;
-		doormen.not( { b: 'text' } , schema ) ;
-		doormen.not( 'text' , schema ) ;
-		doormen.not( 5 , schema ) ;
-		doormen.not( null , schema ) ;
-		doormen.not( undefined , schema ) ;
+		doormen.not( schema , {} ) ;
+		doormen.not( schema , { b: 'text' } ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
 	} ) ;
 } ) ;
 
@@ -1023,7 +1023,7 @@ describe( "Children and recursivity" , function() {
 
 describe( "Properties having 'when'" , function() {
 	
-	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
+	it( "zzz when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
 		
 		var schema = {
 			properties: {
@@ -1042,19 +1042,20 @@ describe( "Properties having 'when'" , function() {
 		} ;
 		
 		doormen.equals(
-			doormen( { a: 0, b: 'text' } , schema ) ,
+			doormen( schema , { a: 0, b: 'text' } ) ,
 			{ a: 0, b: 'text' }
 		) ;
 		
+		console.log( "TOFIX: " , doormen( schema , { a: 1, b: 'text' } ) ) ;
 		doormen.equals(
-			doormen( { a: 1, b: 'text' } , schema ) ,
+			doormen( schema , { a: 1, b: 'text' } ) ,
 			{ a: 1 }
 		) ;
 		
-		doormen.not( { a: 0 } , schema ) ;
+		doormen.not( schema , { a: 0 } ) ;
 		
 		doormen.equals(
-			doormen( { a: 1 } , schema ) ,
+			doormen( schema , { a: 1 } ) ,
 			{ a: 1 }
 		) ;
 		
@@ -1076,19 +1077,19 @@ describe( "Properties having 'when'" , function() {
 		} ;
 		
 		doormen.equals(
-			doormen( { a: 0, b: 'text' } , schema ) ,
+			doormen( schema , { a: 0, b: 'text' } ) ,
 			{ a: 0, b: 'text' }
 		) ;
 		
 		doormen.equals(
-			doormen( { a: 1, b: 'text' } , schema ) ,
+			doormen( schema , { a: 1, b: 'text' } ) ,
 			{ a: 1 }
 		) ;
 		
-		doormen.not( { a: 0 } , schema ) ;
+		doormen.not( schema , { a: 0 } ) ;
 		
 		doormen.equals(
-			doormen( { a: 1 } , schema ) ,
+			doormen( schema , { a: 1 } ) ,
 			{ a: 1 }
 		) ;
 	} ) ;
@@ -1120,30 +1121,30 @@ describe( "Properties having 'when'" , function() {
 		} ;
 		
 		doormen.equals(
-			doormen( { a: 0, b: 'text', c: 'toto' } , schema ) ,
+			doormen( schema , { a: 0, b: 'text', c: 'toto' } ) ,
 			{ a: 0, b: 'text' }
 		) ;
 		
 		doormen.equals(
-			doormen( { a: 0, b: 'text' } , schema ) ,
+			doormen( schema , { a: 0, b: 'text' } ) ,
 			{ a: 0, b: 'text' }
 		) ;
 		
 		doormen.equals(
-			doormen( { a: 1, b: 'text' } , schema ) ,
+			doormen( schema , { a: 1, b: 'text' } ) ,
 			{ a: 1 }
 		) ;
 		
 		doormen.equals(
-			doormen( { a: 1, b: undefined } , schema ) ,
+			doormen( schema , { a: 1, b: undefined } ) ,
 			{ a: 1 }
 		) ;
 		
-		doormen.not( { a: 0, b: undefined } , schema ) ;
-		doormen.not( { a: 0 } , schema ) ;
+		doormen.not( schema , { a: 0, b: undefined } ) ;
+		doormen.not( schema , { a: 0 } ) ;
 		
 		doormen.equals(
-			doormen( { a: 1 } , schema ) ,
+			doormen( schema , { a: 1 } ) ,
 			{ a: 1 }
 		) ;
 	} ) ;
@@ -1172,7 +1173,7 @@ describe( "Properties having 'when'" , function() {
 		} ;
 		
 		// Circular 'when' throw
-		doormen.not( { a: 0, b: 'text' } , schema ) ;
+		doormen.not( schema , { a: 0, b: 'text' } ) ;
 		
 		var schema = {
 			properties: {
@@ -1188,7 +1189,7 @@ describe( "Properties having 'when'" , function() {
 		} ;
 		
 		// Circular 'when' throw
-		doormen.not( { a: 0, b: 'text' } , schema ) ;
+		doormen.not( schema , { a: 0, b: 'text' } ) ;
 	} ) ;
 } ) ;
 
@@ -1400,10 +1401,10 @@ describe( "Sanitize" , function() {
 			properties: [ 'a' , 'b' ]
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen( { a: 'text', b: 3 } , schema ) ;
-		doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
-		doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen( schema , { a: 'text', b: 3 } ) ;
+		doormen.equals( doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
+		doormen.equals( doormen( schema , { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
 		
 		
 		schema = {
@@ -1414,10 +1415,10 @@ describe( "Sanitize" , function() {
 			}
 		} ;
 		
-		doormen( { a: 1, b: 'text' } , schema ) ;
-		doormen.not( { a: 'text', b: 3 } , schema ) ;
-		doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
-		doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+		doormen( schema , { a: 1, b: 'text' } ) ;
+		doormen.not( schema , { a: 'text', b: 3 } ) ;
+		doormen.equals( doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
+		doormen.equals( doormen( schema , { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
 	} ) ;
 	
 	it( "should trim a string accordingly" , function() {
@@ -1478,13 +1479,13 @@ describe( "Full report mode" , function() {
 			of: { type: 'string' , sanitize: 'trim' }
 		} ;
 		
-		report = doormen.report( { a: 'abc', b: '  def  ' } , schema ) ;
+		report = doormen.report( { a: 'abc', b: '  def  ' } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , true ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 'def' } ) ;
 		doormen.equals( report.errors.length , 0 ) ;
 		
-		report = doormen.report( { a: true, b: 3 } , schema ) ;
+		report = doormen.report( { a: true, b: 3 } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: true, b: 3 } ) ;
@@ -1498,7 +1499,7 @@ describe( "Full report mode" , function() {
 			}
 		} ;
 		
-		report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , schema ) ;
+		report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
@@ -1598,11 +1599,11 @@ describe( "Export mode" , function() {
 		} ;
 		
 		data = { a: 'abc', b: '  def  ' } ;
-		returned = doormen.export( data , schema ) ;
+		returned = doormen.export( data ) ;
 		doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
 		doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
 		
-		returned = doormen( data , schema ) ;
+		returned = doormen( schema , data ) ;
 		doormen.equals( data , { a: 'abc', b: 'def' } ) ;
 		doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
 	} ) ;
@@ -1619,26 +1620,26 @@ describe( "Export mode" , function() {
 		} ;
 		
 		data = { a: 'abc', b: '  def  ' } ;
-		returned = doormen.export( data , schema ) ;
+		returned = doormen.export( schema , data ) ;
 		doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
 		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 		
-		returned = doormen( data , schema ) ;
+		returned = doormen( schema , data ) ;
 		doormen.equals( data , { a: 'ABC', b: 'def' } ) ;
 		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 		
 		data = { a: 'abc', b: '  def  ', c: 'toto' } ;
 		doormen.shouldThrow( function() {
-			returned = doormen.export( data , schema ) ;
+			returned = doormen.export( schema , data ) ;
 		} ) ;
 		
 		schema.extraProperties = true ;
 		data = { a: 'abc', b: '  def  ', c: 'toto' } ;
-		returned = doormen.export( data , schema ) ;
+		returned = doormen.export( schema , data ) ;
 		doormen.equals( data , { a: 'abc', b: '  def  ', c: 'toto' } ) ;
 		doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 		
-		returned = doormen( data , schema ) ;
+		returned = doormen( schema , data ) ;
 		doormen.equals( data , { a: 'ABC', b: 'def', c: 'toto' } ) ;
 		doormen.equals( returned , { a: 'ABC', b: 'def', c: 'toto' } ) ;
 	} ) ;
@@ -1655,26 +1656,26 @@ describe( "Export mode" , function() {
 		} ;
 		
 		data = [ 'abc', '  def  ' ] ;
-		returned = doormen.export( data , schema ) ;
+		returned = doormen.export( schema , data ) ;
 		doormen.equals( data , [ 'abc', '  def  ' ] ) ;
 		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 		
-		returned = doormen( data , schema ) ;
+		returned = doormen( schema , data ) ;
 		doormen.equals( data , [ 'ABC', 'def' ] ) ;
 		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 		
 		data = [ 'abc', '  def  ', 'toto' ] ;
 		doormen.shouldThrow( function() {
-			returned = doormen.export( data , schema ) ;
+			returned = doormen.export( schema , data ) ;
 		} ) ;
 		
 		schema.extraElements = true ;
 		data = [ 'abc', '  def  ', 'toto' ] ;
-		returned = doormen.export( data , schema ) ;
+		returned = doormen.export( schema , data ) ;
 		doormen.equals( data , [ 'abc', '  def  ', 'toto' ] ) ;
 		doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 		
-		returned = doormen( data , schema ) ;
+		returned = doormen( schema , data ) ;
 		doormen.equals( data , [ 'ABC', 'def', 'toto' ] ) ;
 		doormen.equals( returned , [ 'ABC', 'def', 'toto' ] ) ;
 	} ) ;
@@ -1859,14 +1860,14 @@ describe( "Misc" , function() {
 			}
 		} ;
 		
-		doormen( {
+		doormen( userSchema , {
 			id: 'alacon',
 			name: 'Doug',
 			email: 'doug@java.net',
 			password: 'myJavaCodeIsFasterThanYourC!',
-		} , userSchema ) ;
+		} ) ;
 		
-		doormen( {
+		doormen( userSchema , {
 			id: 'alanoix',
 			name: 'Étienne Jabert',
 			email: 'etienne-jabert@java.net',
@@ -1874,7 +1875,7 @@ describe( "Misc" , function() {
 			contact: {
 				fax: '0142559833'
 			}
-		} , userSchema ) ;
+		} ) ;
 	} ) ;
 } ) ;
 	
