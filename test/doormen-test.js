@@ -87,7 +87,7 @@ describe( "Assertion utilities" , function() {
 		thrown = false ;
 		
 		try {
-			doormen.not( 'text' , { type: 'string' } ) ;
+			doormen.not( { type: 'string' } , 'text' ) ;
 		}
 		catch ( error ) {
 			thrown = true ;
@@ -99,7 +99,7 @@ describe( "Assertion utilities" , function() {
 		thrown = false ;
 		
 		try {
-			doormen.not( 1 , { type: 'string' } ) ;
+			doormen.not( { type: 'string' } , 1 ) ;
 		}
 		catch ( error ) {
 			thrown = true ;
@@ -239,93 +239,105 @@ describe( "Optional and default data" , function() {
 	
 	it( "when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate" , function() {
 		
-		doormen.not( null , { type: 'string' } ) ;
-		doormen( null , { optional: true, type: 'string' } ) ;
-		doormen.not( undefined , { type: 'string' } ) ;
-		doormen( undefined , { optional: true, type: 'string' } ) ;
+		doormen.not( { type: 'string' } , null ) ;
+		doormen( { optional: true, type: 'string' } , null ) ;
+		doormen.not( { type: 'string' } , undefined ) ;
+		doormen( { optional: true, type: 'string' } , undefined ) ;
 		
-		doormen( 'text' , { type: 'string' } ) ;
-		doormen( 'text' , { optional: true, type: 'string' } ) ;
-		doormen.not( 1 , { type: 'string' } ) ;
-		doormen.not( 1 , { optional: true, type: 'string' } ) ;
+		doormen( { type: 'string' } , 'text' ) ;
+		doormen( { optional: true, type: 'string' } , 'text' ) ;
+		doormen.not( { type: 'string' } , 1 ) ;
+		doormen.not( { optional: true, type: 'string' } , 1 ) ;
 		
-		doormen.not( {} , { properties: { a: { type: 'string' } } } ) ;
-		doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+		doormen.not( { properties: { a: { type: 'string' } } } , {} ) ;
+		doormen( { properties: { a: { optional: true, type: 'string' } } } , {} ) ;
 	} ) ;
 	
 	it( "missing optional properties should not be created (i.e. with undefined)." , function() {
 		
 		var result ;
 		
-		result = doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+		result = doormen( { properties: { a: { optional: true, type: 'string' } } } , {} ) ;
 		
 		// {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
 		// that a key is not defined, so we have to check it explicitly
 		
 		doormen.equals( 'a' in result , false ) ;
 		
-		result = doormen( {} , {
-			properties: {
-				a: { optional: true, type: 'string' },
-				b: { optional: true, type: 'string' },
-				c: {
-					optional: true,
-					properties: {
-						d: { optional: true, type: 'string' }
+		result = doormen( {
+				properties: {
+					a: { optional: true, type: 'string' },
+					b: { optional: true, type: 'string' },
+					c: {
+						optional: true,
+						properties: {
+							d: { optional: true, type: 'string' }
+						}
 					}
 				}
-			}
-		} ) ;
+			} ,
+			{}
+		) ;
+		
 		doormen.equals( 'a' in result , false ) ;
 		doormen.equals( 'b' in result , false ) ;
 		doormen.equals( 'c' in result , false ) ;
 		
-		result = doormen( { c: undefined } , {
-			properties: {
-				a: { optional: true, type: 'string' },
-				b: { optional: true, type: 'string' },
-				c: {
-					optional: true,
-					properties: {
-						d: { optional: true, type: 'string' }
+		result = doormen( {
+				properties: {
+					a: { optional: true, type: 'string' },
+					b: { optional: true, type: 'string' },
+					c: {
+						optional: true,
+						properties: {
+							d: { optional: true, type: 'string' }
+						}
 					}
 				}
-			}
-		} ) ;
+			} ,
+			{ c: undefined }
+		) ;
+		
 		doormen.equals( 'a' in result , false ) ;
 		doormen.equals( 'b' in result , false ) ;
 		doormen.equals( 'c' in result , true ) ;
 		doormen.equals( result.c , undefined ) ;
 		
-		result = doormen( { c: null } , {
-			properties: {
-				a: { optional: true, type: 'string' },
-				b: { optional: true, type: 'string' },
-				c: {
-					optional: true,
-					properties: {
-						d: { optional: true, type: 'string' }
+		result = doormen( {
+				properties: {
+					a: { optional: true, type: 'string' },
+					b: { optional: true, type: 'string' },
+					c: {
+						optional: true,
+						properties: {
+							d: { optional: true, type: 'string' }
+						}
 					}
 				}
-			}
-		} ) ;
+			} ,
+			{ c: null }
+		) ;
+		
 		doormen.equals( 'a' in result , false ) ;
 		doormen.equals( 'b' in result , false ) ;
 		doormen.equals( 'c' in result , true ) ;
 		doormen.equals( result.c , null ) ;
 		
-		result = doormen( { c: {} } , {
-			properties: {
-				a: { optional: true, type: 'string' },
-				b: { optional: true, type: 'string' },
-				c: {
-					optional: true,
-					properties: {
-						d: { optional: true, type: 'string' }
+		result = doormen( {
+				properties: {
+					a: { optional: true, type: 'string' },
+					b: { optional: true, type: 'string' },
+					c: {
+						optional: true,
+						properties: {
+							d: { optional: true, type: 'string' }
+						}
 					}
 				}
-			}
-		} ) ;
+			} ,
+			{ c: {} }
+		) ;
+		
 		doormen.equals( 'a' in result , false ) ;
 		doormen.equals( 'b' in result , false ) ;
 		doormen.equals( 'c' in result , true ) ;
@@ -333,23 +345,23 @@ describe( "Optional and default data" , function() {
 	} ) ;
 	
 	it( "when a data is null, undefined or unexistant, and a default value is specified in the schema, that default value should overwrite the original one" , function() {
-		doormen.equals( doormen( null , { type: 'string' , "default": 'default!' } ) , 'default!' ) ;
+		doormen.equals( doormen( { type: 'string' , "default": 'default!' } , null ) , 'default!' ) ;
 		doormen.equals(
 			doormen(
-				{ a: null } ,
-				{ properties: { a: { type: 'string' , "default": 'default!' } } } ) ,
+				{ properties: { a: { type: 'string' , "default": 'default!' } } } ,
+				{ a: null } ) ,
 			{ a: 'default!' }
 		) ;
 		doormen.equals(
 			doormen(
-				{ a: null, b: undefined } ,
-				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ,
+				{ a: null, b: undefined } ) ,
 			{ a: 'default!' , b: { c: 5 } }
 		) ;
 		doormen.equals(
 			doormen(
-				{} ,
-				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ,
+				{} ) ,
 			{ a: 'default!' , b: { c: 5 } }
 		) ;
 	} ) ;
@@ -361,101 +373,101 @@ describe( "Optional and default data" , function() {
 describe( "Basic types" , function() {
 	
 	it( "should validate undefined accordingly" , function() {
-		doormen( undefined , { type: 'undefined' } ) ;
-		doormen.not( null , { type: 'undefined' } ) ;
-		doormen.not( false , { type: 'undefined' } ) ;
-		doormen.not( true , { type: 'undefined' } ) ;
-		doormen.not( 0 , { type: 'undefined' } ) ;
-		doormen.not( 1 , { type: 'undefined' } ) ;
-		doormen.not( '' , { type: 'undefined' } ) ;
-		doormen.not( 'text' , { type: 'undefined' } ) ;
-		doormen.not( {} , { type: 'undefined' } ) ;
-		doormen.not( [] , { type: 'undefined' } ) ;
+		doormen( { type: 'undefined' } , undefined ) ;
+		doormen.not( { type: 'undefined' } , null ) ;
+		doormen.not( { type: 'undefined' } , false ) ;
+		doormen.not( { type: 'undefined' } , true ) ;
+		doormen.not( { type: 'undefined' } , 0 ) ;
+		doormen.not( { type: 'undefined' } , 1 ) ;
+		doormen.not( { type: 'undefined' } , '' ) ;
+		doormen.not( { type: 'undefined' } , 'text' ) ;
+		doormen.not( { type: 'undefined' } , {} ) ;
+		doormen.not( { type: 'undefined' } , [] ) ;
 	} ) ;
 	
 	it( "should validate null accordingly" , function() {
-		doormen.not( undefined , { type: 'null' } ) ;
-		doormen( null , { type: 'null' } ) ;
-		doormen.not( false , { type: 'null' } ) ;
-		doormen.not( true , { type: 'null' } ) ;
-		doormen.not( 0 , { type: 'null' } ) ;
-		doormen.not( 1 , { type: 'null' } ) ;
-		doormen.not( '' , { type: 'null' } ) ;
-		doormen.not( 'text' , { type: 'null' } ) ;
-		doormen.not( {} , { type: 'null' } ) ;
-		doormen.not( [] , { type: 'null' } ) ;
+		doormen.not( { type: 'null' } , undefined ) ;
+		doormen( { type: 'null' } , null ) ;
+		doormen.not( { type: 'null' } , false ) ;
+		doormen.not( { type: 'null' } , true ) ;
+		doormen.not( { type: 'null' } , 0 ) ;
+		doormen.not( { type: 'null' } , 1 ) ;
+		doormen.not( { type: 'null' } , '' ) ;
+		doormen.not( { type: 'null' } , 'text' ) ;
+		doormen.not( { type: 'null' } , {} ) ;
+		doormen.not( { type: 'null' } , [] ) ;
 	} ) ;
 	
 	it( "should validate boolean accordingly" , function() {
-		doormen.not( undefined , { type: 'boolean' } ) ;
-		doormen.not( null , { type: 'boolean' } ) ;
-		doormen( false , { type: 'boolean' } ) ;
-		doormen( true , { type: 'boolean' } ) ;
-		doormen.not( 0 , { type: 'boolean' } ) ;
-		doormen.not( 1 , { type: 'boolean' } ) ;
-		doormen.not( '' , { type: 'boolean' } ) ;
-		doormen.not( 'text' , { type: 'boolean' } ) ;
-		doormen.not( {} , { type: 'boolean' } ) ;
-		doormen.not( [] , { type: 'boolean' } ) ;
+		doormen.not( { type: 'boolean' } , undefined ) ;
+		doormen.not( { type: 'boolean' } , null ) ;
+		doormen( { type: 'boolean' } , false ) ;
+		doormen( { type: 'boolean' } , true ) ;
+		doormen.not( { type: 'boolean' } , 0 ) ;
+		doormen.not( { type: 'boolean' } , 1 ) ;
+		doormen.not( { type: 'boolean' } , '' ) ;
+		doormen.not( { type: 'boolean' } , 'text' ) ;
+		doormen.not( { type: 'boolean' } , {} ) ;
+		doormen.not( { type: 'boolean' } , [] ) ;
 	} ) ;
 	
 	it( "should validate number accordingly" , function() {
-		doormen.not( undefined , { type: 'number' } ) ;
-		doormen.not( null , { type: 'number' } ) ;
-		doormen.not( false , { type: 'number' } ) ;
-		doormen.not( true , { type: 'number' } ) ;
-		doormen( 0 , { type: 'number' } ) ;
-		doormen( 1 , { type: 'number' } ) ;
-		doormen( Infinity , { type: 'number' } ) ;
-		doormen( NaN , { type: 'number' } ) ;
-		doormen.not( '' , { type: 'number' } ) ;
-		doormen.not( 'text' , { type: 'number' } ) ;
-		doormen.not( {} , { type: 'number' } ) ;
-		doormen.not( [] , { type: 'number' } ) ;
+		doormen.not( { type: 'number' } , undefined ) ;
+		doormen.not( { type: 'number' } , null ) ;
+		doormen.not( { type: 'number' } , false ) ;
+		doormen.not( { type: 'number' } , true ) ;
+		doormen( { type: 'number' } , 0 ) ;
+		doormen( { type: 'number' } , 1 ) ;
+		doormen( { type: 'number' } , Infinity ) ;
+		doormen( { type: 'number' } , NaN ) ;
+		doormen.not( { type: 'number' } , '' ) ;
+		doormen.not( { type: 'number' } , 'text' ) ;
+		doormen.not( { type: 'number' } , {} ) ;
+		doormen.not( { type: 'number' } , [] ) ;
 	} ) ;
 	
 	it( "should validate string accordingly" , function() {
-		doormen.not( undefined , { type: 'string' } ) ;
-		doormen.not( null , { type: 'string' } ) ;
-		doormen.not( false , { type: 'string' } ) ;
-		doormen.not( true , { type: 'string' } ) ;
-		doormen.not( 0 , { type: 'string' } ) ;
-		doormen.not( 1 , { type: 'string' } ) ;
-		doormen( '' , { type: 'string' } ) ;
-		doormen( 'text' , { type: 'string' } ) ;
-		doormen.not( {} , { type: 'string' } ) ;
-		doormen.not( [] , { type: 'string' } ) ;
+		doormen.not( { type: 'string' } , undefined ) ;
+		doormen.not( { type: 'string' } , null ) ;
+		doormen.not( { type: 'string' } , false ) ;
+		doormen.not( { type: 'string' } , true ) ;
+		doormen.not( { type: 'string' } , 0 ) ;
+		doormen.not( { type: 'string' } , 1 ) ;
+		doormen( { type: 'string' } , '' ) ;
+		doormen( { type: 'string' } , 'text' ) ;
+		doormen.not( { type: 'string' } , {} ) ;
+		doormen.not( { type: 'string' } , [] ) ;
 	} ) ;
 	
 	it( "should validate object accordingly" , function() {
-		doormen.not( undefined , { type: 'object' } ) ;
-		doormen.not( null , { type: 'object' } ) ;
-		doormen.not( false , { type: 'object' } ) ;
-		doormen.not( true , { type: 'object' } ) ;
-		doormen.not( 0 , { type: 'object' } ) ;
-		doormen.not( 1 , { type: 'object' } ) ;
-		doormen.not( '' , { type: 'object' } ) ;
-		doormen.not( 'text' , { type: 'object' } ) ;
-		doormen( {} , { type: 'object' } ) ;
-		doormen( { a:1 , b:2 } , { type: 'object' } ) ;
-		doormen( [] , { type: 'object' } ) ;
-		doormen( [ 1,2,3 ] , { type: 'object' } ) ;
-		doormen( new Date() , { type: 'object' } ) ;
-		doormen.not( function(){} , { type: 'object' } ) ;
+		doormen.not( { type: 'object' } , undefined ) ;
+		doormen.not( { type: 'object' } , null ) ;
+		doormen.not( { type: 'object' } , false ) ;
+		doormen.not( { type: 'object' } , true ) ;
+		doormen.not( { type: 'object' } , 0 ) ;
+		doormen.not( { type: 'object' } , 1 ) ;
+		doormen.not( { type: 'object' } , '' ) ;
+		doormen.not( { type: 'object' } , 'text' ) ;
+		doormen( { type: 'object' } , {} ) ;
+		doormen( { type: 'object' } , { a:1 , b:2 } ) ;
+		doormen( { type: 'object' } , [] ) ;
+		doormen( { type: 'object' } , [ 1,2,3 ] ) ;
+		doormen( { type: 'object' } , new Date() ) ;
+		doormen.not( { type: 'object' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate function accordingly" , function() {
-		doormen.not( undefined , { type: 'function' } ) ;
-		doormen.not( null , { type: 'function' } ) ;
-		doormen.not( false , { type: 'function' } ) ;
-		doormen.not( true , { type: 'function' } ) ;
-		doormen.not( 0 , { type: 'function' } ) ;
-		doormen.not( 1 , { type: 'function' } ) ;
-		doormen.not( '' , { type: 'function' } ) ;
-		doormen.not( 'text' , { type: 'function' } ) ;
-		doormen.not( {} , { type: 'function' } ) ;
-		doormen.not( [] , { type: 'function' } ) ;
-		doormen( function(){} , { type: 'function' } ) ;
+		doormen.not( { type: 'function' } , undefined ) ;
+		doormen.not( { type: 'function' } , null ) ;
+		doormen.not( { type: 'function' } , false ) ;
+		doormen.not( { type: 'function' } , true ) ;
+		doormen.not( { type: 'function' } , 0 ) ;
+		doormen.not( { type: 'function' } , 1 ) ;
+		doormen.not( { type: 'function' } , '' ) ;
+		doormen.not( { type: 'function' } , 'text' ) ;
+		doormen.not( { type: 'function' } , {} ) ;
+		doormen.not( { type: 'function' } , [] ) ;
+		doormen( { type: 'function' } , function(){} ) ;
 	} ) ;
 } ) ;
 	
@@ -464,77 +476,77 @@ describe( "Basic types" , function() {
 describe( "Built-in types" , function() {
 	
 	it( "should validate array accordingly" , function() {
-		doormen.not( undefined , { type: 'array' } ) ;
-		doormen.not( null , { type: 'array' } ) ;
-		doormen.not( false , { type: 'array' } ) ;
-		doormen.not( true , { type: 'array' } ) ;
-		doormen.not( 0 , { type: 'array' } ) ;
-		doormen.not( 1 , { type: 'array' } ) ;
-		doormen.not( '' , { type: 'array' } ) ;
-		doormen.not( 'text' , { type: 'array' } ) ;
-		doormen.not( {} , { type: 'array' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'array' } ) ;
-		doormen( [] , { type: 'array' } ) ;
-		doormen( [ 1,2,3 ] , { type: 'array' } ) ;
-		doormen.not( function(){} , { type: 'array' } ) ;
+		doormen.not( { type: 'array' } , undefined ) ;
+		doormen.not( { type: 'array' } , null ) ;
+		doormen.not( { type: 'array' } , false ) ;
+		doormen.not( { type: 'array' } , true ) ;
+		doormen.not( { type: 'array' } , 0 ) ;
+		doormen.not( { type: 'array' } , 1 ) ;
+		doormen.not( { type: 'array' } , '' ) ;
+		doormen.not( { type: 'array' } , 'text' ) ;
+		doormen.not( { type: 'array' } , {} ) ;
+		doormen.not( { type: 'array' } , { a:1 , b:2 } ) ;
+		doormen( { type: 'array' } , [] ) ;
+		doormen( { type: 'array' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'array' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate date accordingly" , function() {
-		doormen( new Date() , { type: 'date' } ) ;
+		doormen( { type: 'date' } , new Date() ) ;
 		
-		doormen.not( undefined , { type: 'date' } ) ;
-		doormen.not( null , { type: 'date' } ) ;
-		doormen.not( false , { type: 'date' } ) ;
-		doormen.not( true , { type: 'date' } ) ;
-		doormen.not( 0 , { type: 'date' } ) ;
-		doormen.not( 1 , { type: 'date' } ) ;
-		doormen.not( '' , { type: 'date' } ) ;
-		doormen.not( 'text' , { type: 'date' } ) ;
-		doormen.not( {} , { type: 'date' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'date' } ) ;
-		doormen.not( [] , { type: 'date' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'date' } ) ;
-		doormen.not( function(){} , { type: 'date' } ) ;
+		doormen.not( { type: 'date' } , undefined ) ;
+		doormen.not( { type: 'date' } , null ) ;
+		doormen.not( { type: 'date' } , false ) ;
+		doormen.not( { type: 'date' } , true ) ;
+		doormen.not( { type: 'date' } , 0 ) ;
+		doormen.not( { type: 'date' } , 1 ) ;
+		doormen.not( { type: 'date' } , '' ) ;
+		doormen.not( { type: 'date' } , 'text' ) ;
+		doormen.not( { type: 'date' } , {} ) ;
+		doormen.not( { type: 'date' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'date' } , [] ) ;
+		doormen.not( { type: 'date' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'date' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate error accordingly" , function() {
-		doormen( new Error() , { type: 'error' } ) ;
+		doormen( { type: 'error' } , new Error() ) ;
 		
-		doormen.not( undefined , { type: 'error' } ) ;
-		doormen.not( null , { type: 'error' } ) ;
-		doormen.not( false , { type: 'error' } ) ;
-		doormen.not( true , { type: 'error' } ) ;
-		doormen.not( 0 , { type: 'error' } ) ;
-		doormen.not( 1 , { type: 'error' } ) ;
-		doormen.not( '' , { type: 'error' } ) ;
-		doormen.not( 'text' , { type: 'error' } ) ;
-		doormen.not( {} , { type: 'error' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'error' } ) ;
-		doormen.not( [] , { type: 'error' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'error' } ) ;
-		doormen.not( function(){} , { type: 'error' } ) ;
+		doormen.not( { type: 'error' } , undefined ) ;
+		doormen.not( { type: 'error' } , null ) ;
+		doormen.not( { type: 'error' } , false ) ;
+		doormen.not( { type: 'error' } , true ) ;
+		doormen.not( { type: 'error' } , 0 ) ;
+		doormen.not( { type: 'error' } , 1 ) ;
+		doormen.not( { type: 'error' } , '' ) ;
+		doormen.not( { type: 'error' } , 'text' ) ;
+		doormen.not( { type: 'error' } , {} ) ;
+		doormen.not( { type: 'error' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'error' } , [] ) ;
+		doormen.not( { type: 'error' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'error' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate arguments accordingly" , function() {
-		var fn = function() { doormen( arguments , { type: 'arguments' } ) ; } ;
+		var fn = function() { doormen( { type: 'arguments' } , arguments ) ; } ;
 		
 		fn() ;
 		fn( 1 ) ;
 		fn( 1 , 2 , 3 ) ;
 		
-		doormen.not( undefined , { type: 'arguments' } ) ;
-		doormen.not( null , { type: 'arguments' } ) ;
-		doormen.not( false , { type: 'arguments' } ) ;
-		doormen.not( true , { type: 'arguments' } ) ;
-		doormen.not( 0 , { type: 'arguments' } ) ;
-		doormen.not( 1 , { type: 'arguments' } ) ;
-		doormen.not( '' , { type: 'arguments' } ) ;
-		doormen.not( 'text' , { type: 'arguments' } ) ;
-		doormen.not( {} , { type: 'arguments' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'arguments' } ) ;
-		doormen.not( [] , { type: 'arguments' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
-		doormen.not( function(){} , { type: 'arguments' } ) ;
+		doormen.not( { type: 'arguments' } , undefined ) ;
+		doormen.not( { type: 'arguments' } , null ) ;
+		doormen.not( { type: 'arguments' } , false ) ;
+		doormen.not( { type: 'arguments' } , true ) ;
+		doormen.not( { type: 'arguments' } , 0 ) ;
+		doormen.not( { type: 'arguments' } , 1 ) ;
+		doormen.not( { type: 'arguments' } , '' ) ;
+		doormen.not( { type: 'arguments' } , 'text' ) ;
+		doormen.not( { type: 'arguments' } , {} ) ;
+		doormen.not( { type: 'arguments' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'arguments' } , [] ) ;
+		doormen.not( { type: 'arguments' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'arguments' } , function(){} ) ;
 	} ) ;
 } ) ;
 
@@ -543,55 +555,56 @@ describe( "Built-in types" , function() {
 describe( "Mixed types" , function() {
 	
 	it( "should validate 'strictObject' accordingly, i.e. objects that are *NOT* arrays" , function() {
-		doormen.not( undefined , { type: 'strictObject' } ) ;
-		doormen.not( null , { type: 'strictObject' } ) ;
-		doormen.not( false , { type: 'strictObject' } ) ;
-		doormen.not( true , { type: 'strictObject' } ) ;
-		doormen.not( 0 , { type: 'strictObject' } ) ;
-		doormen.not( 1 , { type: 'strictObject' } ) ;
-		doormen.not( '' , { type: 'strictObject' } ) ;
-		doormen.not( 'text' , { type: 'strictObject' } ) ;
-		doormen( {} , { type: 'strictObject' } ) ;
-		doormen( { a:1 , b:2 } , { type: 'strictObject' } ) ;
-		doormen.not( [] , { type: 'strictObject' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'strictObject' } ) ;
-		doormen.not( function(){} , { type: 'strictObject' } ) ;
+		doormen.not( { type: 'strictObject' } , undefined ) ;
+		doormen.not( { type: 'strictObject' } , null ) ;
+		doormen.not( { type: 'strictObject' } , false ) ;
+		doormen.not( { type: 'strictObject' } , true ) ;
+		doormen.not( { type: 'strictObject' } , 0 ) ;
+		doormen.not( { type: 'strictObject' } , 1 ) ;
+		doormen.not( { type: 'strictObject' } , '' ) ;
+		doormen.not( { type: 'strictObject' } , 'text' ) ;
+		doormen( { type: 'strictObject' } , {} ) ;
+		doormen( { type: 'strictObject' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'strictObject' } , [] ) ;
+		doormen.not( { type: 'strictObject' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'strictObject' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate 'regexp' accordingly, i.e. RegExp instance or string convertible to RegExp" , function() {
-		doormen( /Random/ , { type: 'regexp' } ) ;
-		doormen( new RegExp( "Random" ) , { type: 'regexp' } ) ;
-		doormen( "Random" , { type: 'regexp' } ) ;
-		doormen.not( "(Random" , { type: 'regexp' } ) ;
-		doormen.not( undefined , { type: 'regexp' } ) ;
-		doormen.not( null , { type: 'regexp' } ) ;
-		doormen.not( false , { type: 'regexp' } ) ;
-		doormen.not( true , { type: 'regexp' } ) ;
-		doormen.not( 0 , { type: 'regexp' } ) ;
-		doormen.not( 1 , { type: 'regexp' } ) ;
-		doormen( '' , { type: 'regexp' } ) ;
-		doormen( 'text' , { type: 'regexp' } ) ;
-		doormen.not( {} , { type: 'regexp' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'regexp' } ) ;
-		doormen.not( [] , { type: 'regexp' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'regexp' } ) ;
-		doormen.not( function(){} , { type: 'regexp' } ) ;
+		doormen( { type: 'regexp' } , /Random/ ) ;
+		doormen( { type: 'regexp' } , new RegExp( "Random" ) ) ;
+		doormen( { type: 'regexp' } , "Random" ) ;
+		doormen.not( { type: 'regexp' } , "(Random" ) ;
+		
+		doormen.not( { type: 'regexp' } , undefined ) ;
+		doormen.not( { type: 'regexp' } , null ) ;
+		doormen.not( { type: 'regexp' } , false ) ;
+		doormen.not( { type: 'regexp' } , true ) ;
+		doormen.not( { type: 'regexp' } , 0 ) ;
+		doormen.not( { type: 'regexp' } , 1 ) ;
+		doormen( { type: 'regexp' } , '' ) ;
+		doormen( { type: 'regexp' } , 'text' ) ;
+		doormen.not( { type: 'regexp' } , {} ) ;
+		doormen.not( { type: 'regexp' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'regexp' } , [] ) ;
+		doormen.not( { type: 'regexp' } , [ 1,2,3 ] ) ;
+		doormen.not( { type: 'regexp' } , function(){} ) ;
 	} ) ;
 	
 	it( "should validate 'classId' accordingly, i.e. function (constructor) or non-empty string" , function() {
-		doormen.not( undefined , { type: 'classId' } ) ;
-		doormen.not( null , { type: 'classId' } ) ;
-		doormen.not( false , { type: 'classId' } ) ;
-		doormen.not( true , { type: 'classId' } ) ;
-		doormen.not( 0 , { type: 'classId' } ) ;
-		doormen.not( 1 , { type: 'classId' } ) ;
-		doormen.not( '' , { type: 'classId' } ) ;
-		doormen( 'text' , { type: 'classId' } ) ;
-		doormen.not( {} , { type: 'classId' } ) ;
-		doormen.not( { a:1 , b:2 } , { type: 'classId' } ) ;
-		doormen.not( [] , { type: 'classId' } ) ;
-		doormen.not( [ 1,2,3 ] , { type: 'classId' } ) ;
-		doormen( function(){} , { type: 'classId' } ) ;
+		doormen.not( { type: 'classId' } , undefined ) ;
+		doormen.not( { type: 'classId' } , null ) ;
+		doormen.not( { type: 'classId' } , false ) ;
+		doormen.not( { type: 'classId' } , true ) ;
+		doormen.not( { type: 'classId' } , 0 ) ;
+		doormen.not( { type: 'classId' } , 1 ) ;
+		doormen.not( { type: 'classId' } , '' ) ;
+		doormen( { type: 'classId' } , 'text' ) ;
+		doormen.not( { type: 'classId' } , {} ) ;
+		doormen.not( { type: 'classId' } , { a:1 , b:2 } ) ;
+		doormen.not( { type: 'classId' } , [] ) ;
+		doormen.not( { type: 'classId' } , [ 1,2,3 ] ) ;
+		doormen( { type: 'classId' } , function(){} ) ;
 	} ) ;
 	
 } ) ;
