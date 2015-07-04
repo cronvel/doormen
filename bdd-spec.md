@@ -1,59 +1,3 @@
-try
-catch
-try
-try
-catch
-try
-postpone: b
-try
-catch
-postpone: b
-try
-postpone: b
-try
-catch
-postpone: b
-try
-postpone: c
-postpone: b
-postpone: c
-try
-catch
-try
-postpone: c
-postpone: b
-postpone: c
-try
-catch
-try
-postpone: c
-postpone: b
-postpone: c
-try
-try
-postpone: c
-postpone: b
-postpone: c
-try
-try
-postpone: c
-postpone: b
-postpone: c
-try
-catch
-postpone: c
-postpone: b
-postpone: c
-try
-catch
-postpone: c
-postpone: b
-postpone: c
-try
-try
-postpone: a
-postpone: b
-postpone: a
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -117,7 +61,7 @@ var thrown ;
 thrown = false ;
 
 try {
-	doormen.not( 'text' , { type: 'string' } ) ;
+	doormen.not( { type: 'string' } , 'text' ) ;
 }
 catch ( error ) {
 	thrown = true ;
@@ -129,7 +73,7 @@ if ( ! thrown ) { throw new Error( 'It should throw' ) ; }
 thrown = false ;
 
 try {
-	doormen.not( 1 , { type: 'string' } ) ;
+	doormen.not( { type: 'string' } , 1 ) ;
 }
 catch ( error ) {
 	thrown = true ;
@@ -268,18 +212,18 @@ doormen.equals( a , b ) ;
 when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate.
 
 ```js
-doormen.not( null , { type: 'string' } ) ;
-doormen( null , { optional: true, type: 'string' } ) ;
-doormen.not( undefined , { type: 'string' } ) ;
-doormen( undefined , { optional: true, type: 'string' } ) ;
+doormen.not( { type: 'string' } , null ) ;
+doormen( { optional: true, type: 'string' } , null ) ;
+doormen.not( { type: 'string' } , undefined ) ;
+doormen( { optional: true, type: 'string' } , undefined ) ;
 
-doormen( 'text' , { type: 'string' } ) ;
-doormen( 'text' , { optional: true, type: 'string' } ) ;
-doormen.not( 1 , { type: 'string' } ) ;
-doormen.not( 1 , { optional: true, type: 'string' } ) ;
+doormen( { type: 'string' } , 'text' ) ;
+doormen( { optional: true, type: 'string' } , 'text' ) ;
+doormen.not( { type: 'string' } , 1 ) ;
+doormen.not( { optional: true, type: 'string' } , 1 ) ;
 
-doormen.not( {} , { properties: { a: { type: 'string' } } } ) ;
-doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+doormen.not( { properties: { a: { type: 'string' } } } , {} ) ;
+doormen( { properties: { a: { optional: true, type: 'string' } } } , {} ) ;
 ```
 
 missing optional properties should not be created (i.e. with undefined)..
@@ -287,75 +231,87 @@ missing optional properties should not be created (i.e. with undefined)..
 ```js
 var result ;
 
-result = doormen( {} , { properties: { a: { optional: true, type: 'string' } } } ) ;
+result = doormen( { properties: { a: { optional: true, type: 'string' } } } , {} ) ;
 
 // {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
 // that a key is not defined, so we have to check it explicitly
 
 doormen.equals( 'a' in result , false ) ;
 
-result = doormen( {} , {
-	properties: {
-		a: { optional: true, type: 'string' },
-		b: { optional: true, type: 'string' },
-		c: {
-			optional: true,
-			properties: {
-				d: { optional: true, type: 'string' }
+result = doormen( {
+		properties: {
+			a: { optional: true, type: 'string' },
+			b: { optional: true, type: 'string' },
+			c: {
+				optional: true,
+				properties: {
+					d: { optional: true, type: 'string' }
+				}
 			}
 		}
-	}
-} ) ;
+	} ,
+	{}
+) ;
+
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , false ) ;
 
-result = doormen( { c: undefined } , {
-	properties: {
-		a: { optional: true, type: 'string' },
-		b: { optional: true, type: 'string' },
-		c: {
-			optional: true,
-			properties: {
-				d: { optional: true, type: 'string' }
+result = doormen( {
+		properties: {
+			a: { optional: true, type: 'string' },
+			b: { optional: true, type: 'string' },
+			c: {
+				optional: true,
+				properties: {
+					d: { optional: true, type: 'string' }
+				}
 			}
 		}
-	}
-} ) ;
+	} ,
+	{ c: undefined }
+) ;
+
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , true ) ;
 doormen.equals( result.c , undefined ) ;
 
-result = doormen( { c: null } , {
-	properties: {
-		a: { optional: true, type: 'string' },
-		b: { optional: true, type: 'string' },
-		c: {
-			optional: true,
-			properties: {
-				d: { optional: true, type: 'string' }
+result = doormen( {
+		properties: {
+			a: { optional: true, type: 'string' },
+			b: { optional: true, type: 'string' },
+			c: {
+				optional: true,
+				properties: {
+					d: { optional: true, type: 'string' }
+				}
 			}
 		}
-	}
-} ) ;
+	} ,
+	{ c: null }
+) ;
+
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , true ) ;
 doormen.equals( result.c , null ) ;
 
-result = doormen( { c: {} } , {
-	properties: {
-		a: { optional: true, type: 'string' },
-		b: { optional: true, type: 'string' },
-		c: {
-			optional: true,
-			properties: {
-				d: { optional: true, type: 'string' }
+result = doormen( {
+		properties: {
+			a: { optional: true, type: 'string' },
+			b: { optional: true, type: 'string' },
+			c: {
+				optional: true,
+				properties: {
+					d: { optional: true, type: 'string' }
+				}
 			}
 		}
-	}
-} ) ;
+	} ,
+	{ c: {} }
+) ;
+
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , true ) ;
@@ -365,23 +321,23 @@ doormen.equals( 'd' in result.c , false ) ;
 when a data is null, undefined or unexistant, and a default value is specified in the schema, that default value should overwrite the original one.
 
 ```js
-doormen.equals( doormen( null , { type: 'string' , "default": 'default!' } ) , 'default!' ) ;
+doormen.equals( doormen( { type: 'string' , "default": 'default!' } , null ) , 'default!' ) ;
 doormen.equals(
 	doormen(
-		{ a: null } ,
-		{ properties: { a: { type: 'string' , "default": 'default!' } } } ) ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } } } ,
+		{ a: null } ) ,
 	{ a: 'default!' }
 ) ;
 doormen.equals(
 	doormen(
-		{ a: null, b: undefined } ,
-		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ,
+		{ a: null, b: undefined } ) ,
 	{ a: 'default!' , b: { c: 5 } }
 ) ;
 doormen.equals(
 	doormen(
-		{} ,
-		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ) ,
+		{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ,
+		{} ) ,
 	{ a: 'default!' , b: { c: 5 } }
 ) ;
 ```
@@ -391,113 +347,113 @@ doormen.equals(
 should validate undefined accordingly.
 
 ```js
-doormen( undefined , { type: 'undefined' } ) ;
-doormen.not( null , { type: 'undefined' } ) ;
-doormen.not( false , { type: 'undefined' } ) ;
-doormen.not( true , { type: 'undefined' } ) ;
-doormen.not( 0 , { type: 'undefined' } ) ;
-doormen.not( 1 , { type: 'undefined' } ) ;
-doormen.not( '' , { type: 'undefined' } ) ;
-doormen.not( 'text' , { type: 'undefined' } ) ;
-doormen.not( {} , { type: 'undefined' } ) ;
-doormen.not( [] , { type: 'undefined' } ) ;
+doormen( { type: 'undefined' } , undefined ) ;
+doormen.not( { type: 'undefined' } , null ) ;
+doormen.not( { type: 'undefined' } , false ) ;
+doormen.not( { type: 'undefined' } , true ) ;
+doormen.not( { type: 'undefined' } , 0 ) ;
+doormen.not( { type: 'undefined' } , 1 ) ;
+doormen.not( { type: 'undefined' } , '' ) ;
+doormen.not( { type: 'undefined' } , 'text' ) ;
+doormen.not( { type: 'undefined' } , {} ) ;
+doormen.not( { type: 'undefined' } , [] ) ;
 ```
 
 should validate null accordingly.
 
 ```js
-doormen.not( undefined , { type: 'null' } ) ;
-doormen( null , { type: 'null' } ) ;
-doormen.not( false , { type: 'null' } ) ;
-doormen.not( true , { type: 'null' } ) ;
-doormen.not( 0 , { type: 'null' } ) ;
-doormen.not( 1 , { type: 'null' } ) ;
-doormen.not( '' , { type: 'null' } ) ;
-doormen.not( 'text' , { type: 'null' } ) ;
-doormen.not( {} , { type: 'null' } ) ;
-doormen.not( [] , { type: 'null' } ) ;
+doormen.not( { type: 'null' } , undefined ) ;
+doormen( { type: 'null' } , null ) ;
+doormen.not( { type: 'null' } , false ) ;
+doormen.not( { type: 'null' } , true ) ;
+doormen.not( { type: 'null' } , 0 ) ;
+doormen.not( { type: 'null' } , 1 ) ;
+doormen.not( { type: 'null' } , '' ) ;
+doormen.not( { type: 'null' } , 'text' ) ;
+doormen.not( { type: 'null' } , {} ) ;
+doormen.not( { type: 'null' } , [] ) ;
 ```
 
 should validate boolean accordingly.
 
 ```js
-doormen.not( undefined , { type: 'boolean' } ) ;
-doormen.not( null , { type: 'boolean' } ) ;
-doormen( false , { type: 'boolean' } ) ;
-doormen( true , { type: 'boolean' } ) ;
-doormen.not( 0 , { type: 'boolean' } ) ;
-doormen.not( 1 , { type: 'boolean' } ) ;
-doormen.not( '' , { type: 'boolean' } ) ;
-doormen.not( 'text' , { type: 'boolean' } ) ;
-doormen.not( {} , { type: 'boolean' } ) ;
-doormen.not( [] , { type: 'boolean' } ) ;
+doormen.not( { type: 'boolean' } , undefined ) ;
+doormen.not( { type: 'boolean' } , null ) ;
+doormen( { type: 'boolean' } , false ) ;
+doormen( { type: 'boolean' } , true ) ;
+doormen.not( { type: 'boolean' } , 0 ) ;
+doormen.not( { type: 'boolean' } , 1 ) ;
+doormen.not( { type: 'boolean' } , '' ) ;
+doormen.not( { type: 'boolean' } , 'text' ) ;
+doormen.not( { type: 'boolean' } , {} ) ;
+doormen.not( { type: 'boolean' } , [] ) ;
 ```
 
 should validate number accordingly.
 
 ```js
-doormen.not( undefined , { type: 'number' } ) ;
-doormen.not( null , { type: 'number' } ) ;
-doormen.not( false , { type: 'number' } ) ;
-doormen.not( true , { type: 'number' } ) ;
-doormen( 0 , { type: 'number' } ) ;
-doormen( 1 , { type: 'number' } ) ;
-doormen( Infinity , { type: 'number' } ) ;
-doormen( NaN , { type: 'number' } ) ;
-doormen.not( '' , { type: 'number' } ) ;
-doormen.not( 'text' , { type: 'number' } ) ;
-doormen.not( {} , { type: 'number' } ) ;
-doormen.not( [] , { type: 'number' } ) ;
+doormen.not( { type: 'number' } , undefined ) ;
+doormen.not( { type: 'number' } , null ) ;
+doormen.not( { type: 'number' } , false ) ;
+doormen.not( { type: 'number' } , true ) ;
+doormen( { type: 'number' } , 0 ) ;
+doormen( { type: 'number' } , 1 ) ;
+doormen( { type: 'number' } , Infinity ) ;
+doormen( { type: 'number' } , NaN ) ;
+doormen.not( { type: 'number' } , '' ) ;
+doormen.not( { type: 'number' } , 'text' ) ;
+doormen.not( { type: 'number' } , {} ) ;
+doormen.not( { type: 'number' } , [] ) ;
 ```
 
 should validate string accordingly.
 
 ```js
-doormen.not( undefined , { type: 'string' } ) ;
-doormen.not( null , { type: 'string' } ) ;
-doormen.not( false , { type: 'string' } ) ;
-doormen.not( true , { type: 'string' } ) ;
-doormen.not( 0 , { type: 'string' } ) ;
-doormen.not( 1 , { type: 'string' } ) ;
-doormen( '' , { type: 'string' } ) ;
-doormen( 'text' , { type: 'string' } ) ;
-doormen.not( {} , { type: 'string' } ) ;
-doormen.not( [] , { type: 'string' } ) ;
+doormen.not( { type: 'string' } , undefined ) ;
+doormen.not( { type: 'string' } , null ) ;
+doormen.not( { type: 'string' } , false ) ;
+doormen.not( { type: 'string' } , true ) ;
+doormen.not( { type: 'string' } , 0 ) ;
+doormen.not( { type: 'string' } , 1 ) ;
+doormen( { type: 'string' } , '' ) ;
+doormen( { type: 'string' } , 'text' ) ;
+doormen.not( { type: 'string' } , {} ) ;
+doormen.not( { type: 'string' } , [] ) ;
 ```
 
 should validate object accordingly.
 
 ```js
-doormen.not( undefined , { type: 'object' } ) ;
-doormen.not( null , { type: 'object' } ) ;
-doormen.not( false , { type: 'object' } ) ;
-doormen.not( true , { type: 'object' } ) ;
-doormen.not( 0 , { type: 'object' } ) ;
-doormen.not( 1 , { type: 'object' } ) ;
-doormen.not( '' , { type: 'object' } ) ;
-doormen.not( 'text' , { type: 'object' } ) ;
-doormen( {} , { type: 'object' } ) ;
-doormen( { a:1 , b:2 } , { type: 'object' } ) ;
-doormen( [] , { type: 'object' } ) ;
-doormen( [ 1,2,3 ] , { type: 'object' } ) ;
-doormen( new Date() , { type: 'object' } ) ;
-doormen.not( function(){} , { type: 'object' } ) ;
+doormen.not( { type: 'object' } , undefined ) ;
+doormen.not( { type: 'object' } , null ) ;
+doormen.not( { type: 'object' } , false ) ;
+doormen.not( { type: 'object' } , true ) ;
+doormen.not( { type: 'object' } , 0 ) ;
+doormen.not( { type: 'object' } , 1 ) ;
+doormen.not( { type: 'object' } , '' ) ;
+doormen.not( { type: 'object' } , 'text' ) ;
+doormen( { type: 'object' } , {} ) ;
+doormen( { type: 'object' } , { a:1 , b:2 } ) ;
+doormen( { type: 'object' } , [] ) ;
+doormen( { type: 'object' } , [ 1,2,3 ] ) ;
+doormen( { type: 'object' } , new Date() ) ;
+doormen.not( { type: 'object' } , function(){} ) ;
 ```
 
 should validate function accordingly.
 
 ```js
-doormen.not( undefined , { type: 'function' } ) ;
-doormen.not( null , { type: 'function' } ) ;
-doormen.not( false , { type: 'function' } ) ;
-doormen.not( true , { type: 'function' } ) ;
-doormen.not( 0 , { type: 'function' } ) ;
-doormen.not( 1 , { type: 'function' } ) ;
-doormen.not( '' , { type: 'function' } ) ;
-doormen.not( 'text' , { type: 'function' } ) ;
-doormen.not( {} , { type: 'function' } ) ;
-doormen.not( [] , { type: 'function' } ) ;
-doormen( function(){} , { type: 'function' } ) ;
+doormen.not( { type: 'function' } , undefined ) ;
+doormen.not( { type: 'function' } , null ) ;
+doormen.not( { type: 'function' } , false ) ;
+doormen.not( { type: 'function' } , true ) ;
+doormen.not( { type: 'function' } , 0 ) ;
+doormen.not( { type: 'function' } , 1 ) ;
+doormen.not( { type: 'function' } , '' ) ;
+doormen.not( { type: 'function' } , 'text' ) ;
+doormen.not( { type: 'function' } , {} ) ;
+doormen.not( { type: 'function' } , [] ) ;
+doormen( { type: 'function' } , function(){} ) ;
 ```
 
 <a name="built-in-types"></a>
@@ -505,83 +461,83 @@ doormen( function(){} , { type: 'function' } ) ;
 should validate array accordingly.
 
 ```js
-doormen.not( undefined , { type: 'array' } ) ;
-doormen.not( null , { type: 'array' } ) ;
-doormen.not( false , { type: 'array' } ) ;
-doormen.not( true , { type: 'array' } ) ;
-doormen.not( 0 , { type: 'array' } ) ;
-doormen.not( 1 , { type: 'array' } ) ;
-doormen.not( '' , { type: 'array' } ) ;
-doormen.not( 'text' , { type: 'array' } ) ;
-doormen.not( {} , { type: 'array' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'array' } ) ;
-doormen( [] , { type: 'array' } ) ;
-doormen( [ 1,2,3 ] , { type: 'array' } ) ;
-doormen.not( function(){} , { type: 'array' } ) ;
+doormen.not( { type: 'array' } , undefined ) ;
+doormen.not( { type: 'array' } , null ) ;
+doormen.not( { type: 'array' } , false ) ;
+doormen.not( { type: 'array' } , true ) ;
+doormen.not( { type: 'array' } , 0 ) ;
+doormen.not( { type: 'array' } , 1 ) ;
+doormen.not( { type: 'array' } , '' ) ;
+doormen.not( { type: 'array' } , 'text' ) ;
+doormen.not( { type: 'array' } , {} ) ;
+doormen.not( { type: 'array' } , { a:1 , b:2 } ) ;
+doormen( { type: 'array' } , [] ) ;
+doormen( { type: 'array' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'array' } , function(){} ) ;
 ```
 
 should validate date accordingly.
 
 ```js
-doormen( new Date() , { type: 'date' } ) ;
+doormen( { type: 'date' } , new Date() ) ;
 
-doormen.not( undefined , { type: 'date' } ) ;
-doormen.not( null , { type: 'date' } ) ;
-doormen.not( false , { type: 'date' } ) ;
-doormen.not( true , { type: 'date' } ) ;
-doormen.not( 0 , { type: 'date' } ) ;
-doormen.not( 1 , { type: 'date' } ) ;
-doormen.not( '' , { type: 'date' } ) ;
-doormen.not( 'text' , { type: 'date' } ) ;
-doormen.not( {} , { type: 'date' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'date' } ) ;
-doormen.not( [] , { type: 'date' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'date' } ) ;
-doormen.not( function(){} , { type: 'date' } ) ;
+doormen.not( { type: 'date' } , undefined ) ;
+doormen.not( { type: 'date' } , null ) ;
+doormen.not( { type: 'date' } , false ) ;
+doormen.not( { type: 'date' } , true ) ;
+doormen.not( { type: 'date' } , 0 ) ;
+doormen.not( { type: 'date' } , 1 ) ;
+doormen.not( { type: 'date' } , '' ) ;
+doormen.not( { type: 'date' } , 'text' ) ;
+doormen.not( { type: 'date' } , {} ) ;
+doormen.not( { type: 'date' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'date' } , [] ) ;
+doormen.not( { type: 'date' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'date' } , function(){} ) ;
 ```
 
 should validate error accordingly.
 
 ```js
-doormen( new Error() , { type: 'error' } ) ;
+doormen( { type: 'error' } , new Error() ) ;
 
-doormen.not( undefined , { type: 'error' } ) ;
-doormen.not( null , { type: 'error' } ) ;
-doormen.not( false , { type: 'error' } ) ;
-doormen.not( true , { type: 'error' } ) ;
-doormen.not( 0 , { type: 'error' } ) ;
-doormen.not( 1 , { type: 'error' } ) ;
-doormen.not( '' , { type: 'error' } ) ;
-doormen.not( 'text' , { type: 'error' } ) ;
-doormen.not( {} , { type: 'error' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'error' } ) ;
-doormen.not( [] , { type: 'error' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'error' } ) ;
-doormen.not( function(){} , { type: 'error' } ) ;
+doormen.not( { type: 'error' } , undefined ) ;
+doormen.not( { type: 'error' } , null ) ;
+doormen.not( { type: 'error' } , false ) ;
+doormen.not( { type: 'error' } , true ) ;
+doormen.not( { type: 'error' } , 0 ) ;
+doormen.not( { type: 'error' } , 1 ) ;
+doormen.not( { type: 'error' } , '' ) ;
+doormen.not( { type: 'error' } , 'text' ) ;
+doormen.not( { type: 'error' } , {} ) ;
+doormen.not( { type: 'error' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'error' } , [] ) ;
+doormen.not( { type: 'error' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'error' } , function(){} ) ;
 ```
 
 should validate arguments accordingly.
 
 ```js
-var fn = function() { doormen( arguments , { type: 'arguments' } ) ; } ;
+var fn = function() { doormen( { type: 'arguments' } , arguments ) ; } ;
 
 fn() ;
 fn( 1 ) ;
 fn( 1 , 2 , 3 ) ;
 
-doormen.not( undefined , { type: 'arguments' } ) ;
-doormen.not( null , { type: 'arguments' } ) ;
-doormen.not( false , { type: 'arguments' } ) ;
-doormen.not( true , { type: 'arguments' } ) ;
-doormen.not( 0 , { type: 'arguments' } ) ;
-doormen.not( 1 , { type: 'arguments' } ) ;
-doormen.not( '' , { type: 'arguments' } ) ;
-doormen.not( 'text' , { type: 'arguments' } ) ;
-doormen.not( {} , { type: 'arguments' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'arguments' } ) ;
-doormen.not( [] , { type: 'arguments' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'arguments' } ) ;
-doormen.not( function(){} , { type: 'arguments' } ) ;
+doormen.not( { type: 'arguments' } , undefined ) ;
+doormen.not( { type: 'arguments' } , null ) ;
+doormen.not( { type: 'arguments' } , false ) ;
+doormen.not( { type: 'arguments' } , true ) ;
+doormen.not( { type: 'arguments' } , 0 ) ;
+doormen.not( { type: 'arguments' } , 1 ) ;
+doormen.not( { type: 'arguments' } , '' ) ;
+doormen.not( { type: 'arguments' } , 'text' ) ;
+doormen.not( { type: 'arguments' } , {} ) ;
+doormen.not( { type: 'arguments' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'arguments' } , [] ) ;
+doormen.not( { type: 'arguments' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'arguments' } , function(){} ) ;
 ```
 
 <a name="mixed-types"></a>
@@ -589,59 +545,60 @@ doormen.not( function(){} , { type: 'arguments' } ) ;
 should validate 'strictObject' accordingly, i.e. objects that are *NOT* arrays.
 
 ```js
-doormen.not( undefined , { type: 'strictObject' } ) ;
-doormen.not( null , { type: 'strictObject' } ) ;
-doormen.not( false , { type: 'strictObject' } ) ;
-doormen.not( true , { type: 'strictObject' } ) ;
-doormen.not( 0 , { type: 'strictObject' } ) ;
-doormen.not( 1 , { type: 'strictObject' } ) ;
-doormen.not( '' , { type: 'strictObject' } ) ;
-doormen.not( 'text' , { type: 'strictObject' } ) ;
-doormen( {} , { type: 'strictObject' } ) ;
-doormen( { a:1 , b:2 } , { type: 'strictObject' } ) ;
-doormen.not( [] , { type: 'strictObject' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'strictObject' } ) ;
-doormen.not( function(){} , { type: 'strictObject' } ) ;
+doormen.not( { type: 'strictObject' } , undefined ) ;
+doormen.not( { type: 'strictObject' } , null ) ;
+doormen.not( { type: 'strictObject' } , false ) ;
+doormen.not( { type: 'strictObject' } , true ) ;
+doormen.not( { type: 'strictObject' } , 0 ) ;
+doormen.not( { type: 'strictObject' } , 1 ) ;
+doormen.not( { type: 'strictObject' } , '' ) ;
+doormen.not( { type: 'strictObject' } , 'text' ) ;
+doormen( { type: 'strictObject' } , {} ) ;
+doormen( { type: 'strictObject' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'strictObject' } , [] ) ;
+doormen.not( { type: 'strictObject' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'strictObject' } , function(){} ) ;
 ```
 
 should validate 'regexp' accordingly, i.e. RegExp instance or string convertible to RegExp.
 
 ```js
-doormen( /Random/ , { type: 'regexp' } ) ;
-doormen( new RegExp( "Random" ) , { type: 'regexp' } ) ;
-doormen( "Random" , { type: 'regexp' } ) ;
-doormen.not( "(Random" , { type: 'regexp' } ) ;
-doormen.not( undefined , { type: 'regexp' } ) ;
-doormen.not( null , { type: 'regexp' } ) ;
-doormen.not( false , { type: 'regexp' } ) ;
-doormen.not( true , { type: 'regexp' } ) ;
-doormen.not( 0 , { type: 'regexp' } ) ;
-doormen.not( 1 , { type: 'regexp' } ) ;
-doormen( '' , { type: 'regexp' } ) ;
-doormen( 'text' , { type: 'regexp' } ) ;
-doormen.not( {} , { type: 'regexp' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'regexp' } ) ;
-doormen.not( [] , { type: 'regexp' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'regexp' } ) ;
-doormen.not( function(){} , { type: 'regexp' } ) ;
+doormen( { type: 'regexp' } , /Random/ ) ;
+doormen( { type: 'regexp' } , new RegExp( "Random" ) ) ;
+doormen( { type: 'regexp' } , "Random" ) ;
+doormen.not( { type: 'regexp' } , "(Random" ) ;
+
+doormen.not( { type: 'regexp' } , undefined ) ;
+doormen.not( { type: 'regexp' } , null ) ;
+doormen.not( { type: 'regexp' } , false ) ;
+doormen.not( { type: 'regexp' } , true ) ;
+doormen.not( { type: 'regexp' } , 0 ) ;
+doormen.not( { type: 'regexp' } , 1 ) ;
+doormen( { type: 'regexp' } , '' ) ;
+doormen( { type: 'regexp' } , 'text' ) ;
+doormen.not( { type: 'regexp' } , {} ) ;
+doormen.not( { type: 'regexp' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'regexp' } , [] ) ;
+doormen.not( { type: 'regexp' } , [ 1,2,3 ] ) ;
+doormen.not( { type: 'regexp' } , function(){} ) ;
 ```
 
 should validate 'classId' accordingly, i.e. function (constructor) or non-empty string.
 
 ```js
-doormen.not( undefined , { type: 'classId' } ) ;
-doormen.not( null , { type: 'classId' } ) ;
-doormen.not( false , { type: 'classId' } ) ;
-doormen.not( true , { type: 'classId' } ) ;
-doormen.not( 0 , { type: 'classId' } ) ;
-doormen.not( 1 , { type: 'classId' } ) ;
-doormen.not( '' , { type: 'classId' } ) ;
-doormen( 'text' , { type: 'classId' } ) ;
-doormen.not( {} , { type: 'classId' } ) ;
-doormen.not( { a:1 , b:2 } , { type: 'classId' } ) ;
-doormen.not( [] , { type: 'classId' } ) ;
-doormen.not( [ 1,2,3 ] , { type: 'classId' } ) ;
-doormen( function(){} , { type: 'classId' } ) ;
+doormen.not( { type: 'classId' } , undefined ) ;
+doormen.not( { type: 'classId' } , null ) ;
+doormen.not( { type: 'classId' } , false ) ;
+doormen.not( { type: 'classId' } , true ) ;
+doormen.not( { type: 'classId' } , 0 ) ;
+doormen.not( { type: 'classId' } , 1 ) ;
+doormen.not( { type: 'classId' } , '' ) ;
+doormen( { type: 'classId' } , 'text' ) ;
+doormen.not( { type: 'classId' } , {} ) ;
+doormen.not( { type: 'classId' } , { a:1 , b:2 } ) ;
+doormen.not( { type: 'classId' } , [] ) ;
+doormen.not( { type: 'classId' } , [ 1,2,3 ] ) ;
+doormen( { type: 'classId' } , function(){} ) ;
 ```
 
 <a name="top-level-filters"></a>
@@ -652,212 +609,214 @@ doormen( function(){} , { type: 'classId' } ) ;
 if ( doormen.isBrowser ) { window[ 'MyClass' ] = function MyClass(){} ; }
 else { global[ 'MyClass' ] = function MyClass(){} ; }
 
-doormen( new Date() , { instanceOf: Date } ) ;
-doormen( new Array() , { instanceOf: Array } ) ;	// jshint ignore:line
-doormen( new MyClass() , { instanceOf: MyClass } ) ;
-doormen( new MyClass() , { instanceOf: Object } ) ;
+doormen( { instanceOf: Date } , new Date ) ;
+doormen( { instanceOf: Array } , new Array ) ;	// jshint ignore:line
+doormen( { instanceOf: MyClass } , new MyClass() ) ;
+doormen( { instanceOf: Object } , new MyClass() ) ;
 
-doormen( new MyClass() , { instanceOf: 'MyClass' } ) ;
-doormen( new MyClass() , { instanceOf: 'Object' } ) ;
+doormen( { instanceOf: 'MyClass' } , new MyClass() ) ;
+doormen( { instanceOf: 'Object' } , new MyClass() ) ;
+
+doormen.not( { instanceOf: Date } , new Array ) ;
+doormen.not( { instanceOf: 'Date' } , new Array ) ;
 ```
 
 min filter should validate accordingly, non-number should throw.
 
 ```js
-doormen( 10 , { min: 3 } ) ;
-doormen( 3 , { min: 3 } ) ;
-doormen.not( 1 , { min: 3 } ) ;
-doormen.not( 0 , { min: 3 } ) ;
-doormen.not( -10 , { min: 3 } ) ;
-doormen( Infinity , { min: 3 } ) ;
-doormen( Infinity , { min: Infinity } ) ;
-doormen.not( -Infinity , { min: 3 } ) ;
-doormen.not( NaN , { min: 3 } ) ;
-doormen.not( true , { min: 3 } ) ;
-doormen.not( false , { min: 3 } ) ;
-doormen.not( undefined , { min: 3 } ) ;
-doormen.not( undefined , { min: 0 } ) ;
-doormen.not( undefined , { min: -3 } ) ;
-doormen.not( '10' , { min: 3 } ) ;
+doormen( { min: 3 } , 10 ) ;
+doormen( { min: 3 } , 3 ) ;
+doormen.not( { min: 3 } , 1 ) ;
+doormen.not( { min: 3 } , 0 ) ;
+doormen.not( { min: 3 } , -10 ) ;
+doormen( { min: 3 } , Infinity ) ;
+doormen( { min: Infinity } , Infinity ) ;
+doormen.not( { min: 3 } , -Infinity ) ;
+doormen.not( { min: 3 } , NaN ) ;
+doormen.not( { min: 3 } , true ) ;
+doormen.not( { min: 3 } , false ) ;
+doormen.not( { min: 3 } , undefined ) ;
+doormen.not( { min: 0 } , undefined ) ;
+doormen.not( { min: -3 } , undefined ) ;
+doormen.not( { min: 3 } , '10' ) ;
 ```
 
 max filter should validate accordingly, non-number should throw.
 
 ```js
-doormen.not( 10 , { max: 3 } ) ;
-doormen( 3 , { max: 3 } ) ;
-doormen( 1 , { max: 3 } ) ;
-doormen( 0 , { max: 3 } ) ;
-doormen( -10 , { max: 3 } ) ;
-doormen.not( Infinity , { max: 3 } ) ;
-doormen( -Infinity , { max: 3 } ) ;
-doormen( -Infinity , { max: -Infinity } ) ;
-doormen.not( NaN , { max: 3 } ) ;
-doormen.not( true , { max: 3 } ) ;
-doormen.not( false , { max: 3 } ) ;
-doormen.not( '1' , { max: 3 } ) ;
+doormen.not( { max: 3 } , 10 ) ;
+doormen( { max: 3 } , 3 ) ;
+doormen( { max: 3 } , 1 ) ;
+doormen( { max: 3 } , 0 ) ;
+doormen( { max: 3 } , -10 ) ;
+doormen.not( { max: 3 } , Infinity ) ;
+doormen( { max: 3 } , -Infinity ) ;
+doormen( { max: -Infinity } , -Infinity ) ;
+doormen.not( { max: 3 } , NaN ) ;
+doormen.not( { max: 3 } , true ) ;
+doormen.not( { max: 3 } , false ) ;
+doormen.not( { max: 3 } , '1' ) ;
 ```
 
 min + max filter should validate accordingly, non-number should throw.
 
 ```js
-doormen.not( 15 , { min: 3, max: 10 } ) ;
-doormen( 10 , { min: 3, max: 10 } ) ;
-doormen( 5 , { min: 3, max: 10 } ) ;
-doormen( 3 , { min: 3, max: 10 } ) ;
-doormen.not( 1 , { min: 3, max: 10 } ) ;
-doormen.not( 0 , { min: 3, max: 10 } ) ;
-doormen.not( -10 , { min: 3, max: 10 } ) ;
-doormen.not( Infinity , { min: 3, max: 10 } ) ;
-doormen.not( -Infinity , { min: 3, max: 10 } ) ;
-doormen.not( NaN , { min: 3, max: 10 } ) ;
-doormen.not( true , { min: 3, max: 10 } ) ;
-doormen.not( false , { min: 3, max: 10 } ) ;
-doormen.not( '6' , { min: 3, max: 10 } ) ;
+doormen.not( { min: 3, max: 10 } , 15 ) ;
+doormen( { min: 3, max: 10 } , 10 ) ;
+doormen( { min: 3, max: 10 } , 5 ) ;
+doormen( { min: 3, max: 10 } , 3 ) ;
+doormen.not( { min: 3, max: 10 } , 1 ) ;
+doormen.not( { min: 3, max: 10 } , 0 ) ;
+doormen.not( { min: 3, max: 10 } , -10 ) ;
+doormen.not( { min: 3, max: 10 } , Infinity ) ;
+doormen.not( { min: 3, max: 10 } , -Infinity ) ;
+doormen.not( { min: 3, max: 10 } , NaN ) ;
+doormen.not( { min: 3, max: 10 } , true ) ;
+doormen.not( { min: 3, max: 10 } , false ) ;
+doormen.not( { min: 3, max: 10 } , '6' ) ;
 ```
 
 'length' filter should validate accordingly, data that do not have a length should throw.
 
 ```js
-doormen( "abc" , { length: 3 } ) ;
-doormen.not( "abcde" , { length: 3 } ) ;
-doormen.not( "ab" , { length: 3 } ) ;
-doormen.not( "" , { length: 3 } ) ;
+doormen( { length: 3 } , "abc" ) ;
+doormen.not( { length: 3 } , "abcde" ) ;
+doormen.not( { length: 3 } , "ab" ) ;
+doormen.not( { length: 3 } , "" ) ;
 
-doormen.not( 1 , { length: 3 } ) ;
-doormen.not( 1 , { length: 0 } ) ;
-doormen.not( NaN , { length: 3 } ) ;
-doormen.not( true , { length: 3 } ) ;
-doormen.not( false , { length: 3 } ) ;
+doormen.not( { length: 3 } , 1 ) ;
+doormen.not( { length: 0 } , 1 ) ;
+doormen.not( { length: 3 } , NaN ) ;
+doormen.not( { length: 3 } , true ) ;
+doormen.not( { length: 3 } , false ) ;
 ```
 
 minLength filter should validate accordingly, data that do not have a length should throw.
 
 ```js
-doormen( "abc" , { minLength: 3 } ) ;
-doormen( "abcde" , { minLength: 3 } ) ;
-doormen.not( "ab" , { minLength: 3 } ) ;
-doormen.not( "" , { minLength: 3 } ) ;
+doormen( { minLength: 3 } , "abc" ) ;
+doormen( { minLength: 3 } , "abcde" ) ;
+doormen.not( { minLength: 3 } , "ab" ) ;
+doormen.not( { minLength: 3 } , "" ) ;
 
-doormen.not( 1 , { minLength: 3 } ) ;
-doormen.not( 1 , { minLength: 0 } ) ;
-doormen.not( NaN , { minLength: 3 } ) ;
-doormen.not( true , { minLength: 3 } ) ;
-doormen.not( false , { minLength: 3 } ) ;
+doormen.not( { minLength: 3 } , 1 ) ;
+doormen.not( { minLength: 0 } , 1 ) ;
+doormen.not( { minLength: 3 } , NaN ) ;
+doormen.not( { minLength: 3 } , true ) ;
+doormen.not( { minLength: 3 } , false ) ;
 ```
 
 maxLength filter should validate accordingly, data that do not have a length should throw.
 
 ```js
-doormen( "abc" , { maxLength: 3 } ) ;
-doormen.not( "abcde" , { maxLength: 3 } ) ;
-doormen( "ab" , { maxLength: 3 } ) ;
-doormen( "" , { maxLength: 3 } ) ;
+doormen( { maxLength: 3 } , "abc" ) ;
+doormen.not( { maxLength: 3 } , "abcde" ) ;
+doormen( { maxLength: 3 } , "ab" ) ;
+doormen( { maxLength: 3 } , "" ) ;
 
-doormen.not( 1 , { maxLength: 3 } ) ;
-doormen.not( 1 , { maxLength: 0 } ) ;
-doormen.not( NaN , { maxLength: 3 } ) ;
-doormen.not( true , { maxLength: 3 } ) ;
-doormen.not( false , { maxLength: 3 } ) ;
+doormen.not( { maxLength: 3 } , 1 ) ;
+doormen.not( { maxLength: 0 } , 1 ) ;
+doormen.not( { maxLength: 3 } , NaN ) ;
+doormen.not( { maxLength: 3 } , true ) ;
+doormen.not( { maxLength: 3 } , false ) ;
 ```
 
 minLength + maxLength filter should validate accordingly, data that do not have a length should throw.
 
 ```js
-doormen( "abc" , { minLength: 3 , maxLength: 5 } ) ;
-doormen( "abcd" , { minLength: 3 , maxLength: 5 } ) ;
-doormen( "abcde" , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( "abcdef" , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( "ab" , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( "" , { minLength: 3 , maxLength: 5 } ) ;
+doormen( { minLength: 3 , maxLength: 5 } , "abc" ) ;
+doormen( { minLength: 3 , maxLength: 5 } , "abcd" ) ;
+doormen( { minLength: 3 , maxLength: 5 } , "abcde" ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , "abcdef" ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , "ab" ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , "" ) ;
 
-doormen.not( 1 , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( 1 , { maxLength: 0 } ) ;
-doormen.not( NaN , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( true , { minLength: 3 , maxLength: 5 } ) ;
-doormen.not( false , { minLength: 3 , maxLength: 5 } ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , 1 ) ;
+doormen.not( { maxLength: 0 } , 1 ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , NaN ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , true ) ;
+doormen.not( { minLength: 3 , maxLength: 5 } , false ) ;
 ```
 
 'match' filter should validate accordingly using a RegExp.
 
 ```js
-doormen( "" , { match: "^[a-f]*$" } ) ;
-doormen.not( "" , { match: "^[a-f]+$" } ) ;
-doormen( "abc" , { match: "^[a-f]*$" } ) ;
-doormen( "abcdef" , { match: "^[a-f]*$" } ) ;
-doormen.not( "ghi" , { match: "^[a-f]*$" } ) ;
-doormen.not( "ghi" , { match: /^[a-f]*$/ } ) ;
+doormen( { match: "^[a-f]*$" } , "" ) ;
+doormen.not( { match: "^[a-f]+$" } , "" ) ;
+doormen( { match: "^[a-f]*$" } , "abc" ) ;
+doormen( { match: "^[a-f]*$" } , "abcdef" ) ;
+doormen.not( { match: "^[a-f]*$" } , "ghi" ) ;
+doormen.not( { match: /^[a-f]*$/ } , "ghi" ) ;
 
-doormen.not( 1 , { match: "^[a-f]*$" } ) ;
-doormen.not( 1 , { maxLength: 0 } ) ;
-doormen.not( NaN , { match: "^[a-f]*$" } ) ;
-doormen.not( true , { match: "^[a-f]*$" } ) ;
-doormen.not( false , { match: "^[a-f]*$" } ) ;
+doormen.not( { match: "^[a-f]*$" } , 1 ) ;
+doormen.not( { match: "^[a-f]*$" } , NaN ) ;
+doormen.not( { match: "^[a-f]*$" } , true ) ;
+doormen.not( { match: "^[a-f]*$" } , false ) ;
 ```
 
 'in' filter should validate if the value is listed.
 
 ```js
-doormen.not( 10 , { in: [ 1,5,7 ] } ) ;
-doormen( 5 , { in: [ 1,5,7 ] } ) ;
-doormen( 1 , { in: [ 1,5,7 ] } ) ;
-doormen.not( 0 , { in: [ 1,5,7 ] } ) ;
-doormen.not( -10 , { in: [ 1,5,7 ] } ) ;
-doormen.not( Infinity , { in: [ 1,5,7 ] } ) ;
-doormen( Infinity , { in: [ 1,5,Infinity,7 ] } ) ;
-doormen.not( -Infinity , { in: [ 1,5,7 ] } ) ;
-doormen.not( NaN , { in: [ 1,5,7 ] } ) ;
-doormen( NaN , { in: [ 1,5,NaN,7 ] } ) ;
+doormen.not( { in: [ 1,5,7 ] } , 10 ) ;
+doormen( { in: [ 1,5,7 ] } , 5 ) ;
+doormen( { in: [ 1,5,7 ] } , 1 ) ;
+doormen.not( { in: [ 1,5,7 ] } , 0 ) ;
+doormen.not( { in: [ 1,5,7 ] } , -10 ) ;
+doormen.not( { in: [ 1,5,7 ] } , Infinity ) ;
+doormen( { in: [ 1,5,Infinity,7 ] } , Infinity ) ;
+doormen.not( { in: [ 1,5,7 ] } , -Infinity ) ;
+doormen.not( { in: [ 1,5,7 ] } , NaN ) ;
+doormen( { in: [ 1,5,NaN,7 ] } , NaN ) ;
 
-doormen( true , { in: [ 1,true,5,7 ] } ) ;
-doormen.not( true , { in: [ 1,5,7 ] } ) ;
-doormen( false , { in: [ 1,false,5,7 ] } ) ;
-doormen.not( false , { in: [ 1,5,7 ] } ) ;
+doormen( { in: [ 1,true,5,7 ] } , true ) ;
+doormen.not( { in: [ 1,5,7 ] } , true ) ;
+doormen( { in: [ 1,false,5,7 ] } , false ) ;
+doormen.not( { in: [ 1,5,7 ] } , false ) ;
 
-doormen.not( "text" , { in: [ 1,5,7 ] } ) ;
-doormen( "text" , { in: [ 1,"text",5,7 ] } ) ;
-doormen( "text" , { in: [ "string", "text", "bob" ] } ) ;
-doormen.not( "bobby" , { in: [ "string", "text", "bob" ] } ) ;
-doormen( "" , { in: [ "string", "text", "" ] } ) ;
-doormen.not( "" , { in: [ "string", "text", "bob" ] } ) ;
+doormen.not( { in: [ 1,5,7 ] } , "text" ) ;
+doormen( { in: [ 1,"text",5,7 ] } , "text" ) ;
+doormen( { in: [ "string", "text", "bob" ] } , "text" ) ;
+doormen.not( { in: [ "string", "text", "bob" ] } , "bobby" ) ;
+doormen( { in: [ "string", "text", "" ] } , "" ) ;
+doormen.not( { in: [ "string", "text", "bob" ] } , "" ) ;
 ```
 
 'notIn' filter should validate if the value is listed.
 
 ```js
-doormen( 10 , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( 5 , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( 1 , { notIn: [ 1,5,7 ] } ) ;
-doormen( 0 , { notIn: [ 1,5,7 ] } ) ;
-doormen( -10 , { notIn: [ 1,5,7 ] } ) ;
-doormen( Infinity , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( Infinity , { notIn: [ 1,5,Infinity,7 ] } ) ;
-doormen( -Infinity , { notIn: [ 1,5,7 ] } ) ;
-doormen( NaN , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( NaN , { notIn: [ 1,5,NaN,7 ] } ) ;
+doormen( { notIn: [ 1,5,7 ] } , 10 ) ;
+doormen.not( { notIn: [ 1,5,7 ] } , 5 ) ;
+doormen.not( { notIn: [ 1,5,7 ] } , 1 ) ;
+doormen( { notIn: [ 1,5,7 ] } , 0 ) ;
+doormen( { notIn: [ 1,5,7 ] } , -10 ) ;
+doormen( { notIn: [ 1,5,7 ] } , Infinity ) ;
+doormen.not( { notIn: [ 1,5,Infinity,7 ] } , Infinity ) ;
+doormen( { notIn: [ 1,5,7 ] } , -Infinity ) ;
+doormen( { notIn: [ 1,5,7 ] } , NaN ) ;
+doormen.not( { notIn: [ 1,5,NaN,7 ] } , NaN ) ;
 
-doormen.not( true , { notIn: [ 1,true,5,7 ] } ) ;
-doormen( true , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( false , { notIn: [ 1,false,5,7 ] } ) ;
-doormen( false , { notIn: [ 1,5,7 ] } ) ;
+doormen.not( { notIn: [ 1,true,5,7 ] } , true ) ;
+doormen( { notIn: [ 1,5,7 ] } , true ) ;
+doormen.not( { notIn: [ 1,false,5,7 ] } , false ) ;
+doormen( { notIn: [ 1,5,7 ] } , false ) ;
 
-doormen( "text" , { notIn: [ 1,5,7 ] } ) ;
-doormen.not( "text" , { notIn: [ 1,"text",5,7 ] } ) ;
-doormen.not( "text" , { notIn: [ "string", "text", "bob" ] } ) ;
-doormen( "bobby" , { notIn: [ "string", "text", "bob" ] } ) ;
-doormen.not( "" , { notIn: [ "string", "text", "" ] } ) ;
-doormen( "" , { notIn: [ "string", "text", "bob" ] } ) ;
+doormen( { notIn: [ 1,5,7 ] } , "text" ) ;
+doormen.not( { notIn: [ 1,"text",5,7 ] } , "text" ) ;
+doormen.not( { notIn: [ "string", "text", "bob" ] } , "text" ) ;
+doormen( { notIn: [ "string", "text", "bob" ] } , "bobby" ) ;
+doormen.not( { notIn: [ "string", "text", "" ] } , "" ) ;
+doormen( { notIn: [ "string", "text", "bob" ] } , "" ) ;
 ```
 
 'in' filter containing object and arrays.
 
 ```js
-doormen( { a: 2 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
-doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
-doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } ) ;
-doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
-doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
-doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+doormen( { in: [ 1 , { a: 2 } , 5 , 7 ] } , { a: 2 } ) ;
+doormen.not( { in: [ 1 , { a: 2 } , 5 , 7 ] } , { a: 2 , b: 5 } ) ;
+doormen.not( { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } , { a: 2 , b: 5 } ) ;
+doormen( { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } , { a: 2 , b: 5 } ) ;
+doormen( { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } , [ 'a' , 2 ] ) ;
+doormen.not( { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } , [ 'a' , 2 ] ) ;
 ```
 
 <a name="filters"></a>
@@ -865,50 +824,50 @@ doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
 'greaterThan' and aliases ('gt' and '>') filter should validate accordingly, non-number should throw.
 
 ```js
-doormen( 10 , { filter: { greaterThan: 3 } } ) ;
-doormen( 3.0001 , { filter: { greaterThan: 3 } } ) ;
-doormen.not( 3 , { filter: { greaterThan: 3 } } ) ;
-doormen.not( 1 , { filter: { greaterThan: 3 } } ) ;
-doormen.not( 0 , { filter: { greaterThan: 3 } } ) ;
-doormen.not( -10 , { filter: { greaterThan: 3 } } ) ;
-doormen( Infinity , { filter: { greaterThan: 3 } } ) ;
-doormen.not( Infinity , { filter: { greaterThan: Infinity } } ) ;
-doormen.not( -Infinity , { filter: { greaterThan: 3 } } ) ;
-doormen.not( NaN , { filter: { greaterThan: 3 } } ) ;
-doormen.not( true , { filter: { greaterThan: 3 } } ) ;
-doormen.not( false , { filter: { greaterThan: 3 } } ) ;
-doormen.not( undefined , { filter: { greaterThan: 3 } } ) ;
-doormen.not( undefined , { filter: { greaterThan: 0 } } ) ;
-doormen.not( undefined , { filter: { greaterThan: -3 } } ) ;
-doormen.not( '10' , { filter: { greaterThan: 3 } } ) ;
+doormen( { filter: { greaterThan: 3 } } , 10 ) ;
+doormen( { filter: { greaterThan: 3 } } , 3.00001 ) ;
+doormen.not( { filter: { greaterThan: 3 } } , 3 ) ;
+doormen.not( { filter: { greaterThan: 3 } } , 1 ) ;
+doormen.not( { filter: { greaterThan: 3 } } , 0 ) ;
+doormen.not( { filter: { greaterThan: 3 } } , -10 ) ;
+doormen( { filter: { greaterThan: 3 } } , Infinity ) ;
+doormen.not( { filter: { greaterThan: Infinity } } , Infinity ) ;
+doormen.not( { filter: { greaterThan: 3 } } , -Infinity ) ;
+doormen.not( { filter: { greaterThan: 3 } } , NaN ) ;
+doormen.not( { filter: { greaterThan: 3 } } , true ) ;
+doormen.not( { filter: { greaterThan: 3 } } , false ) ;
+doormen.not( { filter: { greaterThan: 3 } } , undefined ) ;
+doormen.not( { filter: { greaterThan: 0 } } , undefined ) ;
+doormen.not( { filter: { greaterThan: -3 } } , undefined ) ;
+doormen.not( { filter: { greaterThan: 3 } } , '10' ) ;
 
-doormen( 3.0001 , { filter: { gt: 3 } } ) ;
-doormen.not( 3 , { filter: { gt: 3 } } ) ;
-doormen( 3.0001 , { filter: { '>': 3 } } ) ;
-doormen.not( 3 , { filter: { '>': 3 } } ) ;
+doormen( { filter: { gt: 3 } } , 3.00001) ;
+doormen.not( { filter: { gt: 3 } } , 3 ) ;
+doormen( { filter: { '>': 3 } } , 3.00001 ) ;
+doormen.not( { filter: { '>': 3 } } , 3 ) ;
 ```
 
 'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw.
 
 ```js
-doormen.not( 10 , { filter: { lesserThan: 3 } } ) ;
-doormen( 2.999 , { filter: { lesserThan: 3 } } ) ;
-doormen.not( 3 , { filter: { lesserThan: 3 } } ) ;
-doormen( 1 , { filter: { lesserThan: 3 } } ) ;
-doormen( 0 , { filter: { lesserThan: 3 } } ) ;
-doormen( -10 , { filter: { lesserThan: 3 } } ) ;
-doormen.not( Infinity , { filter: { lesserThan: 3 } } ) ;
-doormen( -Infinity , { filter: { lesserThan: 3 } } ) ;
-doormen.not( -Infinity , { filter: { lesserThan: -Infinity } } ) ;
-doormen.not( NaN , { filter: { lesserThan: 3 } } ) ;
-doormen.not( true , { filter: { lesserThan: 3 } } ) ;
-doormen.not( false , { filter: { lesserThan: 3 } } ) ;
-doormen.not( '1' , { filter: { lesserThan: 3 } } ) ;
+doormen.not( { filter: { lesserThan: 3 } } , 10 ) ;
+doormen( { filter: { lesserThan: 3 } } , 2.999 ) ;
+doormen.not( { filter: { lesserThan: 3 } } , 3 ) ;
+doormen( { filter: { lesserThan: 3 } } , 1 ) ;
+doormen( { filter: { lesserThan: 3 } } , 0 ) ;
+doormen( { filter: { lesserThan: 3 } } , -10 ) ;
+doormen.not( { filter: { lesserThan: 3 } } , Infinity ) ;
+doormen( { filter: { lesserThan: 3 } } , -Infinity ) ;
+doormen.not( { filter: { lesserThan: -Infinity } } , -Infinity ) ;
+doormen.not( { filter: { lesserThan: 3 } } , NaN ) ;
+doormen.not( { filter: { lesserThan: 3 } } , true ) ;
+doormen.not( { filter: { lesserThan: 3 } } , false ) ;
+doormen.not( { filter: { lesserThan: 3 } } , '1' ) ;
 
-doormen( 2.999 , { filter: { lt: 3 } } ) ;
-doormen.not( 3 , { filter: { lt: 3 } } ) ;
-doormen( 2.999 , { filter: { '<': 3 } } ) ;
-doormen.not( 3 , { filter: { '<': 3 } } ) ;
+doormen( { filter: { lt: 3 } } , 2.999 ) ;
+doormen.not( { filter: { lt: 3 } } , 3 ) ;
+doormen( { filter: { '<': 3 } } , 2.999 ) ;
+doormen.not( { filter: { '<': 3 } } , 3 ) ;
 ```
 
 <a name="children-and-recursivity"></a>
@@ -921,26 +880,26 @@ var schema = {
 } ;
 
 // Object
-doormen( { b: 'text' } , schema ) ;
-doormen.not( { a: 1 } , schema ) ;
-doormen.not( { a: 1, b: 'text' } , schema ) ;
-doormen.not( { a: 'text', b: 3 } , schema ) ;
-doormen( { a: 'text', b: 'string' } , schema ) ;
-doormen.not( { A: 'TEXT', b: 'text' , c: undefined } , schema ) ;
+doormen( schema , { b: 'text' } ) ;
+doormen.not( schema , { a: 1 } ) ;
+doormen.not( schema , { a: 1, b: 'text' } ) ;
+doormen.not( schema , { a: 'text', b: 3 } ) ;
+doormen( schema , { a: 'text', b: 'string' } ) ;
+doormen.not( schema , { A: 'TEXT', b: 'text' , c: undefined } ) ;
 
 // Array
-doormen( [ 'text' ] , schema ) ;
-doormen( [] , schema ) ;
-doormen( [ 'text' , 'string' ] , schema ) ;
-doormen.not( [ 'text' , 'string' , null ] , schema ) ;
-doormen.not( [ 1 , 'text' , 'string' ] , schema ) ;
-doormen.not( [ 'text' , 'string' , null ] , schema ) ;
-doormen.not( [ true ] , schema ) ;
+doormen( schema , [ 'text' ] ) ;
+doormen( schema , [] ) ;
+doormen( schema , [ 'text' , 'string' ] ) ;
+doormen.not( schema , [ 'text' , 'string' , null ] ) ;
+doormen.not( schema , [ 1 , 'text' , 'string' ] ) ;
+doormen.not( schema , [ 'text' , 'string' , null ] ) ;
+doormen.not( schema , [ true ] ) ;
 
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an array, it should check if the value has all listed properties, no extra properties are allowed.
@@ -950,16 +909,16 @@ var schema = {
 	properties: [ 'a' , 'b' ]
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen( { a: 'text', b: 3 } , schema ) ;
-doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( { a: 1 } , schema ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen( schema , { a: 'text', b: 3 } ) ;
+doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , { a: 1 } ) ;
 
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an array and 'extraProperties' is set, it should allow non-listed extra-properties.
@@ -970,16 +929,16 @@ var schema = {
 	extraProperties: true
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen( { a: 'text', b: 3 } , schema ) ;
-doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( { a: 1 } , schema ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen( schema , { a: 'text', b: 3 } ) ;
+doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , { a: 1 } ) ;
 
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an object, it should perform the check recursively for each listed child, no extra properties are allowed.
@@ -992,16 +951,16 @@ var schema = {
 	}
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen.not( { a: 'text', b: 3 } , schema ) ;
-doormen.not( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( { a: 1 } , schema ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen.not( schema , { a: 'text', b: 3 } ) ;
+doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , { a: 1 } ) ;
 
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an object and 'extraProperties' is set, it should allow extra-properties.
@@ -1015,16 +974,16 @@ var schema = {
 	extraProperties: true
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen.not( { a: 'text', b: 3 } , schema ) ;
-doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( { a: 1 } , schema ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen.not( schema , { a: 'text', b: 3 } ) ;
+doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , { a: 1 } ) ;
 
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 'elements' should perform the check recursively for each children elements, using a specific schema for each one, extra-element are not allowed.
@@ -1038,18 +997,18 @@ var schema = {
 	]
 } ;
 
-doormen( [ 'text' , 3 , false ] , schema ) ;
-doormen.not( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
-doormen.not( [] , schema ) ;
-doormen.not( [ 'text' , 3 ] , schema ) ;
-doormen.not( [ true ] , schema ) ;
+doormen( schema , [ 'text' , 3 , false ] ) ;
+doormen.not( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
+doormen.not( schema , [] ) ;
+doormen.not( schema , [ 'text' , 3 ] ) ;
+doormen.not( schema , [ true ] ) ;
 
-doormen.not( {} , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , {} ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 when 'elements' is used in conjunction with 'extraElements', extra-elements are allowed.
@@ -1064,18 +1023,18 @@ var schema = {
 	extraElements: true
 } ;
 
-doormen( [ 'text' , 3 , false ] , schema ) ;
-doormen( [ 'text' , 3 , false , 'extra' , true ] , schema ) ;
-doormen.not( [] , schema ) ;
-doormen.not( [ 'text' , 3 ] , schema ) ;
-doormen.not( [ true ] , schema ) ;
+doormen( schema , [ 'text' , 3 , false ] ) ;
+doormen( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
+doormen.not( schema , [] ) ;
+doormen.not( schema , [ 'text' , 3 ] ) ;
+doormen.not( schema , [ true ] ) ;
 
-doormen.not( {} , schema ) ;
-doormen.not( { b: 'text' } , schema ) ;
-doormen.not( 'text' , schema ) ;
-doormen.not( 5 , schema ) ;
-doormen.not( null , schema ) ;
-doormen.not( undefined , schema ) ;
+doormen.not( schema , {} ) ;
+doormen.not( schema , { b: 'text' } ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
 ```
 
 <a name="properties-having-when"></a>
@@ -1100,19 +1059,19 @@ var schema = {
 } ;
 
 doormen.equals(
-	doormen( { a: 0, b: 'text' } , schema ) ,
+	doormen( schema , { a: 0, b: 'text' } ) ,
 	{ a: 0, b: 'text' }
 ) ;
 
 doormen.equals(
-	doormen( { a: 1, b: 'text' } , schema ) ,
+	doormen( schema , { a: 1, b: 'text' } ) ,
 	{ a: 1 }
 ) ;
 
-doormen.not( { a: 0 } , schema ) ;
+doormen.not( schema , { a: 0 } ) ;
 
 doormen.equals(
-	doormen( { a: 1 } , schema ) ,
+	doormen( schema , { a: 1 } ) ,
 	{ a: 1 }
 ) ;
 
@@ -1134,19 +1093,19 @@ var schema = {
 } ;
 
 doormen.equals(
-	doormen( { a: 0, b: 'text' } , schema ) ,
+	doormen( schema , { a: 0, b: 'text' } ) ,
 	{ a: 0, b: 'text' }
 ) ;
 
 doormen.equals(
-	doormen( { a: 1, b: 'text' } , schema ) ,
+	doormen( schema , { a: 1, b: 'text' } ) ,
 	{ a: 1 }
 ) ;
 
-doormen.not( { a: 0 } , schema ) ;
+doormen.not( schema , { a: 0 } ) ;
 
 doormen.equals(
-	doormen( { a: 1 } , schema ) ,
+	doormen( schema , { a: 1 } ) ,
 	{ a: 1 }
 ) ;
 ```
@@ -1179,30 +1138,30 @@ var schema = {
 } ;
 
 doormen.equals(
-	doormen( { a: 0, b: 'text', c: 'toto' } , schema ) ,
+	doormen( schema , { a: 0, b: 'text', c: 'toto' } ) ,
 	{ a: 0, b: 'text' }
 ) ;
 
 doormen.equals(
-	doormen( { a: 0, b: 'text' } , schema ) ,
+	doormen( schema , { a: 0, b: 'text' } ) ,
 	{ a: 0, b: 'text' }
 ) ;
 
 doormen.equals(
-	doormen( { a: 1, b: 'text' } , schema ) ,
+	doormen( schema , { a: 1, b: 'text' } ) ,
 	{ a: 1 }
 ) ;
 
 doormen.equals(
-	doormen( { a: 1, b: undefined } , schema ) ,
+	doormen( schema , { a: 1, b: undefined } ) ,
 	{ a: 1 }
 ) ;
 
-doormen.not( { a: 0, b: undefined } , schema ) ;
-doormen.not( { a: 0 } , schema ) ;
+doormen.not( schema , { a: 0, b: undefined } ) ;
+doormen.not( schema , { a: 0 } ) ;
 
 doormen.equals(
-	doormen( { a: 1 } , schema ) ,
+	doormen( schema , { a: 1 } ) ,
 	{ a: 1 }
 ) ;
 ```
@@ -1232,7 +1191,7 @@ var schema = {
 } ;
 
 // Circular 'when' throw
-doormen.not( { a: 0, b: 'text' } , schema ) ;
+doormen.not( schema , { a: 0, b: 'text' } ) ;
 
 var schema = {
 	properties: {
@@ -1248,7 +1207,7 @@ var schema = {
 } ;
 
 // Circular 'when' throw
-doormen.not( { a: 0, b: 'text' } , schema ) ;
+doormen.not( schema , { a: 0, b: 'text' } ) ;
 ```
 
 <a name="numbers-meta-types"></a>
@@ -1256,53 +1215,53 @@ doormen.not( { a: 0, b: 'text' } , schema ) ;
 should validate real accordingly.
 
 ```js
-doormen( 0 , { type: 'real' } ) ;
-doormen( 1 , { type: 'real' } ) ;
-doormen( -1 , { type: 'real' } ) ;
-doormen( 0.3 , { type: 'real' } ) ;
-doormen( 18.36 , { type: 'real' } ) ;
-doormen.not( 1/0 , { type: 'real' } ) ;
-doormen.not( -1/0 , { type: 'real' } ) ;
-doormen.not( Infinity , { type: 'real' } ) ;
-doormen.not( -Infinity , { type: 'real' } ) ;
-doormen.not( NaN , { type: 'real' } ) ;
+doormen( { type: 'real' } , 0 ) ;
+doormen( { type: 'real' } , 1 ) ;
+doormen( { type: 'real' } , -1 ) ;
+doormen( { type: 'real' } , 0.3 ) ;
+doormen( { type: 'real' } , 18.36 ) ;
+doormen.not( { type: 'real' } , 1/0 ) ;
+doormen.not( { type: 'real' } , -1/0 ) ;
+doormen.not( { type: 'real' } , Infinity ) ;
+doormen.not( { type: 'real' } , -Infinity ) ;
+doormen.not( { type: 'real' } , NaN ) ;
 
-doormen.not( undefined , { type: 'real' } ) ;
-doormen.not( null , { type: 'real' } ) ;
-doormen.not( false , { type: 'real' } ) ;
-doormen.not( true , { type: 'real' } ) ;
-doormen.not( '' , { type: 'real' } ) ;
-doormen.not( 'text' , { type: 'real' } ) ;
-doormen.not( {} , { type: 'real' } ) ;
-doormen.not( [] , { type: 'real' } ) ;
+doormen.not( { type: 'real' } , undefined ) ;
+doormen.not( { type: 'real' } , null ) ;
+doormen.not( { type: 'real' } , false ) ;
+doormen.not( { type: 'real' } , true ) ;
+doormen.not( { type: 'real' } , '' ) ;
+doormen.not( { type: 'real' } , 'text' ) ;
+doormen.not( { type: 'real' } , {} ) ;
+doormen.not( { type: 'real' } , [] ) ;
 ```
 
 should validate integer accordingly.
 
 ```js
-doormen( 0 , { type: 'integer' } ) ;
-doormen( 1 , { type: 'integer' } ) ;
-doormen( 123456789 , { type: 'integer' } ) ;
-doormen( -1 , { type: 'integer' } ) ;
-doormen.not( 0.00001 , { type: 'integer' } ) ;
-doormen.not( -0.00001 , { type: 'integer' } ) ;
-doormen.not( 123456.00001 , { type: 'integer' } ) ;
-doormen.not( 123456.99999 , { type: 'integer' } ) ;
-doormen.not( 0.3 , { type: 'integer' } ) ;
-doormen.not( 18.36 , { type: 'integer' } ) ;
-doormen.not( 1/0 , { type: 'integer' } ) ;
-doormen.not( Infinity , { type: 'integer' } ) ;
-doormen.not( -Infinity , { type: 'integer' } ) ;
-doormen.not( NaN , { type: 'integer' } ) ;
+doormen( { type: 'integer' } , 0 ) ;
+doormen( { type: 'integer' } , 1 ) ;
+doormen( { type: 'integer' } , 123456789 ) ;
+doormen( { type: 'integer' } , -1 ) ;
+doormen.not( { type: 'integer' } , 0.00001 ) ;
+doormen.not( { type: 'integer' } , -0.00001 ) ;
+doormen.not( { type: 'integer' } , 123456.00001 ) ;
+doormen.not( { type: 'integer' } , 123456.99999 ) ;
+doormen.not( { type: 'integer' } , 0.3 ) ;
+doormen.not( { type: 'integer' } , 18.36 ) ;
+doormen.not( { type: 'integer' } , 1/0 ) ;
+doormen.not( { type: 'integer' } , Infinity ) ;
+doormen.not( { type: 'integer' } , -Infinity ) ;
+doormen.not( { type: 'integer' } , NaN ) ;
 
-doormen.not( undefined , { type: 'integer' } ) ;
-doormen.not( null , { type: 'integer' } ) ;
-doormen.not( false , { type: 'integer' } ) ;
-doormen.not( true , { type: 'integer' } ) ;
-doormen.not( '' , { type: 'integer' } ) ;
-doormen.not( 'text' , { type: 'integer' } ) ;
-doormen.not( {} , { type: 'integer' } ) ;
-doormen.not( [] , { type: 'integer' } ) ;
+doormen.not( { type: 'integer' } , undefined ) ;
+doormen.not( { type: 'integer' } , null ) ;
+doormen.not( { type: 'integer' } , false ) ;
+doormen.not( { type: 'integer' } , true ) ;
+doormen.not( { type: 'integer' } , '' ) ;
+doormen.not( { type: 'integer' } , 'text' ) ;
+doormen.not( { type: 'integer' } , {} ) ;
+doormen.not( { type: 'integer' } , [] ) ;
 ```
 
 <a name="strings-meta-types"></a>
@@ -1310,124 +1269,124 @@ doormen.not( [] , { type: 'integer' } ) ;
 should validate ipv4 accordingly.
 
 ```js
-doormen( '127.0.0.1' , { type: 'ipv4' } ) ;
-doormen( '127.000.00.001' , { type: 'ipv4' } ) ;
-doormen.not( '127.0000.00.001' , { type: 'ipv4' } ) ;
-doormen.not( '0127.000.00.001' , { type: 'ipv4' } ) ;
-doormen.not( '127.0.0.0001' , { type: 'ipv4' } ) ;
-doormen.not( '127.0.0.' , { type: 'ipv4' } ) ;
-doormen.not( '127.0.0.256' , { type: 'ipv4' } ) ;
-doormen.not( '127.0.0.1.' , { type: 'ipv4' } ) ;
-doormen.not( '.127.0.0.1' , { type: 'ipv4' } ) ;
-doormen.not( '.127.0.0.' , { type: 'ipv4' } ) ;
+doormen( { type: 'ipv4' } , '127.0.0.1' ) ;
+doormen( { type: 'ipv4' } , '127.000.00.001' ) ;
+doormen.not( { type: 'ipv4' } , '127.0000.00.001' ) ;
+doormen.not( { type: 'ipv4' } , '0127.000.00.001' ) ;
+doormen.not( { type: 'ipv4' } , '127.0.0.0001' ) ;
+doormen.not( { type: 'ipv4' } , '127.0.0.' ) ;
+doormen.not( { type: 'ipv4' } , '127.0.0.256' ) ;
+doormen.not( { type: 'ipv4' } , '127.0.0.1.' ) ;
+doormen.not( { type: 'ipv4' } , '.127.0.0.1' ) ;
+doormen.not( { type: 'ipv4' } , '.127.0.0.' ) ;
 ```
 
 should validate ipv6 accordingly.
 
 ```js
-doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
-doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
-doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen( '2001:db8::ff00:0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( '2001:db8:::0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ipv6' } ) ;
-doormen.not( '2001::ff00::0042:8329' , { type: 'ipv6' } ) ;
-doormen( '::1' , { type: 'ipv6' } ) ;
-doormen( '1::' , { type: 'ipv6' } ) ;
+doormen( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ipv6' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ipv6' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+doormen( { type: 'ipv6' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+doormen( { type: 'ipv6' } , '2001:db8::ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:db8:::0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:db8::ff00::0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001::ff00::0042:8329' ) ;
+doormen( { type: 'ipv6' } , '::1' ) ;
+doormen( { type: 'ipv6' } , '1::' ) ;
 ```
 
 should validate ip accordingly.
 
 ```js
-doormen( '127.0.0.1' , { type: 'ip' } ) ;
-doormen( '127.000.00.001' , { type: 'ip' } ) ;
-doormen.not( '127.0000.00.001' , { type: 'ip' } ) ;
-doormen.not( '0127.000.00.001' , { type: 'ip' } ) ;
-doormen.not( '127.0.0.0001' , { type: 'ip' } ) ;
-doormen.not( '127.0.0.' , { type: 'ip' } ) ;
-doormen.not( '127.0.0.256' , { type: 'ip' } ) ;
-doormen.not( '127.0.0.1.' , { type: 'ip' } ) ;
-doormen.not( '.127.0.0.1' , { type: 'ip' } ) ;
-doormen.not( '.127.0.0.' , { type: 'ip' } ) ;
+doormen( { type: 'ip' } , '127.0.0.1' ) ;
+doormen( { type: 'ip' } , '127.000.00.001' ) ;
+doormen.not( { type: 'ip' } , '127.0000.00.001' ) ;
+doormen.not( { type: 'ip' } , '0127.000.00.001' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.0001' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.256' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.1.' ) ;
+doormen.not( { type: 'ip' } , '.127.0.0.1' ) ;
+doormen.not( { type: 'ip' } , '.127.0.0.' ) ;
 
-doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
-doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
-doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ip' } ) ;
-doormen( '2001:db8::ff00:0042:8329' , { type: 'ip' } ) ;
-doormen.not( '2001:db8:::0042:8329' , { type: 'ip' } ) ;
-doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ip' } ) ;
-doormen.not( '2001::ff00::0042:8329' , { type: 'ip' } ) ;
-doormen( '::1' , { type: 'ip' } ) ;
-doormen( '1::' , { type: 'ip' } ) ;
+doormen( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ip' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ip' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+doormen( { type: 'ip' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+doormen( { type: 'ip' } , '2001:db8::ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:db8:::0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:db8::ff00::0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001::ff00::0042:8329' ) ;
+doormen( { type: 'ip' } , '::1' ) ;
+doormen( { type: 'ip' } , '1::' ) ;
 ```
 
 should validate url accordingly.
 
 ```js
-doormen( 'http://google.com' , { type: 'url' } ) ;
-doormen( 'http://google.com/' , { type: 'url' } ) ;
-doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'url' } ) ;
-doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'url' } ) ;
-doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
-doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'url' } ) ;
-doormen( 'http://::1/#!/massive_attack' , { type: 'url' } ) ;
-doormen( 'http://127.0.0.1/' , { type: 'url' } ) ;
-doormen( 'http://localhost/' , { type: 'url' } ) ;
-doormen( 'http://localhost:8080/' , { type: 'url' } ) ;
-doormen( 'http://bob@localhost/' , { type: 'url' } ) ;
-doormen( 'http://bob:pw@localhost/' , { type: 'url' } ) ;
-doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'url' } ) ;
-doormen.not( 'http://127.0.0/' , { type: 'url' } ) ;
-doormen.not( 'http://192.168.0.256/' , { type: 'url' } ) ;
-doormen.not( 'http://19.16.33.25.6/' , { type: 'url' } ) ;
-doormen( 'file:///home/toto/TODO.txt' , { type: 'url' } ) ;
-doormen.not( 'http:///google.com/' , { type: 'url' } ) ;
-doormen.not( 'google.com' , { type: 'url' } ) ;
+doormen( { type: 'url' } , 'http://google.com' ) ;
+doormen( { type: 'url' } , 'http://google.com/' ) ;
+doormen( { type: 'url' } , 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' ) ;
+doormen( { type: 'url' } , 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' ) ;
+doormen( { type: 'url' } , 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' ) ;
+doormen( { type: 'url' } , 'http://grooveshark.com/#!/massive_attack' ) ;
+doormen( { type: 'url' } , 'http://::1/#!/massive_attack' ) ;
+doormen( { type: 'url' } , 'http://127.0.0.1/' ) ;
+doormen( { type: 'url' } , 'http://localhost/' ) ;
+doormen( { type: 'url' } , 'http://localhost:8080/' ) ;
+doormen( { type: 'url' } , 'http://bob@localhost/' ) ;
+doormen( { type: 'url' } , 'http://bob:pw@localhost/' ) ;
+doormen.not( { type: 'url' } , 'http://127.0.0.1/spaces not allowed' ) ;
+doormen.not( { type: 'url' } , 'http://127.0.0/' ) ;
+doormen.not( { type: 'url' } , 'http://192.168.0.256/' ) ;
+doormen.not( { type: 'url' } , 'http://19.16.33.25.6/' ) ;
+doormen( { type: 'url' } , 'file:///home/toto/TODO.txt' ) ;
+doormen.not( { type: 'url' } , 'http:///google.com/' ) ;
+doormen.not( { type: 'url' } , 'google.com' ) ;
 ```
 
 should validate web url accordingly.
 
 ```js
-doormen( 'http://google.com' , { type: 'weburl' } ) ;
-doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'weburl' } ) ;
-doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'weburl' } ) ;
-doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'weburl' } ) ;
-doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'weburl' } ) ;
-doormen( 'http://127.0.0.1/#!/massive_attack' , { type: 'weburl' } ) ;
-doormen( 'http://::1/#!/massive_attack' , { type: 'weburl' } ) ;
-doormen( 'http://127.0.0.1/' , { type: 'weburl' } ) ;
-doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'weburl' } ) ;
-doormen.not( 'http://127.0.0/' , { type: 'weburl' } ) ;
-doormen.not( 'http://192.168.0.256/' , { type: 'weburl' } ) ;
-doormen.not( 'http://19.16.33.25.6/' , { type: 'weburl' } ) ;
-doormen.not( 'file:///home/toto/TODO.txt' , { type: 'weburl' } ) ;
-doormen.not( 'google.com' , { type: 'weburl' } ) ;
+doormen( { type: 'weburl' } , 'http://google.com' ) ;
+doormen( { type: 'weburl' } , 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' ) ;
+doormen( { type: 'weburl' } , 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' ) ;
+doormen( { type: 'weburl' } , 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' ) ;
+doormen( { type: 'weburl' } , 'http://grooveshark.com/#!/massive_attack' ) ;
+doormen( { type: 'weburl' } , 'http://127.0.0.1/#!/massive_attack' ) ;
+doormen( { type: 'weburl' } , 'http://::1/#!/massive_attack' ) ;
+doormen( { type: 'weburl' } , 'http://127.0.0.1/' ) ;
+doormen.not( { type: 'weburl' } , 'http://127.0.0.1/spaces not allowed' ) ;
+doormen.not( { type: 'weburl' } , 'http://127.0.0/' ) ;
+doormen.not( { type: 'weburl' } , 'http://192.168.0.256/' ) ;
+doormen.not( { type: 'weburl' } , 'http://19.16.33.25.6/' ) ;
+doormen.not( { type: 'weburl' } , 'file:///home/toto/TODO.txt' ) ;
+doormen.not( { type: 'weburl' } , 'google.com' ) ;
 ```
 
 should validate email accordingly.
 
 ```js
-doormen( 'bob@gmail.com' , { type: 'email' } ) ;
-doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
-doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
-doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
-doormen.not( 'bob.@gmail.com' , { type: 'email' } ) ;
-doormen.not( '.bob@gmail.com' , { type: 'email' } ) ;
-doormen.not( 'bob..bob@gmail.com' , { type: 'email' } ) ;
-doormen( 'bob.a.bob@gmail.com' , { type: 'email' } ) ;
-doormen.not( 'bob @gmail.com' , { type: 'email' } ) ;
-doormen.not( ' bob@gmail.com' , { type: 'email' } ) ;
-doormen.not( 'b b@gmail.com' , { type: 'email' } ) ;
+doormen( { type: 'email' } , 'bob@gmail.com' ) ;
+doormen( { type: 'email' } , 'cedric.ronvel@gmail.com' ) ;
+doormen( { type: 'email' } , 'cédric.ronvel@gmail.com' ) ;
+doormen( { type: 'email' } , 'Cédric.Ronvel@gmail.com' ) ;
+doormen( { type: 'email' } , 'söm3-2än.dOm+çH4r@g33-mail.ninja' ) ;
+doormen.not( { type: 'email' } , 'bobgmail.com' ) ;
+doormen.not( { type: 'email' } , 'bob.@gmail.com' ) ;
+doormen.not( { type: 'email' } , '.bob@gmail.com' ) ;
+doormen.not( { type: 'email' } , 'bob..bob@gmail.com' ) ;
+doormen( { type: 'email' } , 'bob.a.bob@gmail.com' ) ;
+doormen.not( { type: 'email' } , 'bob @gmail.com' ) ;
+doormen.not( { type: 'email' } , ' bob@gmail.com' ) ;
+doormen.not( { type: 'email' } , 'b b@gmail.com' ) ;
 ```
 
 <a name="sanitize"></a>
@@ -1435,22 +1394,22 @@ doormen.not( 'b b@gmail.com' , { type: 'email' } ) ;
 should sanitize to 'toNumber' accordingly.
 
 ```js
-doormen.equals( doormen( 0 , { sanitize: 'toNumber' } ) , 0 ) ;
-doormen.equals( doormen( '0' , { sanitize: 'toNumber' } ) , 0 ) ;
-doormen.equals( doormen( 1 , { sanitize: 'toNumber' } ) , 1 ) ;
-doormen.equals( doormen( '1' , { sanitize: 'toNumber' } ) , 1 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , 0 ) , 0 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , '0' ) , 0 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , 1 ) , 1 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , '1' ) , 1 ) ;
 ```
 
 should sanitize to 'toArray' accordingly.
 
 ```js
-doormen.equals( doormen( [] , { sanitize: 'toArray' } ) , [] ) ;
-doormen.equals( doormen( [ 1,2,3 ] , { sanitize: 'toArray' } ) , [ 1,2,3 ] ) ;
-doormen.equals( doormen( { a: 'Ah!' , b: 'bee' } , { sanitize: 'toArray' } ) , [ { a: 'Ah!' , b: 'bee' } ] ) ;
-doormen.equals( doormen( 0 , { sanitize: 'toArray' } ) , [ 0 ] ) ;
-doormen.equals( doormen( 'a' , { sanitize: 'toArray' } ) , [ 'a' ] ) ;
+doormen.equals( doormen( { sanitize: 'toArray' } , [] ) , [] ) ;
+doormen.equals( doormen( { sanitize: 'toArray' } , [ 1,2,3 ] ) , [ 1,2,3 ] ) ;
+doormen.equals( doormen( { sanitize: 'toArray' } , { a: 'Ah!' , b: 'bee' } ) , [ { a: 'Ah!' , b: 'bee' } ] ) ;
+doormen.equals( doormen( { sanitize: 'toArray' } , 0 ) , [ 0 ] ) ;
+doormen.equals( doormen( { sanitize: 'toArray' } , 'a' ) , [ 'a' ] ) ;
 
-var fn = function() { return doormen( arguments , { sanitize: 'toArray' } ) ; } ;
+var fn = function() { return doormen( { sanitize: 'toArray' } , arguments ) ; } ;
 doormen.equals( fn() , [] ) ;
 doormen.equals( fn( 1,2,3 ) , [ 1,2,3 ] ) ;
 doormen.equals( fn( { yeepee: 'yaa' } , 'yeah' , true ) , [ { yeepee: 'yaa' } , 'yeah' , true ] ) ;
@@ -1468,10 +1427,10 @@ schema = {
 	properties: [ 'a' , 'b' ]
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen( { a: 'text', b: 3 } , schema ) ;
-doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
-doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen( schema , { a: 'text', b: 3 } ) ;
+doormen.equals( doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
+doormen.equals( doormen( schema , { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
 
 
 schema = {
@@ -1482,63 +1441,63 @@ schema = {
 	}
 } ;
 
-doormen( { a: 1, b: 'text' } , schema ) ;
-doormen.not( { a: 'text', b: 3 } , schema ) ;
-doormen.equals( doormen( { A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
-doormen.equals( doormen( { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } , schema ) , { a: 1, b: 'text' } ) ;
+doormen( schema , { a: 1, b: 'text' } ) ;
+doormen.not( schema , { a: 'text', b: 3 } ) ;
+doormen.equals( doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
+doormen.equals( doormen( schema , { omg: 'noob!', A: 'TEXT', a: 1, b: 'text' , c: 5 } ) , { a: 1, b: 'text' } ) ;
 ```
 
 should trim a string accordingly.
 
 ```js
-doormen.equals( doormen( 'a' , { sanitize: 'trim' } ) , 'a' ) ;
-doormen.equals( doormen( '  a' , { sanitize: 'trim' } ) , 'a' ) ;
-doormen.equals( doormen( 'a  ' , { sanitize: 'trim' } ) , 'a' ) ;
-doormen.equals( doormen( '  a  ' , { sanitize: 'trim' } ) , 'a' ) ;
-doormen.equals( doormen( 'ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-doormen.equals( doormen( '   ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-doormen.equals( doormen( 'ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-doormen.equals( doormen( '   ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , 'a' ) , 'a' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , '  a' ) , 'a' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , 'a   ' ) , 'a' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , '  a   ' ) , 'a' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , 'ab  cd' ) , 'ab  cd' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , '   ab  cd' ) , 'ab  cd' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , 'ab  cd   ' ) , 'ab  cd' ) ;
+doormen.equals( doormen( { sanitize: 'trim' } , '   ab  cd  ' ) , 'ab  cd' ) ;
 ```
 
 should sanitize to 'toUpperCase' accordingly.
 
 ```js
-doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toUpperCase' } ) , 'ABC DE F' ) ;
+doormen.equals( doormen( { sanitize: 'toUpperCase' } , 'aBc dE f' ) , 'ABC DE F' ) ;
 ```
 
 should sanitize to 'toLowerCase' accordingly.
 
 ```js
-doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
+doormen.equals( doormen( { sanitize: 'toLowerCase' } , 'aBc dE f' ) , 'abc de f' ) ;
 ```
 
 should sanitize to 'dashToCamelCase' accordingly.
 
 ```js
-doormen.equals( doormen( 'to-upper-case' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
-doormen.equals( doormen( 'toUpperCase' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'to-upper-case' ) , 'toUpperCase' ) ;
+doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'toUpperCase' ) , 'toUpperCase' ) ;
 ```
 
 sanitize should work recursively as well.
 
 ```js
-doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
-doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
-doormen.equals( doormen( { a: ' toto  ' , b: 'text  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' , b: 'text' } ) ;
+doormen.equals( doormen( { of: { sanitize: 'trim' } } , {} ) , {} ) ;
+doormen.equals( doormen( { of: { sanitize: 'trim' } } , { a: ' toto  ' } ) , { a: 'toto' } ) ;
+doormen.equals( doormen( { of: { sanitize: 'trim' } } , { a: ' toto  ' , b: 'text  ' } ) , { a: 'toto' , b: 'text' } ) ;
 doormen.equals( doormen(
-		{ a: ' toto  ' , b: 'text  ' } ,
-		{ of: { sanitize: 'trim' } } ) ,
+		{ of: { sanitize: 'trim' } } ,
+		{ a: ' toto  ' , b: 'text  ' } ) ,
 	{ a: 'toto' , b: 'text' }
 ) ;
 doormen.equals( doormen(
-		{ a: ' toto  ' , b: 'text  ' } ,
-		{ extraProperties: true, properties: { a: { sanitize: 'trim' } } } ) ,
+		{ extraProperties: true, properties: { a: { sanitize: 'trim' } } } ,
+		{ a: ' toto  ' , b: 'text  ' } ) ,
 	{ a: 'toto' , b: 'text  ' }
 ) ;
 doormen.equals( doormen(
-		{ a: ' toto  ' , b: 'text  ' } ,
-		{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
+		{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+		{ a: ' toto  ' , b: 'text  ' } ) ,
 	{ a: 'toto' , b: 'text' }
 ) ;
 ```
@@ -1554,13 +1513,13 @@ schema = {
 	of: { type: 'string' , sanitize: 'trim' }
 } ;
 
-report = doormen.report( { a: 'abc', b: '  def  ' } , schema ) ;
+report = doormen.report( schema , { a: 'abc', b: '  def  ' } ) ;
 //console.log( report ) ;
 doormen.equals( report.validate , true ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 'def' } ) ;
 doormen.equals( report.errors.length , 0 ) ;
 
-report = doormen.report( { a: true, b: 3 } , schema ) ;
+report = doormen.report( schema , { a: true, b: 3 } ) ;
 //console.log( report ) ;
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: true, b: 3 } ) ;
@@ -1574,7 +1533,7 @@ schema = {
 	}
 } ;
 
-report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } , schema ) ;
+report = doormen.report( schema , { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } ) ;
 //console.log( report ) ;
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
@@ -1586,9 +1545,9 @@ doormen.equals( report.errors.length , 2 ) ;
 Basic schema alternatives.
 
 ```js
-doormen( true , [ { type: 'boolean' } , { type: 'number' } ] ) ;
-doormen( 5 , [ { type: 'boolean' } , { type: 'number' } ] ) ;
-doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+doormen( [ { type: 'boolean' } , { type: 'number' } ] , true ) ;
+doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
+doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
 ```
 
 <a name="purify"></a>
@@ -1662,11 +1621,11 @@ schema = {
 } ;
 
 data = { a: 'abc', b: '  def  ' } ;
-returned = doormen.export( data , schema ) ;
+returned = doormen.export( schema , data ) ;
 doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
 doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
 
-returned = doormen( data , schema ) ;
+returned = doormen( schema , data ) ;
 doormen.equals( data , { a: 'abc', b: 'def' } ) ;
 doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
 ```
@@ -1684,26 +1643,26 @@ schema = {
 } ;
 
 data = { a: 'abc', b: '  def  ' } ;
-returned = doormen.export( data , schema ) ;
+returned = doormen.export( schema , data ) ;
 doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
 doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 
-returned = doormen( data , schema ) ;
+returned = doormen( schema , data ) ;
 doormen.equals( data , { a: 'ABC', b: 'def' } ) ;
 doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 
 data = { a: 'abc', b: '  def  ', c: 'toto' } ;
 doormen.shouldThrow( function() {
-	returned = doormen.export( data , schema ) ;
+	returned = doormen.export( schema , data ) ;
 } ) ;
 
 schema.extraProperties = true ;
 data = { a: 'abc', b: '  def  ', c: 'toto' } ;
-returned = doormen.export( data , schema ) ;
+returned = doormen.export( schema , data ) ;
 doormen.equals( data , { a: 'abc', b: '  def  ', c: 'toto' } ) ;
 doormen.equals( returned , { a: 'ABC', b: 'def' } ) ;
 
-returned = doormen( data , schema ) ;
+returned = doormen( schema , data ) ;
 doormen.equals( data , { a: 'ABC', b: 'def', c: 'toto' } ) ;
 doormen.equals( returned , { a: 'ABC', b: 'def', c: 'toto' } ) ;
 ```
@@ -1721,26 +1680,26 @@ schema = {
 } ;
 
 data = [ 'abc', '  def  ' ] ;
-returned = doormen.export( data , schema ) ;
+returned = doormen.export( schema , data ) ;
 doormen.equals( data , [ 'abc', '  def  ' ] ) ;
 doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 
-returned = doormen( data , schema ) ;
+returned = doormen( schema , data ) ;
 doormen.equals( data , [ 'ABC', 'def' ] ) ;
 doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 
 data = [ 'abc', '  def  ', 'toto' ] ;
 doormen.shouldThrow( function() {
-	returned = doormen.export( data , schema ) ;
+	returned = doormen.export( schema , data ) ;
 } ) ;
 
 schema.extraElements = true ;
 data = [ 'abc', '  def  ', 'toto' ] ;
-returned = doormen.export( data , schema ) ;
+returned = doormen.export( schema , data ) ;
 doormen.equals( data , [ 'abc', '  def  ', 'toto' ] ) ;
 doormen.equals( returned , [ 'ABC', 'def' ] ) ;
 
-returned = doormen( data , schema ) ;
+returned = doormen( schema , data ) ;
 doormen.equals( data , [ 'ABC', 'def', 'toto' ] ) ;
 doormen.equals( returned , [ 'ABC', 'def', 'toto' ] ) ;
 ```
@@ -1846,19 +1805,19 @@ doormen.equals( doormen.sentence( 'after sanitizers: trim and to-upper-case, it 
 should accept a sentence instead of a schema.
 
 ```js
-doormen( "" , 'should be a string' ) ;
-doormen( "" , 'should be an empty string' ) ;
-doormen( "one two three" , 'should be a string' ) ;
-doormen.not( "one two three" , 'should be an empty string' ) ;
-doormen( "   " , 'after trim, it should be an empty string' ) ;
-doormen.not( " !  " , 'after trim, it should be an empty string' ) ;
+doormen( 'should be a string' , "" ) ;
+doormen( 'should be an empty string' , "" ) ;
+doormen( 'should be a string' , "one two three" ) ;
+doormen.not( 'should be an empty string' , "one two three" ) ;
+doormen( 'after trim, it should be an empty string' , "    " ) ;
+doormen.not( 'after trim, it should be an empty string' , "  !  " ) ;
 
-doormen( [] , 'should be an array' ) ;
-doormen( [] , 'should be an Array' ) ;
-doormen( [] , 'should be an empty array' ) ;
-doormen( [] , 'should be an empty Array' ) ;
-doormen.not( [ 1 , 2 , 3 ] , 'should be an empty array' ) ;
-doormen( [ 1 , 2 , 3 ] , 'should be an array' ) ;
+doormen( 'should be an array' , [] ) ;
+doormen( 'should be an Array' , [] ) ;
+doormen( 'should be an empty array' , [] ) ;
+doormen( 'should be an empty Array' , [] ) ;
+doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
+doormen( 'should be an array' , [ 1,2,3 ] ) ;
 ```
 
 <a name="misc"></a>
@@ -1922,14 +1881,14 @@ var userSchema = {
 	}
 } ;
 
-doormen( {
+doormen( userSchema , {
 	id: 'alacon',
 	name: 'Doug',
 	email: 'doug@java.net',
 	password: 'myJavaCodeIsFasterThanYourC!',
-} , userSchema ) ;
+} ) ;
 
-doormen( {
+doormen( userSchema , {
 	id: 'alanoix',
 	name: 'Étienne Jabert',
 	email: 'etienne-jabert@java.net',
@@ -1937,6 +1896,6 @@ doormen( {
 	contact: {
 		fax: '0142559833'
 	}
-} , userSchema ) ;
+} ) ;
 ```
 

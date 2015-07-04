@@ -56,8 +56,20 @@ module.exports.isBrowser = true ;
 
 
 
-function doormen( data , schema , options )
+//doormen( schema , data )
+//doormen( options , schema , data )
+function doormen()
 {
+	var data , schema , options ;
+	
+	if ( arguments.length < 2 || arguments.length > 3 )
+	{
+		throw new Error( 'doormen() needs at least 2 and at most 3 arguments' ) ;
+	}
+	
+	if ( arguments.length === 2 ) { schema = arguments[ 0 ] ; data = arguments[ 1 ] ; }
+	else { options = arguments[ 0 ] ; schema = arguments[ 1 ] ; data = arguments[ 2 ] ; }
+	
 	// Schema as a sentence
 	if ( typeof schema === 'string' ) { schema = doormen.sentence( schema ) ; }
 	
@@ -77,7 +89,7 @@ function doormen( data , schema , options )
 		export: !! options.export
 	} ;
 	
-	var sanitized = context.check( data , schema , {
+	var sanitized = context.check( schema , data , {
 		path: data === null ? 'null' : ( Array.isArray( data ) ? 'array' : typeof data ) ,
 		key: ''
 	} ) ;
@@ -105,8 +117,8 @@ doormen.isBrowser = false ;
 
 
 // Shorthand
-doormen.report = function report( data , schema ) { return doormen( data , schema , { report: true } ) ; } ;
-doormen.export = function export_( data , schema ) { return doormen( data , schema , { export: true } ) ; } ;
+doormen.report = doormen.bind( doormen , { report: true } ) ;
+doormen.export = doormen.bind( doormen , { export: true } ) ;
 
 
 
@@ -126,7 +138,7 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 
 
-function check( data_ , schema , element )
+function check( schema , data_ , element )
 {
 	var i , key , sanitizerList , hashmap , data = data_ , src , returnValue , alternativeErrors ,
 		when , keys , nextKeys ;
@@ -144,7 +156,7 @@ function check( data_ , schema , element )
 		for ( i = 0 ; i < schema.length ; i ++ )
 		{
 			try {
-				data = doormen.export( data_ , schema[ i ] ) ;
+				data = doormen.export( schema[ i ] , data_ ) ;
 			}
 			catch( error ) {
 				alternativeErrors.push( error.message.replace( /\.$/ , '' ) ) ;
@@ -250,7 +262,7 @@ function check( data_ , schema , element )
 			
 			for ( i = 0 ; i < src.length ; i ++ )
 			{
-				data[ i ] = this.check( src[ i ] , schema.of , { path: element.path + '#' + i , key: i } ) ;
+				data[ i ] = this.check( schema.of , src[ i ] , { path: element.path + '#' + i , key: i } ) ;
 			}
 		}
 		else
@@ -260,7 +272,7 @@ function check( data_ , schema , element )
 			
 			for ( key in src )
 			{
-				data[ key ] = this.check( src[ key ] , schema.of , { path: element.path + '.' + key , key: key } ) ;
+				data[ key ] = this.check( schema.of , src[ key ] , { path: element.path + '.' + key , key: key } ) ;
 			}
 		}
 	}
@@ -341,14 +353,14 @@ function check( data_ , schema , element )
 						if ( ! hashmap[ when.sibling ] && schema.properties[ when.sibling ] )
 						{
 							// Postpone
-							console.log( "postpone:" , key ) ;
+							//console.log( "postpone:" , key ) ;
 							nextKeys.push( key ) ;
 							continue ;
 						}
 						
 						try {
-							console.log( "try" ) ;
-							doormen( data[ when.sibling ] , when.verify ) ;
+							//console.log( "try" ) ;
+							doormen( when.verify , data[ when.sibling ] ) ;
 							
 							if ( when.set === undefined ) { delete data[ key ] ; }
 							else { data[ key ] = when.set ; }
@@ -357,13 +369,13 @@ function check( data_ , schema , element )
 							continue ;
 						}
 						catch ( error ) {
-							console.log( "catch" ) ;
+							//console.log( "catch" ) ;
 						}
 					}
 					
 					hashmap[ key ] = true ;
 					
-					returnValue = this.check( src[ key ] , schema.properties[ key ] , {
+					returnValue = this.check( schema.properties[ key ] , src[ key ] , {
 						path: element.path + '.' + key ,
 						key: key
 					} ) ;
@@ -405,7 +417,7 @@ function check( data_ , schema , element )
 		
 		for ( i = 0 ; i < schema.elements.length ; i ++ )
 		{
-			data[ i ] = this.check( src[ i ] , schema.elements[ i ] , {
+			data[ i ] = this.check( schema.elements[ i ] , src[ i ] , {
 				path: element.path + '#' + i ,
 				key: i
 			} ) ;
@@ -491,10 +503,11 @@ doormen.shouldThrow = function shouldThrow( fn )
 
 
 // Inverse validation
-doormen.not = function not( data , schema , options )
+doormen.not = function not()
 {
+	var args = arguments ;
 	doormen.shouldThrow( function() {
-		doormen( data , schema , options ) ;
+		doormen.apply( doormen , args ) ;
 	} ) ;
 } ;
 
@@ -1091,7 +1104,7 @@ singleSchema.properties.when.properties.verify = doormenSchema ;
 
 module.exports = function( schema ) 
 {
-	return doormen.export( schema , doormenSchema ) ;
+	return doormen.export( doormenSchema , schema ) ;
 } ;
 
 
