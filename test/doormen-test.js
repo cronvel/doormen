@@ -1023,7 +1023,7 @@ describe( "Children and recursivity" , function() {
 
 describe( "Properties having 'when'" , function() {
 	
-	it( "zzz when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
+	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
 		
 		var schema = {
 			properties: {
@@ -1046,7 +1046,6 @@ describe( "Properties having 'when'" , function() {
 			{ a: 0, b: 'text' }
 		) ;
 		
-		console.log( "TOFIX: " , doormen( schema , { a: 1, b: 'text' } ) ) ;
 		doormen.equals(
 			doormen( schema , { a: 1, b: 'text' } ) ,
 			{ a: 1 }
@@ -1198,51 +1197,51 @@ describe( "Properties having 'when'" , function() {
 describe( "Numbers meta types" , function() {
 	
 	it( "should validate real accordingly" , function() {
-		doormen( 0 , { type: 'real' } ) ;
-		doormen( 1 , { type: 'real' } ) ;
-		doormen( -1 , { type: 'real' } ) ;
-		doormen( 0.3 , { type: 'real' } ) ;
-		doormen( 18.36 , { type: 'real' } ) ;
-		doormen.not( 1/0 , { type: 'real' } ) ;
-		doormen.not( -1/0 , { type: 'real' } ) ;
-		doormen.not( Infinity , { type: 'real' } ) ;
-		doormen.not( -Infinity , { type: 'real' } ) ;
-		doormen.not( NaN , { type: 'real' } ) ;
+		doormen( { type: 'real' } , 0 ) ;
+		doormen( { type: 'real' } , 1 ) ;
+		doormen( { type: 'real' } , -1 ) ;
+		doormen( { type: 'real' } , 0.3 ) ;
+		doormen( { type: 'real' } , 18.36 ) ;
+		doormen.not( { type: 'real' } , 1/0 ) ;
+		doormen.not( { type: 'real' } , -1/0 ) ;
+		doormen.not( { type: 'real' } , Infinity ) ;
+		doormen.not( { type: 'real' } , -Infinity ) ;
+		doormen.not( { type: 'real' } , NaN ) ;
 		
-		doormen.not( undefined , { type: 'real' } ) ;
-		doormen.not( null , { type: 'real' } ) ;
-		doormen.not( false , { type: 'real' } ) ;
-		doormen.not( true , { type: 'real' } ) ;
-		doormen.not( '' , { type: 'real' } ) ;
-		doormen.not( 'text' , { type: 'real' } ) ;
-		doormen.not( {} , { type: 'real' } ) ;
-		doormen.not( [] , { type: 'real' } ) ;
+		doormen.not( { type: 'real' } , undefined ) ;
+		doormen.not( { type: 'real' } , null ) ;
+		doormen.not( { type: 'real' } , false ) ;
+		doormen.not( { type: 'real' } , true ) ;
+		doormen.not( { type: 'real' } , '' ) ;
+		doormen.not( { type: 'real' } , 'text' ) ;
+		doormen.not( { type: 'real' } , {} ) ;
+		doormen.not( { type: 'real' } , [] ) ;
 	} ) ;
 	
 	it( "should validate integer accordingly" , function() {
-		doormen( 0 , { type: 'integer' } ) ;
-		doormen( 1 , { type: 'integer' } ) ;
-		doormen( 123456789 , { type: 'integer' } ) ;
-		doormen( -1 , { type: 'integer' } ) ;
-		doormen.not( 0.00001 , { type: 'integer' } ) ;
-		doormen.not( -0.00001 , { type: 'integer' } ) ;
-		doormen.not( 123456.00001 , { type: 'integer' } ) ;
-		doormen.not( 123456.99999 , { type: 'integer' } ) ;
-		doormen.not( 0.3 , { type: 'integer' } ) ;
-		doormen.not( 18.36 , { type: 'integer' } ) ;
-		doormen.not( 1/0 , { type: 'integer' } ) ;
-		doormen.not( Infinity , { type: 'integer' } ) ;
-		doormen.not( -Infinity , { type: 'integer' } ) ;
-		doormen.not( NaN , { type: 'integer' } ) ;
+		doormen( { type: 'integer' } , 0 ) ;
+		doormen( { type: 'integer' } , 1 ) ;
+		doormen( { type: 'integer' } , 123456789 ) ;
+		doormen( { type: 'integer' } , -1 ) ;
+		doormen.not( { type: 'integer' } , 0.00001 ) ;
+		doormen.not( { type: 'integer' } , -0.00001 ) ;
+		doormen.not( { type: 'integer' } , 123456.00001 ) ;
+		doormen.not( { type: 'integer' } , 123456.99999 ) ;
+		doormen.not( { type: 'integer' } , 0.3 ) ;
+		doormen.not( { type: 'integer' } , 18.36 ) ;
+		doormen.not( { type: 'integer' } , 1/0 ) ;
+		doormen.not( { type: 'integer' } , Infinity ) ;
+		doormen.not( { type: 'integer' } , -Infinity ) ;
+		doormen.not( { type: 'integer' } , NaN ) ;
 		
-		doormen.not( undefined , { type: 'integer' } ) ;
-		doormen.not( null , { type: 'integer' } ) ;
-		doormen.not( false , { type: 'integer' } ) ;
-		doormen.not( true , { type: 'integer' } ) ;
-		doormen.not( '' , { type: 'integer' } ) ;
-		doormen.not( 'text' , { type: 'integer' } ) ;
-		doormen.not( {} , { type: 'integer' } ) ;
-		doormen.not( [] , { type: 'integer' } ) ;
+		doormen.not( { type: 'integer' } , undefined ) ;
+		doormen.not( { type: 'integer' } , null ) ;
+		doormen.not( { type: 'integer' } , false ) ;
+		doormen.not( { type: 'integer' } , true ) ;
+		doormen.not( { type: 'integer' } , '' ) ;
+		doormen.not( { type: 'integer' } , 'text' ) ;
+		doormen.not( { type: 'integer' } , {} ) ;
+		doormen.not( { type: 'integer' } , [] ) ;
 	} ) ;
 } ) ;
 
@@ -1599,7 +1598,7 @@ describe( "Export mode" , function() {
 		} ;
 		
 		data = { a: 'abc', b: '  def  ' } ;
-		returned = doormen.export( data ) ;
+		returned = doormen.export( schema , data ) ;
 		doormen.equals( data , { a: 'abc', b: '  def  ' } ) ;
 		doormen.equals( returned , { a: 'abc', b: 'def' } ) ;
 		
