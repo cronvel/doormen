@@ -1513,7 +1513,6 @@ describe( "Full report mode" , function() {
 describe( "Alternatives" , function() {
 	
 	it( "Basic schema alternatives" , function() {
-		doormen( { type: 'boolean' } , true ) ;
 		doormen( [ { type: 'boolean' } , { type: 'number' } ] , true ) ;
 		doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
 		doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
@@ -1782,19 +1781,19 @@ describe( "Schema as a sentence" , function() {
 	} ) ;
 	
 	it( "should accept a sentence instead of a schema" , function() {
-		doormen( "" , 'should be a string' ) ;
-		doormen( "" , 'should be an empty string' ) ;
-		doormen( "one two three" , 'should be a string' ) ;
-		doormen.not( "one two three" , 'should be an empty string' ) ;
-		doormen( "   " , 'after trim, it should be an empty string' ) ;
-		doormen.not( " !  " , 'after trim, it should be an empty string' ) ;
+		doormen( 'should be a string' , "" ) ;
+		doormen( 'should be an empty string' , "" ) ;
+		doormen( 'should be a string' , "one two three" ) ;
+		doormen.not( 'should be an empty string' , "one two three" ) ;
+		doormen( 'after trim, it should be an empty string' , "    " ) ;
+		doormen.not( 'after trim, it should be an empty string' , "  !  " ) ;
 		
-		doormen( [] , 'should be an array' ) ;
-		doormen( [] , 'should be an Array' ) ;
-		doormen( [] , 'should be an empty array' ) ;
-		doormen( [] , 'should be an empty Array' ) ;
-		doormen.not( [ 1 , 2 , 3 ] , 'should be an empty array' ) ;
-		doormen( [ 1 , 2 , 3 ] , 'should be an array' ) ;
+		doormen( 'should be an array' , [] ) ;
+		doormen( 'should be an Array' , [] ) ;
+		doormen( 'should be an empty array' , [] ) ;
+		doormen( 'should be an empty Array' , [] ) ;
+		doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
+		doormen( 'should be an array' , [ 1,2,3 ] ) ;
 	} ) ;
 		
 } ) ;
