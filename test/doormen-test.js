@@ -1250,118 +1250,118 @@ describe( "Numbers meta types" , function() {
 describe( "Strings meta types" , function() {
 	
 	it( "should validate ipv4 accordingly" , function() {
-		doormen( '127.0.0.1' , { type: 'ipv4' } ) ;
-		doormen( '127.000.00.001' , { type: 'ipv4' } ) ;
-		doormen.not( '127.0000.00.001' , { type: 'ipv4' } ) ;
-		doormen.not( '0127.000.00.001' , { type: 'ipv4' } ) ;
-		doormen.not( '127.0.0.0001' , { type: 'ipv4' } ) ;
-		doormen.not( '127.0.0.' , { type: 'ipv4' } ) ;
-		doormen.not( '127.0.0.256' , { type: 'ipv4' } ) ;
-		doormen.not( '127.0.0.1.' , { type: 'ipv4' } ) ;
-		doormen.not( '.127.0.0.1' , { type: 'ipv4' } ) ;
-		doormen.not( '.127.0.0.' , { type: 'ipv4' } ) ;
+		doormen( { type: 'ipv4' } , '127.0.0.1' ) ;
+		doormen( { type: 'ipv4' } , '127.000.00.001' ) ;
+		doormen.not( { type: 'ipv4' } , '127.0000.00.001' ) ;
+		doormen.not( { type: 'ipv4' } , '0127.000.00.001' ) ;
+		doormen.not( { type: 'ipv4' } , '127.0.0.0001' ) ;
+		doormen.not( { type: 'ipv4' } , '127.0.0.' ) ;
+		doormen.not( { type: 'ipv4' } , '127.0.0.256' ) ;
+		doormen.not( { type: 'ipv4' } , '127.0.0.1.' ) ;
+		doormen.not( { type: 'ipv4' } , '.127.0.0.1' ) ;
+		doormen.not( { type: 'ipv4' } , '.127.0.0.' ) ;
 	} ) ;
 		
 	it( "should validate ipv6 accordingly" , function() {
 		
-		doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
-		doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ipv6' } ) ;
-		doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen( '2001:db8::ff00:0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( '2001:db8:::0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ipv6' } ) ;
-		doormen.not( '2001::ff00::0042:8329' , { type: 'ipv6' } ) ;
-		doormen( '::1' , { type: 'ipv6' } ) ;
-		doormen( '1::' , { type: 'ipv6' } ) ;
+		doormen( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+		doormen.not( { type: 'ipv6' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+		doormen.not( { type: 'ipv6' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen( { type: 'ipv6' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+		doormen( { type: 'ipv6' } , '2001:db8::ff00:0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , '2001:db8:::0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , '2001:db8::ff00::0042:8329' ) ;
+		doormen.not( { type: 'ipv6' } , '2001::ff00::0042:8329' ) ;
+		doormen( { type: 'ipv6' } , '::1' ) ;
+		doormen( { type: 'ipv6' } , '1::' ) ;
 	} ) ;
 	
 	it( "should validate ip accordingly" , function() {
 		
-		doormen( '127.0.0.1' , { type: 'ip' } ) ;
-		doormen( '127.000.00.001' , { type: 'ip' } ) ;
-		doormen.not( '127.0000.00.001' , { type: 'ip' } ) ;
-		doormen.not( '0127.000.00.001' , { type: 'ip' } ) ;
-		doormen.not( '127.0.0.0001' , { type: 'ip' } ) ;
-		doormen.not( '127.0.0.' , { type: 'ip' } ) ;
-		doormen.not( '127.0.0.256' , { type: 'ip' } ) ;
-		doormen.not( '127.0.0.1.' , { type: 'ip' } ) ;
-		doormen.not( '.127.0.0.1' , { type: 'ip' } ) ;
-		doormen.not( '.127.0.0.' , { type: 'ip' } ) ;
+		doormen( { type: 'ip' } , '127.0.0.1' ) ;
+		doormen( { type: 'ip' } , '127.000.00.001' ) ;
+		doormen.not( { type: 'ip' } , '127.0000.00.001' ) ;
+		doormen.not( { type: 'ip' } , '0127.000.00.001' ) ;
+		doormen.not( { type: 'ip' } , '127.0.0.0001' ) ;
+		doormen.not( { type: 'ip' } , '127.0.0.' ) ;
+		doormen.not( { type: 'ip' } , '127.0.0.256' ) ;
+		doormen.not( { type: 'ip' } , '127.0.0.1.' ) ;
+		doormen.not( { type: 'ip' } , '.127.0.0.1' ) ;
+		doormen.not( { type: 'ip' } , '.127.0.0.' ) ;
 		
-		doormen( '2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen.not( ':2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen.not( 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen.not( '2001:0db8:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
-		doormen.not( '2001:0000:0000:0000:ff00:0042:8329:' , { type: 'ip' } ) ;
-		doormen.not( ':2001:0000:0000:0000:ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen( '2001:db8:0:0:0:ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen( '2001:db8::ff00:0042:8329' , { type: 'ip' } ) ;
-		doormen.not( '2001:db8:::0042:8329' , { type: 'ip' } ) ;
-		doormen.not( '2001:db8::ff00::0042:8329' , { type: 'ip' } ) ;
-		doormen.not( '2001::ff00::0042:8329' , { type: 'ip' } ) ;
-		doormen( '::1' , { type: 'ip' } ) ;
-		doormen( '1::' , { type: 'ip' } ) ;
+		doormen( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ip' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ip' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen.not( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+		doormen.not( { type: 'ip' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+		doormen.not( { type: 'ip' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+		doormen( { type: 'ip' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+		doormen( { type: 'ip' } , '2001:db8::ff00:0042:8329' ) ;
+		doormen.not( { type: 'ip' } , '2001:db8:::0042:8329' ) ;
+		doormen.not( { type: 'ip' } , '2001:db8::ff00::0042:8329' ) ;
+		doormen.not( { type: 'ip' } , '2001::ff00::0042:8329' ) ;
+		doormen( { type: 'ip' } , '::1' ) ;
+		doormen( { type: 'ip' } , '1::' ) ;
 	} ) ;
-		
+	
 	it( "should validate hostname accordingly" ) ;
 	
 	it( "should validate url accordingly" , function() {
-		doormen( 'http://google.com' , { type: 'url' } ) ;
-		doormen( 'http://google.com/' , { type: 'url' } ) ;
-		doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'url' } ) ;
-		doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'url' } ) ;
-		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'url' } ) ;
-		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'url' } ) ;
-		doormen( 'http://::1/#!/massive_attack' , { type: 'url' } ) ;
-		doormen( 'http://127.0.0.1/' , { type: 'url' } ) ;
-		doormen( 'http://localhost/' , { type: 'url' } ) ;
-		doormen( 'http://localhost:8080/' , { type: 'url' } ) ;
-		doormen( 'http://bob@localhost/' , { type: 'url' } ) ;
-		doormen( 'http://bob:pw@localhost/' , { type: 'url' } ) ;
-		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'url' } ) ;
-		doormen.not( 'http://127.0.0/' , { type: 'url' } ) ;
-		doormen.not( 'http://192.168.0.256/' , { type: 'url' } ) ;
-		doormen.not( 'http://19.16.33.25.6/' , { type: 'url' } ) ;
-		doormen( 'file:///home/toto/TODO.txt' , { type: 'url' } ) ;
-		doormen.not( 'http:///google.com/' , { type: 'url' } ) ;
-		doormen.not( 'google.com' , { type: 'url' } ) ;
+		doormen( { type: 'url' } , 'http://google.com' ) ;
+		doormen( { type: 'url' } , 'http://google.com/' ) ;
+		doormen( { type: 'url' } , 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' ) ;
+		doormen( { type: 'url' } , 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' ) ;
+		doormen( { type: 'url' } , 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' ) ;
+		doormen( { type: 'url' } , 'http://grooveshark.com/#!/massive_attack' ) ;
+		doormen( { type: 'url' } , 'http://::1/#!/massive_attack' ) ;
+		doormen( { type: 'url' } , 'http://127.0.0.1/' ) ;
+		doormen( { type: 'url' } , 'http://localhost/' ) ;
+		doormen( { type: 'url' } , 'http://localhost:8080/' ) ;
+		doormen( { type: 'url' } , 'http://bob@localhost/' ) ;
+		doormen( { type: 'url' } , 'http://bob:pw@localhost/' ) ;
+		doormen.not( { type: 'url' } , 'http://127.0.0.1/spaces not allowed' ) ;
+		doormen.not( { type: 'url' } , 'http://127.0.0/' ) ;
+		doormen.not( { type: 'url' } , 'http://192.168.0.256/' ) ;
+		doormen.not( { type: 'url' } , 'http://19.16.33.25.6/' ) ;
+		doormen( { type: 'url' } , 'file:///home/toto/TODO.txt' ) ;
+		doormen.not( { type: 'url' } , 'http:///google.com/' ) ;
+		doormen.not( { type: 'url' } , 'google.com' ) ;
 	} ) ;
 	
 	it( "should validate web url accordingly" , function() {
-		doormen( 'http://google.com' , { type: 'weburl' } ) ;
-		doormen( 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' , { type: 'weburl' } ) ;
-		doormen( 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' , { type: 'weburl' } ) ;
-		doormen( 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' , { type: 'weburl' } ) ;
-		doormen( 'http://grooveshark.com/#!/massive_attack' , { type: 'weburl' } ) ;
-		doormen( 'http://127.0.0.1/#!/massive_attack' , { type: 'weburl' } ) ;
-		doormen( 'http://::1/#!/massive_attack' , { type: 'weburl' } ) ;
-		doormen( 'http://127.0.0.1/' , { type: 'weburl' } ) ;
-		doormen.not( 'http://127.0.0.1/spaces not allowed' , { type: 'weburl' } ) ;
-		doormen.not( 'http://127.0.0/' , { type: 'weburl' } ) ;
-		doormen.not( 'http://192.168.0.256/' , { type: 'weburl' } ) ;
-		doormen.not( 'http://19.16.33.25.6/' , { type: 'weburl' } ) ;
-		doormen.not( 'file:///home/toto/TODO.txt' , { type: 'weburl' } ) ;
-		doormen.not( 'google.com' , { type: 'weburl' } ) ;
+		doormen( { type: 'weburl' } , 'http://google.com' ) ;
+		doormen( { type: 'weburl' } , 'https://stackoverflow.com/questions/1303872/url-validation-using-javascript' ) ;
+		doormen( { type: 'weburl' } , 'http://regexlib.com/DisplayPatterns.aspx?cattabindex=1&categoryId=2' ) ;
+		doormen( { type: 'weburl' } , 'https://uk.reuters.com/article/2013/02/25/rosneft-tender-idUKL6N0BPJZC20130225' ) ;
+		doormen( { type: 'weburl' } , 'http://grooveshark.com/#!/massive_attack' ) ;
+		doormen( { type: 'weburl' } , 'http://127.0.0.1/#!/massive_attack' ) ;
+		doormen( { type: 'weburl' } , 'http://::1/#!/massive_attack' ) ;
+		doormen( { type: 'weburl' } , 'http://127.0.0.1/' ) ;
+		doormen.not( { type: 'weburl' } , 'http://127.0.0.1/spaces not allowed' ) ;
+		doormen.not( { type: 'weburl' } , 'http://127.0.0/' ) ;
+		doormen.not( { type: 'weburl' } , 'http://192.168.0.256/' ) ;
+		doormen.not( { type: 'weburl' } , 'http://19.16.33.25.6/' ) ;
+		doormen.not( { type: 'weburl' } , 'file:///home/toto/TODO.txt' ) ;
+		doormen.not( { type: 'weburl' } , 'google.com' ) ;
 	} ) ;
 	
 	it( "should validate email accordingly" , function() {
-		doormen( 'bob@gmail.com' , { type: 'email' } ) ;
-		doormen( 'cedric.ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'cédric.ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'Cédric.Ronvel@gmail.com' , { type: 'email' } ) ;
-		doormen( 'söm3-2än.dOm+çH4r@g33-mail.ninja' , { type: 'email' } ) ;
-		doormen.not( 'bobgmail.com' , { type: 'email' } ) ;
-		doormen.not( 'bob.@gmail.com' , { type: 'email' } ) ;
-		doormen.not( '.bob@gmail.com' , { type: 'email' } ) ;
-		doormen.not( 'bob..bob@gmail.com' , { type: 'email' } ) ;
-		doormen( 'bob.a.bob@gmail.com' , { type: 'email' } ) ;
-		doormen.not( 'bob @gmail.com' , { type: 'email' } ) ;
-		doormen.not( ' bob@gmail.com' , { type: 'email' } ) ;
-		doormen.not( 'b b@gmail.com' , { type: 'email' } ) ;
+		doormen( { type: 'email' } , 'bob@gmail.com' ) ;
+		doormen( { type: 'email' } , 'cedric.ronvel@gmail.com' ) ;
+		doormen( { type: 'email' } , 'cédric.ronvel@gmail.com' ) ;
+		doormen( { type: 'email' } , 'Cédric.Ronvel@gmail.com' ) ;
+		doormen( { type: 'email' } , 'söm3-2än.dOm+çH4r@g33-mail.ninja' ) ;
+		doormen.not( { type: 'email' } , 'bobgmail.com' ) ;
+		doormen.not( { type: 'email' } , 'bob.@gmail.com' ) ;
+		doormen.not( { type: 'email' } , '.bob@gmail.com' ) ;
+		doormen.not( { type: 'email' } , 'bob..bob@gmail.com' ) ;
+		doormen( { type: 'email' } , 'bob.a.bob@gmail.com' ) ;
+		doormen.not( { type: 'email' } , 'bob @gmail.com' ) ;
+		doormen.not( { type: 'email' } , ' bob@gmail.com' ) ;
+		doormen.not( { type: 'email' } , 'b b@gmail.com' ) ;
 	} ) ;
 } ) ;
 
@@ -1370,20 +1370,20 @@ describe( "Strings meta types" , function() {
 describe( "Sanitize" , function() {
 	
 	it( "should sanitize to 'toNumber' accordingly" , function() {
-		doormen.equals( doormen( 0 , { sanitize: 'toNumber' } ) , 0 ) ;
-		doormen.equals( doormen( '0' , { sanitize: 'toNumber' } ) , 0 ) ;
-		doormen.equals( doormen( 1 , { sanitize: 'toNumber' } ) , 1 ) ;
-		doormen.equals( doormen( '1' , { sanitize: 'toNumber' } ) , 1 ) ;
+		doormen.equals( doormen( { sanitize: 'toNumber' } , 0 ) , 0 ) ;
+		doormen.equals( doormen( { sanitize: 'toNumber' } , '0' ) , 0 ) ;
+		doormen.equals( doormen( { sanitize: 'toNumber' } , 1 ) , 1 ) ;
+		doormen.equals( doormen( { sanitize: 'toNumber' } , '1' ) , 1 ) ;
 	} ) ;
 	
 	it( "should sanitize to 'toArray' accordingly" , function() {
-		doormen.equals( doormen( [] , { sanitize: 'toArray' } ) , [] ) ;
-		doormen.equals( doormen( [ 1,2,3 ] , { sanitize: 'toArray' } ) , [ 1,2,3 ] ) ;
-		doormen.equals( doormen( { a: 'Ah!' , b: 'bee' } , { sanitize: 'toArray' } ) , [ { a: 'Ah!' , b: 'bee' } ] ) ;
-		doormen.equals( doormen( 0 , { sanitize: 'toArray' } ) , [ 0 ] ) ;
-		doormen.equals( doormen( 'a' , { sanitize: 'toArray' } ) , [ 'a' ] ) ;
+		doormen.equals( doormen( { sanitize: 'toArray' } , [] ) , [] ) ;
+		doormen.equals( doormen( { sanitize: 'toArray' } , [ 1,2,3 ] ) , [ 1,2,3 ] ) ;
+		doormen.equals( doormen( { sanitize: 'toArray' } , { a: 'Ah!' , b: 'bee' } ) , [ { a: 'Ah!' , b: 'bee' } ] ) ;
+		doormen.equals( doormen( { sanitize: 'toArray' } , 0 ) , [ 0 ] ) ;
+		doormen.equals( doormen( { sanitize: 'toArray' } , 'a' ) , [ 'a' ] ) ;
 		
-		var fn = function() { return doormen( arguments , { sanitize: 'toArray' } ) ; } ;
+		var fn = function() { return doormen( { sanitize: 'toArray' } , arguments ) ; } ;
 		doormen.equals( fn() , [] ) ;
 		doormen.equals( fn( 1,2,3 ) , [ 1,2,3 ] ) ;
 		doormen.equals( fn( { yeepee: 'yaa' } , 'yeah' , true ) , [ { yeepee: 'yaa' } , 'yeah' , true ] ) ;
@@ -1421,46 +1421,46 @@ describe( "Sanitize" , function() {
 	} ) ;
 	
 	it( "should trim a string accordingly" , function() {
-		doormen.equals( doormen( 'a' , { sanitize: 'trim' } ) , 'a' ) ;
-		doormen.equals( doormen( '  a' , { sanitize: 'trim' } ) , 'a' ) ;
-		doormen.equals( doormen( 'a  ' , { sanitize: 'trim' } ) , 'a' ) ;
-		doormen.equals( doormen( '  a  ' , { sanitize: 'trim' } ) , 'a' ) ;
-		doormen.equals( doormen( 'ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-		doormen.equals( doormen( '   ab  cd' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-		doormen.equals( doormen( 'ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
-		doormen.equals( doormen( '   ab  cd   ' , { sanitize: 'trim' } ) , 'ab  cd' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , 'a' ) , 'a' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , '  a' ) , 'a' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , 'a   ' ) , 'a' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , '  a   ' ) , 'a' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , 'ab  cd' ) , 'ab  cd' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , '   ab  cd' ) , 'ab  cd' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , 'ab  cd   ' ) , 'ab  cd' ) ;
+		doormen.equals( doormen( { sanitize: 'trim' } , '   ab  cd  ' ) , 'ab  cd' ) ;
 	} ) ;
 	
 	it( "should sanitize to 'toUpperCase' accordingly" , function() {
-		doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toUpperCase' } ) , 'ABC DE F' ) ;
+		doormen.equals( doormen( { sanitize: 'toUpperCase' } , 'aBc dE f' ) , 'ABC DE F' ) ;
 	} ) ;
 	
 	it( "should sanitize to 'toLowerCase' accordingly" , function() {
-		doormen.equals( doormen( 'aBc dE f' , { sanitize: 'toLowerCase' } ) , 'abc de f' ) ;
+		doormen.equals( doormen( { sanitize: 'toLowerCase' } , 'aBc dE f' ) , 'abc de f' ) ;
 	} ) ;
 	
 	it( "should sanitize to 'dashToCamelCase' accordingly" , function() {
-		doormen.equals( doormen( 'to-upper-case' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
-		doormen.equals( doormen( 'toUpperCase' , { sanitize: 'dashToCamelCase' } ) , 'toUpperCase' ) ;
+		doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'to-upper-case' ) , 'toUpperCase' ) ;
+		doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'toUpperCase' ) , 'toUpperCase' ) ;
 	} ) ;
 	
 	it( "sanitize should work recursively as well" , function() {
-		doormen.equals( doormen( {} , { of: { sanitize: 'trim' } } ) , {} ) ;
-		doormen.equals( doormen( { a: ' toto  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' } ) ;
-		doormen.equals( doormen( { a: ' toto  ' , b: 'text  ' } , { of: { sanitize: 'trim' } } ) , { a: 'toto' , b: 'text' } ) ;
+		doormen.equals( doormen( { of: { sanitize: 'trim' } } , {} ) , {} ) ;
+		doormen.equals( doormen( { of: { sanitize: 'trim' } } , { a: ' toto  ' } ) , { a: 'toto' } ) ;
+		doormen.equals( doormen( { of: { sanitize: 'trim' } } , { a: ' toto  ' , b: 'text  ' } ) , { a: 'toto' , b: 'text' } ) ;
 		doormen.equals( doormen(
-				{ a: ' toto  ' , b: 'text  ' } ,
-				{ of: { sanitize: 'trim' } } ) ,
+				{ of: { sanitize: 'trim' } } ,
+				{ a: ' toto  ' , b: 'text  ' } ) ,
 			{ a: 'toto' , b: 'text' }
 		) ;
 		doormen.equals( doormen(
-				{ a: ' toto  ' , b: 'text  ' } ,
-				{ extraProperties: true, properties: { a: { sanitize: 'trim' } } } ) ,
+				{ extraProperties: true, properties: { a: { sanitize: 'trim' } } } ,
+				{ a: ' toto  ' , b: 'text  ' } ) ,
 			{ a: 'toto' , b: 'text  ' }
 		) ;
 		doormen.equals( doormen(
-				{ a: ' toto  ' , b: 'text  ' } ,
-				{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ) ,
+				{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+				{ a: ' toto  ' , b: 'text  ' } ) ,
 			{ a: 'toto' , b: 'text' }
 		) ;
 	} ) ;
@@ -1478,13 +1478,13 @@ describe( "Full report mode" , function() {
 			of: { type: 'string' , sanitize: 'trim' }
 		} ;
 		
-		report = doormen.report( { a: 'abc', b: '  def  ' } ) ;
+		report = doormen.report( schema , { a: 'abc', b: '  def  ' } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , true ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 'def' } ) ;
 		doormen.equals( report.errors.length , 0 ) ;
 		
-		report = doormen.report( { a: true, b: 3 } ) ;
+		report = doormen.report( schema , { a: true, b: 3 } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: true, b: 3 } ) ;
@@ -1498,7 +1498,7 @@ describe( "Full report mode" , function() {
 			}
 		} ;
 		
-		report = doormen.report( { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } ) ;
+		report = doormen.report( schema , { a: '  abc  ', b: 3 , c: { d: true , e: 'def  ' } } ) ;
 		//console.log( report ) ;
 		doormen.equals( report.validate , false ) ;
 		doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
@@ -1513,9 +1513,10 @@ describe( "Full report mode" , function() {
 describe( "Alternatives" , function() {
 	
 	it( "Basic schema alternatives" , function() {
-		doormen( true , [ { type: 'boolean' } , { type: 'number' } ] ) ;
-		doormen( 5 , [ { type: 'boolean' } , { type: 'number' } ] ) ;
-		doormen.not( 'toto' , [ { type: 'boolean' } , { type: 'number' } ] ) ;
+		doormen( { type: 'boolean' } , true ) ;
+		doormen( [ { type: 'boolean' } , { type: 'number' } ] , true ) ;
+		doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
+		doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
 	} ) ;
 	
 	it( "Schema alternatives 'export' tests" ) ;
