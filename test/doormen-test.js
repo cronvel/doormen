@@ -617,190 +617,192 @@ describe( "Top-level filters" , function() {
 		if ( doormen.isBrowser ) { window[ 'MyClass' ] = function MyClass(){} ; }
 		else { global[ 'MyClass' ] = function MyClass(){} ; }
 		
-		doormen( new Date() , { instanceOf: Date } ) ;
-		doormen( new Array() , { instanceOf: Array } ) ;	// jshint ignore:line
-		doormen( new MyClass() , { instanceOf: MyClass } ) ;
-		doormen( new MyClass() , { instanceOf: Object } ) ;
+		doormen( { instanceOf: Date } , new Date ) ;
+		doormen( { instanceOf: Array } , new Array ) ;	// jshint ignore:line
+		doormen( { instanceOf: MyClass } , new MyClass() ) ;
+		doormen( { instanceOf: Object } , new MyClass() ) ;
 		
-		doormen( new MyClass() , { instanceOf: 'MyClass' } ) ;
-		doormen( new MyClass() , { instanceOf: 'Object' } ) ;
+		doormen( { instanceOf: 'MyClass' } , new MyClass() ) ;
+		doormen( { instanceOf: 'Object' } , new MyClass() ) ;
+		
+		doormen.not( { instanceOf: Date } , new Array ) ;
+		doormen.not( { instanceOf: 'Date' } , new Array ) ;
 	} ) ;
 	
 	it( "min filter should validate accordingly, non-number should throw" , function() {
-		doormen( 10 , { min: 3 } ) ;
-		doormen( 3 , { min: 3 } ) ;
-		doormen.not( 1 , { min: 3 } ) ;
-		doormen.not( 0 , { min: 3 } ) ;
-		doormen.not( -10 , { min: 3 } ) ;
-		doormen( Infinity , { min: 3 } ) ;
-		doormen( Infinity , { min: Infinity } ) ;
-		doormen.not( -Infinity , { min: 3 } ) ;
-		doormen.not( NaN , { min: 3 } ) ;
-		doormen.not( true , { min: 3 } ) ;
-		doormen.not( false , { min: 3 } ) ;
-		doormen.not( undefined , { min: 3 } ) ;
-		doormen.not( undefined , { min: 0 } ) ;
-		doormen.not( undefined , { min: -3 } ) ;
-		doormen.not( '10' , { min: 3 } ) ;
+		doormen( { min: 3 } , 10 ) ;
+		doormen( { min: 3 } , 3 ) ;
+		doormen.not( { min: 3 } , 1 ) ;
+		doormen.not( { min: 3 } , 0 ) ;
+		doormen.not( { min: 3 } , -10 ) ;
+		doormen( { min: 3 } , Infinity ) ;
+		doormen( { min: Infinity } , Infinity ) ;
+		doormen.not( { min: 3 } , -Infinity ) ;
+		doormen.not( { min: 3 } , NaN ) ;
+		doormen.not( { min: 3 } , true ) ;
+		doormen.not( { min: 3 } , false ) ;
+		doormen.not( { min: 3 } , undefined ) ;
+		doormen.not( { min: 0 } , undefined ) ;
+		doormen.not( { min: -3 } , undefined ) ;
+		doormen.not( { min: 3 } , '10' ) ;
 	} ) ;
 	
 	it( "max filter should validate accordingly, non-number should throw" , function() {
-		doormen.not( 10 , { max: 3 } ) ;
-		doormen( 3 , { max: 3 } ) ;
-		doormen( 1 , { max: 3 } ) ;
-		doormen( 0 , { max: 3 } ) ;
-		doormen( -10 , { max: 3 } ) ;
-		doormen.not( Infinity , { max: 3 } ) ;
-		doormen( -Infinity , { max: 3 } ) ;
-		doormen( -Infinity , { max: -Infinity } ) ;
-		doormen.not( NaN , { max: 3 } ) ;
-		doormen.not( true , { max: 3 } ) ;
-		doormen.not( false , { max: 3 } ) ;
-		doormen.not( '1' , { max: 3 } ) ;
+		doormen.not( { max: 3 } , 10 ) ;
+		doormen( { max: 3 } , 3 ) ;
+		doormen( { max: 3 } , 1 ) ;
+		doormen( { max: 3 } , 0 ) ;
+		doormen( { max: 3 } , -10 ) ;
+		doormen.not( { max: 3 } , Infinity ) ;
+		doormen( { max: 3 } , -Infinity ) ;
+		doormen( { max: -Infinity } , -Infinity ) ;
+		doormen.not( { max: 3 } , NaN ) ;
+		doormen.not( { max: 3 } , true ) ;
+		doormen.not( { max: 3 } , false ) ;
+		doormen.not( { max: 3 } , '1' ) ;
 	} ) ;
 	
 	it( "min + max filter should validate accordingly, non-number should throw" , function() {
-		doormen.not( 15 , { min: 3, max: 10 } ) ;
-		doormen( 10 , { min: 3, max: 10 } ) ;
-		doormen( 5 , { min: 3, max: 10 } ) ;
-		doormen( 3 , { min: 3, max: 10 } ) ;
-		doormen.not( 1 , { min: 3, max: 10 } ) ;
-		doormen.not( 0 , { min: 3, max: 10 } ) ;
-		doormen.not( -10 , { min: 3, max: 10 } ) ;
-		doormen.not( Infinity , { min: 3, max: 10 } ) ;
-		doormen.not( -Infinity , { min: 3, max: 10 } ) ;
-		doormen.not( NaN , { min: 3, max: 10 } ) ;
-		doormen.not( true , { min: 3, max: 10 } ) ;
-		doormen.not( false , { min: 3, max: 10 } ) ;
-		doormen.not( '6' , { min: 3, max: 10 } ) ;
+		doormen.not( { min: 3, max: 10 } , 15 ) ;
+		doormen( { min: 3, max: 10 } , 10 ) ;
+		doormen( { min: 3, max: 10 } , 5 ) ;
+		doormen( { min: 3, max: 10 } , 3 ) ;
+		doormen.not( { min: 3, max: 10 } , 1 ) ;
+		doormen.not( { min: 3, max: 10 } , 0 ) ;
+		doormen.not( { min: 3, max: 10 } , -10 ) ;
+		doormen.not( { min: 3, max: 10 } , Infinity ) ;
+		doormen.not( { min: 3, max: 10 } , -Infinity ) ;
+		doormen.not( { min: 3, max: 10 } , NaN ) ;
+		doormen.not( { min: 3, max: 10 } , true ) ;
+		doormen.not( { min: 3, max: 10 } , false ) ;
+		doormen.not( { min: 3, max: 10 } , '6' ) ;
 	} ) ;
 	
 	it( "'length' filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { length: 3 } ) ;
-		doormen.not( "abcde" , { length: 3 } ) ;
-		doormen.not( "ab" , { length: 3 } ) ;
-		doormen.not( "" , { length: 3 } ) ;
+		doormen( { length: 3 } , "abc" ) ;
+		doormen.not( { length: 3 } , "abcde" ) ;
+		doormen.not( { length: 3 } , "ab" ) ;
+		doormen.not( { length: 3 } , "" ) ;
 		
-		doormen.not( 1 , { length: 3 } ) ;
-		doormen.not( 1 , { length: 0 } ) ;
-		doormen.not( NaN , { length: 3 } ) ;
-		doormen.not( true , { length: 3 } ) ;
-		doormen.not( false , { length: 3 } ) ;
+		doormen.not( { length: 3 } , 1 ) ;
+		doormen.not( { length: 0 } , 1 ) ;
+		doormen.not( { length: 3 } , NaN ) ;
+		doormen.not( { length: 3 } , true ) ;
+		doormen.not( { length: 3 } , false ) ;
 	} ) ;
 	
 	it( "minLength filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { minLength: 3 } ) ;
-		doormen( "abcde" , { minLength: 3 } ) ;
-		doormen.not( "ab" , { minLength: 3 } ) ;
-		doormen.not( "" , { minLength: 3 } ) ;
+		doormen( { minLength: 3 } , "abc" ) ;
+		doormen( { minLength: 3 } , "abcde" ) ;
+		doormen.not( { minLength: 3 } , "ab" ) ;
+		doormen.not( { minLength: 3 } , "" ) ;
 		
-		doormen.not( 1 , { minLength: 3 } ) ;
-		doormen.not( 1 , { minLength: 0 } ) ;
-		doormen.not( NaN , { minLength: 3 } ) ;
-		doormen.not( true , { minLength: 3 } ) ;
-		doormen.not( false , { minLength: 3 } ) ;
+		doormen.not( { minLength: 3 } , 1 ) ;
+		doormen.not( { minLength: 0 } , 1 ) ;
+		doormen.not( { minLength: 3 } , NaN ) ;
+		doormen.not( { minLength: 3 } , true ) ;
+		doormen.not( { minLength: 3 } , false ) ;
 	} ) ;
 	
 	it( "maxLength filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { maxLength: 3 } ) ;
-		doormen.not( "abcde" , { maxLength: 3 } ) ;
-		doormen( "ab" , { maxLength: 3 } ) ;
-		doormen( "" , { maxLength: 3 } ) ;
+		doormen( { maxLength: 3 } , "abc" ) ;
+		doormen.not( { maxLength: 3 } , "abcde" ) ;
+		doormen( { maxLength: 3 } , "ab" ) ;
+		doormen( { maxLength: 3 } , "" ) ;
 		
-		doormen.not( 1 , { maxLength: 3 } ) ;
-		doormen.not( 1 , { maxLength: 0 } ) ;
-		doormen.not( NaN , { maxLength: 3 } ) ;
-		doormen.not( true , { maxLength: 3 } ) ;
-		doormen.not( false , { maxLength: 3 } ) ;
+		doormen.not( { maxLength: 3 } , 1 ) ;
+		doormen.not( { maxLength: 0 } , 1 ) ;
+		doormen.not( { maxLength: 3 } , NaN ) ;
+		doormen.not( { maxLength: 3 } , true ) ;
+		doormen.not( { maxLength: 3 } , false ) ;
 	} ) ;
 	
 	it( "minLength + maxLength filter should validate accordingly, data that do not have a length should throw" , function() {
-		doormen( "abc" , { minLength: 3 , maxLength: 5 } ) ;
-		doormen( "abcd" , { minLength: 3 , maxLength: 5 } ) ;
-		doormen( "abcde" , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( "abcdef" , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( "ab" , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( "" , { minLength: 3 , maxLength: 5 } ) ;
+		doormen( { minLength: 3 , maxLength: 5 } , "abc" ) ;
+		doormen( { minLength: 3 , maxLength: 5 } , "abcd" ) ;
+		doormen( { minLength: 3 , maxLength: 5 } , "abcde" ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , "abcdef" ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , "ab" ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , "" ) ;
 		
-		doormen.not( 1 , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( 1 , { maxLength: 0 } ) ;
-		doormen.not( NaN , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( true , { minLength: 3 , maxLength: 5 } ) ;
-		doormen.not( false , { minLength: 3 , maxLength: 5 } ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , 1 ) ;
+		doormen.not( { maxLength: 0 } , 1 ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , NaN ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , true ) ;
+		doormen.not( { minLength: 3 , maxLength: 5 } , false ) ;
 	} ) ;
 	
 	it( "'match' filter should validate accordingly using a RegExp" , function() {
-		doormen( "" , { match: "^[a-f]*$" } ) ;
-		doormen.not( "" , { match: "^[a-f]+$" } ) ;
-		doormen( "abc" , { match: "^[a-f]*$" } ) ;
-		doormen( "abcdef" , { match: "^[a-f]*$" } ) ;
-		doormen.not( "ghi" , { match: "^[a-f]*$" } ) ;
-		doormen.not( "ghi" , { match: /^[a-f]*$/ } ) ;
+		doormen( { match: "^[a-f]*$" } , "" ) ;
+		doormen.not( { match: "^[a-f]+$" } , "" ) ;
+		doormen( { match: "^[a-f]*$" } , "abc" ) ;
+		doormen( { match: "^[a-f]*$" } , "abcdef" ) ;
+		doormen.not( { match: "^[a-f]*$" } , "ghi" ) ;
+		doormen.not( { match: /^[a-f]*$/ } , "ghi" ) ;
 		
-		doormen.not( 1 , { match: "^[a-f]*$" } ) ;
-		doormen.not( 1 , { maxLength: 0 } ) ;
-		doormen.not( NaN , { match: "^[a-f]*$" } ) ;
-		doormen.not( true , { match: "^[a-f]*$" } ) ;
-		doormen.not( false , { match: "^[a-f]*$" } ) ;
+		doormen.not( { match: "^[a-f]*$" } , 1 ) ;
+		doormen.not( { match: "^[a-f]*$" } , NaN ) ;
+		doormen.not( { match: "^[a-f]*$" } , true ) ;
+		doormen.not( { match: "^[a-f]*$" } , false ) ;
 	} ) ;
 	
 	it( "'in' filter should validate if the value is listed" , function() {
-		doormen.not( 10 , { in: [ 1,5,7 ] } ) ;
-		doormen( 5 , { in: [ 1,5,7 ] } ) ;
-		doormen( 1 , { in: [ 1,5,7 ] } ) ;
-		doormen.not( 0 , { in: [ 1,5,7 ] } ) ;
-		doormen.not( -10 , { in: [ 1,5,7 ] } ) ;
-		doormen.not( Infinity , { in: [ 1,5,7 ] } ) ;
-		doormen( Infinity , { in: [ 1,5,Infinity,7 ] } ) ;
-		doormen.not( -Infinity , { in: [ 1,5,7 ] } ) ;
-		doormen.not( NaN , { in: [ 1,5,7 ] } ) ;
-		doormen( NaN , { in: [ 1,5,NaN,7 ] } ) ;
+		doormen.not( { in: [ 1,5,7 ] } , 10 ) ;
+		doormen( { in: [ 1,5,7 ] } , 5 ) ;
+		doormen( { in: [ 1,5,7 ] } , 1 ) ;
+		doormen.not( { in: [ 1,5,7 ] } , 0 ) ;
+		doormen.not( { in: [ 1,5,7 ] } , -10 ) ;
+		doormen.not( { in: [ 1,5,7 ] } , Infinity ) ;
+		doormen( { in: [ 1,5,Infinity,7 ] } , Infinity ) ;
+		doormen.not( { in: [ 1,5,7 ] } , -Infinity ) ;
+		doormen.not( { in: [ 1,5,7 ] } , NaN ) ;
+		doormen( { in: [ 1,5,NaN,7 ] } , NaN ) ;
 		
-		doormen( true , { in: [ 1,true,5,7 ] } ) ;
-		doormen.not( true , { in: [ 1,5,7 ] } ) ;
-		doormen( false , { in: [ 1,false,5,7 ] } ) ;
-		doormen.not( false , { in: [ 1,5,7 ] } ) ;
+		doormen( { in: [ 1,true,5,7 ] } , true ) ;
+		doormen.not( { in: [ 1,5,7 ] } , true ) ;
+		doormen( { in: [ 1,false,5,7 ] } , false ) ;
+		doormen.not( { in: [ 1,5,7 ] } , false ) ;
 		
-		doormen.not( "text" , { in: [ 1,5,7 ] } ) ;
-		doormen( "text" , { in: [ 1,"text",5,7 ] } ) ;
-		doormen( "text" , { in: [ "string", "text", "bob" ] } ) ;
-		doormen.not( "bobby" , { in: [ "string", "text", "bob" ] } ) ;
-		doormen( "" , { in: [ "string", "text", "" ] } ) ;
-		doormen.not( "" , { in: [ "string", "text", "bob" ] } ) ;
+		doormen.not( { in: [ 1,5,7 ] } , "text" ) ;
+		doormen( { in: [ 1,"text",5,7 ] } , "text" ) ;
+		doormen( { in: [ "string", "text", "bob" ] } , "text" ) ;
+		doormen.not( { in: [ "string", "text", "bob" ] } , "bobby" ) ;
+		doormen( { in: [ "string", "text", "" ] } , "" ) ;
+		doormen.not( { in: [ "string", "text", "bob" ] } , "" ) ;
 	} ) ;
 	
 	it( "'notIn' filter should validate if the value is listed" , function() {
-		doormen( 10 , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( 5 , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( 1 , { notIn: [ 1,5,7 ] } ) ;
-		doormen( 0 , { notIn: [ 1,5,7 ] } ) ;
-		doormen( -10 , { notIn: [ 1,5,7 ] } ) ;
-		doormen( Infinity , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( Infinity , { notIn: [ 1,5,Infinity,7 ] } ) ;
-		doormen( -Infinity , { notIn: [ 1,5,7 ] } ) ;
-		doormen( NaN , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( NaN , { notIn: [ 1,5,NaN,7 ] } ) ;
+		doormen( { notIn: [ 1,5,7 ] } , 10 ) ;
+		doormen.not( { notIn: [ 1,5,7 ] } , 5 ) ;
+		doormen.not( { notIn: [ 1,5,7 ] } , 1 ) ;
+		doormen( { notIn: [ 1,5,7 ] } , 0 ) ;
+		doormen( { notIn: [ 1,5,7 ] } , -10 ) ;
+		doormen( { notIn: [ 1,5,7 ] } , Infinity ) ;
+		doormen.not( { notIn: [ 1,5,Infinity,7 ] } , Infinity ) ;
+		doormen( { notIn: [ 1,5,7 ] } , -Infinity ) ;
+		doormen( { notIn: [ 1,5,7 ] } , NaN ) ;
+		doormen.not( { notIn: [ 1,5,NaN,7 ] } , NaN ) ;
 		
-		doormen.not( true , { notIn: [ 1,true,5,7 ] } ) ;
-		doormen( true , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( false , { notIn: [ 1,false,5,7 ] } ) ;
-		doormen( false , { notIn: [ 1,5,7 ] } ) ;
+		doormen.not( { notIn: [ 1,true,5,7 ] } , true ) ;
+		doormen( { notIn: [ 1,5,7 ] } , true ) ;
+		doormen.not( { notIn: [ 1,false,5,7 ] } , false ) ;
+		doormen( { notIn: [ 1,5,7 ] } , false ) ;
 		
-		doormen( "text" , { notIn: [ 1,5,7 ] } ) ;
-		doormen.not( "text" , { notIn: [ 1,"text",5,7 ] } ) ;
-		doormen.not( "text" , { notIn: [ "string", "text", "bob" ] } ) ;
-		doormen( "bobby" , { notIn: [ "string", "text", "bob" ] } ) ;
-		doormen.not( "" , { notIn: [ "string", "text", "" ] } ) ;
-		doormen( "" , { notIn: [ "string", "text", "bob" ] } ) ;
+		doormen( { notIn: [ 1,5,7 ] } , "text" ) ;
+		doormen.not( { notIn: [ 1,"text",5,7 ] } , "text" ) ;
+		doormen.not( { notIn: [ "string", "text", "bob" ] } , "text" ) ;
+		doormen( { notIn: [ "string", "text", "bob" ] } , "bobby" ) ;
+		doormen.not( { notIn: [ "string", "text", "" ] } , "" ) ;
+		doormen( { notIn: [ "string", "text", "bob" ] } , "" ) ;
 	} ) ;
 	
 	it( "'in' filter containing object and arrays" , function() {
-		doormen( { a: 2 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
-		doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , 5 , 7 ] } ) ;
-		doormen.not( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } ) ;
-		doormen( { a: 2 , b: 5 } , { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } ) ;
-		doormen( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } ) ;
-		doormen.not( [ 'a' , 2 ] , { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } ) ;
+		doormen( { in: [ 1 , { a: 2 } , 5 , 7 ] } , { a: 2 } ) ;
+		doormen.not( { in: [ 1 , { a: 2 } , 5 , 7 ] } , { a: 2 , b: 5 } ) ;
+		doormen.not( { in: [ 1 , { a: 2 } , { b: 5 } , 7 ] } , { a: 2 , b: 5 } ) ;
+		doormen( { in: [ 1 , { a: 2 } , { a: 2 , b: 5 } , { b: 5 } , 7 ] } , { a: 2 , b: 5 } ) ;
+		doormen( { in: [ 1 , [ 'a', 2 ] , 5 , 7 ] } , [ 'a' , 2 ] ) ;
+		doormen.not( { in: [ 1 , [ 'a', 2 , 3 ] , 5 , 7 ] } , [ 'a' , 2 ] ) ;
 	} ) ;
 } ) ;
 
@@ -809,27 +811,27 @@ describe( "Top-level filters" , function() {
 describe( "Filters" , function() {
 	
 	it( "'greaterThan' and aliases ('gt' and '>') filter should validate accordingly, non-number should throw" , function() {
-		doormen( 10 , { filter: { greaterThan: 3 } } ) ;
-		doormen( 3.0001 , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( 3 , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( 1 , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( 0 , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( -10 , { filter: { greaterThan: 3 } } ) ;
-		doormen( Infinity , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( Infinity , { filter: { greaterThan: Infinity } } ) ;
-		doormen.not( -Infinity , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( NaN , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( true , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( false , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( undefined , { filter: { greaterThan: 3 } } ) ;
-		doormen.not( undefined , { filter: { greaterThan: 0 } } ) ;
-		doormen.not( undefined , { filter: { greaterThan: -3 } } ) ;
-		doormen.not( '10' , { filter: { greaterThan: 3 } } ) ;
+		doormen( { filter: { greaterThan: 3 } } , 10 ) ;
+		doormen( { filter: { greaterThan: 3 } } , 3.00001 ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , 3 ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , 1 ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , 0 ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , -10 ) ;
+		doormen( { filter: { greaterThan: 3 } } , Infinity ) ;
+		doormen.not( { filter: { greaterThan: Infinity } } , Infinity ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , -Infinity ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , NaN ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , true ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , false ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , undefined ) ;
+		doormen.not( { filter: { greaterThan: 0 } } , undefined ) ;
+		doormen.not( { filter: { greaterThan: -3 } } , undefined ) ;
+		doormen.not( { filter: { greaterThan: 3 } } , '10' ) ;
 		
-		doormen( 3.0001 , { filter: { gt: 3 } } ) ;
-		doormen.not( 3 , { filter: { gt: 3 } } ) ;
-		doormen( 3.0001 , { filter: { '>': 3 } } ) ;
-		doormen.not( 3 , { filter: { '>': 3 } } ) ;
+		doormen( { filter: { gt: 3 } } , 3.00001) ;
+		doormen.not( { filter: { gt: 3 } } , 3 ) ;
+		doormen( { filter: { '>': 3 } } , 3.00001 ) ;
+		doormen.not( { filter: { '>': 3 } } , 3 ) ;
 	} ) ;
 	
 	it( "'lesserThan' and aliases ('lt' and '<') filter should validate accordingly, non-number should throw" , function() {
