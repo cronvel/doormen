@@ -1274,7 +1274,28 @@ sanitizer.dashToCamelCase = function dashToCamelCase( data )
 
 
 
-},{"./doormen.js":2}],8:[function(require,module,exports){
+			/* Misc sanitizers */
+
+
+
+// Convert a string to a MongoDB ObjectID
+sanitizer.mongoId = function mongoId( data )
+{
+	if ( typeof data !== 'string' ) { return data ; }
+	if ( doormen.isBrowser ) { return data ; }
+	
+	try {
+		var mongodb = require( 'mongodb' ) ;
+		return mongodb.ObjectID( data ) ;
+	}
+	catch ( error ) {
+		return data ;
+	}
+} ;
+
+
+
+},{"./doormen.js":2,"mongodb":10}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -1515,7 +1536,7 @@ module.exports = sentence ;
 
 
 // Load modules
-//var doormen = require( './doormen.js' ) ;
+var doormen = require( './doormen.js' ) ;
 
 
 
@@ -1759,9 +1780,28 @@ check.email = function checkEmail( data )
 
 
 
+// MongoDB ObjectID
+check.mongoId = function mongoId( data )
+{
+	var mongodb ;
+	
+	if ( ! doormen.isBrowser )
+	{
+		try {
+			mongodb = require( 'mongodb' ) ;
+			if ( data instanceof require( 'mongodb' ).ObjectID ) { return true ; }
+		}
+		catch ( error ) {}
+	}
+	
+	return typeof data === 'string' && data.length === 24 && /^[0-9a-f]{24}$/.test( data ) ;
+} ;
+
+
+
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":10}],10:[function(require,module,exports){
+},{"./doormen.js":2,"buffer":10,"mongodb":10}],10:[function(require,module,exports){
 
 },{}]},{},[1])(1)
 });

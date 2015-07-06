@@ -43,8 +43,6 @@ else
 	doormen = require( '../lib/browser.js' ) ;
 }
 
-var expect = require( 'expect.js' ) ;
-
 
 
 describe( "Assertion utilities" , function() {
@@ -1796,6 +1794,49 @@ describe( "Schema as a sentence" , function() {
 		doormen( 'should be an array' , [ 1,2,3 ] ) ;
 	} ) ;
 		
+} ) ;
+
+
+
+describe( "MongoDB's ObjectID" , function() {
+	
+	it( "should validate MongoDB's ObjectID" , function() {
+		
+		var mongodb ;
+		
+		doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
+		
+		if ( ! doormen.isBrowser )
+		{
+			try {
+				mongodb = require( 'mongodb' ) ;
+			}
+			catch ( error ) {
+				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				return ;
+			}	// skip the remaining tests if the module is not found
+			
+			doormen( { type: 'mongoId' } , new mongodb.ObjectID() ) ;
+		}
+	} ) ;
+	
+	it( "should sanitize string to MongoDB's ObjectID" , function() {
+		
+		var mongodb ;
+		
+		if ( ! doormen.isBrowser )
+		{
+			try {
+				mongodb = require( 'mongodb' ) ;
+			}
+			catch ( error ) {
+				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				return ;
+			}	// skip the remaining tests if the module is not found
+			
+			doormen( { instanceOf: mongodb.ObjectID } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;
+		}
+	} ) ;
 } ) ;
 
 

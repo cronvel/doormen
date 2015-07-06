@@ -53,7 +53,7 @@ TESTLING=./node_modules/.bin/testling
 
 # Build the browser lib
 browser/doormen.js: lib/*.js
-	${BROWSERIFY} lib/browser.js -i buffer -s doormen -o browser/doormen.js
+	${BROWSERIFY} lib/browser.js -i buffer -i mongodb -s doormen -o browser/doormen.js
 
 # Build the browser minified lib
 browser/doormen.min.js: browser/doormen.js
