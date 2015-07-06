@@ -17,6 +17,7 @@
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
+   - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
 <a name=""></a>
  
@@ -1818,6 +1819,48 @@ doormen( 'should be an empty array' , [] ) ;
 doormen( 'should be an empty Array' , [] ) ;
 doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
 doormen( 'should be an array' , [ 1,2,3 ] ) ;
+```
+
+<a name="mongodbs-objectid"></a>
+# MongoDB's ObjectID
+should validate MongoDB's ObjectID.
+
+```js
+var mongodb ;
+
+doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
+
+if ( ! doormen.isBrowser )
+{
+	try {
+		mongodb = require( 'mongodb' ) ;
+	}
+	catch ( error ) {
+		console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+		return ;
+	}	// skip the remaining tests if the module is not found
+	
+	doormen( { type: 'mongoId' } , new mongodb.ObjectID() ) ;
+}
+```
+
+should sanitize string to MongoDB's ObjectID.
+
+```js
+var mongodb ;
+
+if ( ! doormen.isBrowser )
+{
+	try {
+		mongodb = require( 'mongodb' ) ;
+	}
+	catch ( error ) {
+		console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+		return ;
+	}	// skip the remaining tests if the module is not found
+	
+	doormen( { instanceOf: mongodb.ObjectID } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;
+}
 ```
 
 <a name="misc"></a>
