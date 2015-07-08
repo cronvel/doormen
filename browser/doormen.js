@@ -1075,6 +1075,7 @@ var singleSchema = {
 			type: 'strictObject',
 			of: {
 				type: 'array',
+				sanitize: 'toArray',
 				of: { type: 'function' }
 			}
 		},
