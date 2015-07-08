@@ -1068,6 +1068,16 @@ var singleSchema = {
 				set: { optional: true }
 			}
 		} ,
+		
+		// Commons
+		hooks: {
+			optional: true,
+			type: 'strictObject',
+			of: {
+				type: 'array',
+				of: { type: 'function' }
+			}
+		},
 	} ,
 } ;
 
