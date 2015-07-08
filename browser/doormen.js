@@ -1164,9 +1164,11 @@ sanitizer.toArray = function toArray( data )
 {
 	if ( Array.isArray( data ) ) { return data ; }
 	
-	if ( data && typeof data === 'object' )
+	if ( data === undefined ) { return [] ; }
+	
+	if ( data && typeof data === 'object' && doormen.typeChecker.arguments( data ) )
 	{
-		if ( doormen.typeChecker.arguments( data ) ) { return Array.prototype.slice.call( data ) ; }
+		return Array.prototype.slice.call( data ) ;
 	}
 	
 	return [ data ] ;
