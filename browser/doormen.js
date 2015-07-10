@@ -156,6 +156,8 @@ function check( schema , data_ , element )
 		for ( i = 0 ; i < schema.length ; i ++ )
 		{
 			try {
+				// using .export() is mandatory here: we should not modify the original data
+				// since we should check against alternative (and sanitize can change things, for example)
 				data = doormen.export( schema[ i ] , data_ ) ;
 			}
 			catch( error ) {
@@ -381,7 +383,7 @@ function check( schema , data_ , element )
 					} ) ;
 					
 					// Do not create new properties with undefined
-					if ( returnValue !== undefined || key in data ) { data[ key ] = returnValue ; }
+					if ( returnValue !== undefined || key in src ) { data[ key ] = returnValue ; }
 				}
 			}
 		}
