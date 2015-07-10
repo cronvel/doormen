@@ -1527,6 +1527,8 @@ describe( "Purify" , function() {
 	it( "Purify a basic schema" , function() {
 		doormen.equals( doormen.purifySchema( { type: 'string' } ) , { type: 'string' } ) ;
 		doormen.equals( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) , { type: 'string' } ) ;
+		doormen.equals( 'default' in doormen.purifySchema( { default: null } ) , true ) ;
+		doormen.equals( 'default' in doormen.purifySchema( { default: undefined } ) , true ) ;
 		
 		doormen.equals( doormen.purifySchema(
 			{
