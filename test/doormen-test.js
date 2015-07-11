@@ -1923,4 +1923,19 @@ describe( "Misc" , function() {
 	
 
 
+describe( "restQuery specific" , function() {
+	
+	it( "restQuerySlug type checker" , function() {
+		
+		doormen( { type: 'restQuerySlug' } , 'my-slug' ) ;
+		doormen.not( { type: 'restQuerySlug' } , 'Not-a-slug' ) ;
+	} ) ;
+	
+	it( "restQuerySlug type checker" , function() {
+		
+		var slug = doormen( { type: 'restQuerySlug' , sanitize: 'restQueryRandomSlug' } , null ) ;
+		//console.log( slug ) ;
+	} ) ;
+} ) ;
+
 
