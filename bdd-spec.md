@@ -19,6 +19,7 @@
    - [Schema as a sentence](#schema-as-a-sentence)
    - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
+   - [restQuery specific](#restquery-specific)
 <a name=""></a>
  
 <a name="assertion-utilities"></a>
@@ -1942,5 +1943,21 @@ doormen( userSchema , {
 		fax: '0142559833'
 	}
 } ) ;
+```
+
+<a name="restquery-specific"></a>
+# restQuery specific
+restQuerySlug type checker.
+
+```js
+doormen( { type: 'restQuerySlug' } , 'my-slug' ) ;
+doormen.not( { type: 'restQuerySlug' } , 'Not-a-slug' ) ;
+```
+
+restQuerySlug type checker.
+
+```js
+var slug = doormen( { type: 'restQuerySlug' , sanitize: 'restQueryRandomSlug' } , null ) ;
+//console.log( slug ) ;
 ```
 
