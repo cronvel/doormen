@@ -84,6 +84,7 @@ Common meta types:
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
+   - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Purify](#purify)
    - [Export mode](#export-mode)
@@ -1610,6 +1611,52 @@ report = doormen.report( schema , { a: '  abc  ', b: 3 , c: { d: true , e: 'def 
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
 doormen.equals( report.errors.length , 2 ) ;
+```
+
+<a name="keys-attribute"></a>
+# 'keys' attribute
+'keys' should perform the check recursively for key itself, using the same given schema for all of them..
+
+```js
+var schema = {
+	keys: { match: /^[a-z]+$/ }
+} ;
+
+// Object
+doormen( schema , { a: 'text' } ) ;
+doormen.not( schema , { a2: 1 } ) ;
+doormen( schema , { a: 'text', b: 'string' } ) ;
+doormen.not( schema , { a: 'text', b2: 'string' } ) ;
+
+// Array
+doormen.not( schema , [] ) ;
+doormen.not( schema , 'text' ) ;
+doormen.not( schema , 5 ) ;
+doormen.not( schema , null ) ;
+doormen.not( schema , undefined ) ;
+```
+
+'keys' and sanitizer..
+
+```js
+var schema = {
+	keys: { sanitize: 'dashToCamelCase' }
+} ;
+
+doormen.equals(
+	doormen( schema , { "camel-case": "?" , "or-not-camel-case": "?" } ) ,
+	{ camelCase: "?" , orNotCamelCase: "?" }
+) ;
+```
+
+'keys' should throw in case of overwrite..
+
+```js
+var schema = {
+	keys: { sanitize: 'dashToCamelCase' }
+} ;
+
+doormen.not( schema , { camelCase: "!" , "camel-case": "?" } ) ;
 ```
 
 <a name="alternatives"></a>
