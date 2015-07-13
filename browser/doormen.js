@@ -485,6 +485,36 @@ doormen.SchemaError.prototype.name = 'SchemaError' ;
 
 
 
+			/* Extend */
+
+
+
+function extend( base , extension )
+{
+	var key ;
+	
+	if ( ! extension || typeof extension !== 'object' || Array.isArray( extension ) )
+	{
+		throw new TypeError( '[doormen] .extend*(): Argument #0 should be a plain object' ) ;
+	}
+	
+	for ( key in extension )
+	{
+		if ( key in base || typeof extension[ key ] !== 'function' ) { continue ; }
+		base[ key ] = extension[ key ] ;
+	}
+}
+
+
+
+doormen.extendTypeChecker = function extendTypeChecker( extension ) { extend( doormen.typeChecker , extension ) ; } ;
+doormen.extendSanitizer = function extendSanitizer( extension ) { extend( doormen.sanitizer , extension ) ; } ;
+doormen.extendFilter = function extendFilter( extension ) { extend( doormen.filter , extension ) ; } ;
+
+
+
+
+
 			/* Assertion specific utilities */
 
 
@@ -1308,21 +1338,6 @@ sanitizer.mongoId = function mongoId( data )
 	}
 } ;
 
-
-
-			/* RestQuery specific sanitizer */
-
-
-
-// Create a random slug for restQuery
-sanitizer.restQueryRandomSlug = function restQueryRandomSlug( data )
-{
-	if ( data !== undefined && data !== null ) { return data ; }
-	return Math.random().toString( 36 ).slice( 2 ) + '-' + Date.now().toString( 36 ) ;
-} ;
-
-
-
 },{"./doormen.js":2,"mongodb":10}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -1823,14 +1838,6 @@ check.mongoId = function mongoId( data )
 	}
 	
 	return typeof data === 'string' && data.length === 24 && /^[0-9a-f]{24}$/.test( data ) ;
-} ;
-
-
-
-check.restQuerySlug = function restQuerySlug( data )
-{
-	if ( typeof data !== 'string' || data.length < 2 || data.length > 72 ) { return false ; }
-	return /^[a-z0-9-]+$/.test( data ) ;
 } ;
 
 
