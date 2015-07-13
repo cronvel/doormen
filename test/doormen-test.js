@@ -1508,6 +1508,52 @@ describe( "Full report mode" , function() {
 
 
 
+describe( "'keys' attribute" , function() {
+	
+	it( "'keys' should perform the check recursively for key itself, using the same given schema for all of them." , function() {
+		
+		var schema = {
+			keys: { match: /^[a-z]+$/ }
+		} ;
+		
+		// Object
+		doormen( schema , { a: 'text' } ) ;
+		doormen.not( schema , { a2: 1 } ) ;
+		doormen( schema , { a: 'text', b: 'string' } ) ;
+		doormen.not( schema , { a: 'text', b2: 'string' } ) ;
+		
+		// Array
+		doormen.not( schema , [] ) ;
+		doormen.not( schema , 'text' ) ;
+		doormen.not( schema , 5 ) ;
+		doormen.not( schema , null ) ;
+		doormen.not( schema , undefined ) ;
+	} ) ;
+	
+	it( "'keys' and sanitizer." , function() {
+		
+		var schema = {
+			keys: { sanitize: 'dashToCamelCase' }
+		} ;
+		
+		doormen.equals(
+			doormen( schema , { "camel-case": "?" , "or-not-camel-case": "?" } ) ,
+			{ camelCase: "?" , orNotCamelCase: "?" }
+		) ;
+	} ) ;
+	
+	it( "'keys' should throw in case of overwrite." , function() {
+		
+		var schema = {
+			keys: { sanitize: 'dashToCamelCase' }
+		} ;
+		
+		doormen.not( schema , { camelCase: "!" , "camel-case": "?" } ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Alternatives" , function() {
 	
 	it( "Basic schema alternatives" , function() {
