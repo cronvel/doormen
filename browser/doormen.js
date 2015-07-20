@@ -1858,15 +1858,9 @@ check.email = function checkEmail( data )
 // MongoDB ObjectID
 check.mongoId = function mongoId( data )
 {
-	var mongodb ;
-	
-	if ( ! doormen.isBrowser )
+	if ( data && typeof data === 'object' && data.constructor.name === 'ObjectID' && data.id && typeof data.toString === 'function' )
 	{
-		try {
-			mongodb = require( 'mongodb' ) ;
-			if ( data instanceof require( 'mongodb' ).ObjectID ) { return true ; }
-		}
-		catch ( error ) {}
+		data = data.toString() ;
 	}
 	
 	return typeof data === 'string' && data.length === 24 && /^[0-9a-f]{24}$/.test( data ) ;
@@ -1876,7 +1870,7 @@ check.mongoId = function mongoId( data )
 
 
 }).call(this,require("buffer").Buffer)
-},{"./doormen.js":2,"buffer":10,"mongodb":10}],10:[function(require,module,exports){
+},{"./doormen.js":2,"buffer":10}],10:[function(require,module,exports){
 
 },{}]},{},[1])(1)
 });
