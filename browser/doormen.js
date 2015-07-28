@@ -1794,6 +1794,15 @@ check.hostname = function checkHostname( data , skipRegExp )
 } ;
 
 
+
+// hostname or ip
+check.host = function checkHost( data )
+{
+	return check.ip( data ) || check.hostname( data ) ;
+} ;
+
+
+
 // URLs
 check.url = function checkUrl( data , restrictToWebUrl )
 {
