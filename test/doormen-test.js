@@ -1306,6 +1306,7 @@ describe( "Strings meta types" , function() {
 	} ) ;
 	
 	it( "should validate hostname accordingly" ) ;
+	it( "should validate host accordingly" ) ;
 	
 	it( "should validate url accordingly" , function() {
 		doormen( { type: 'url' } , 'http://google.com' ) ;
