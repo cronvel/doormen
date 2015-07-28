@@ -1471,6 +1471,25 @@ doormen.equals( doormen( { sanitize: 'toNumber' } , 0 ) , 0 ) ;
 doormen.equals( doormen( { sanitize: 'toNumber' } , '0' ) , 0 ) ;
 doormen.equals( doormen( { sanitize: 'toNumber' } , 1 ) , 1 ) ;
 doormen.equals( doormen( { sanitize: 'toNumber' } , '1' ) , 1 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , 123 ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , '123' ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , 123.456 ) , 123.456 ) ;
+doormen.equals( doormen( { sanitize: 'toNumber' } , '123.456' ) , 123.456 ) ;
+```
+
+should sanitize to 'toInteger' accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'toInteger' } , 0 ) , 0 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , '0' ) , 0 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , 1 ) , 1 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , '1' ) , 1 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , 123 ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , '123' ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , 123.456 ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , '123.456' ) , 123 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , 123.789 ) , 124 ) ;
+doormen.equals( doormen( { sanitize: 'toInteger' } , '123.789' ) , 124 ) ;
 ```
 
 should sanitize to 'toArray' accordingly.
