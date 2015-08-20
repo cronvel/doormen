@@ -493,8 +493,11 @@ function validatorError( message , element )
 doormen.ValidatorError = function ValidatorError( message , element )
 {
 	this.message = message ;
+	
 	if ( element ) { this.path = element.path ; }
-	Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ;
+	
+	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
 } ;
 
 doormen.ValidatorError.prototype = Object.create( TypeError.prototype ) ;
@@ -506,7 +509,9 @@ doormen.ValidatorError.prototype.name = 'ValidatorError' ;
 doormen.SchemaError = function SchemaError( message )
 {
 	this.message = message ;
-	Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ;
+	
+	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , SchemaError ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
 } ;
 
 doormen.SchemaError.prototype = Object.create( TypeError.prototype ) ;
