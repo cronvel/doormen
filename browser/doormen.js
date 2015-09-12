@@ -470,6 +470,73 @@ function check( schema , data_ , element )
 
 
 
+doormen.path = function path( schema , path )
+{
+	var length , key ;
+	
+	if ( ! Array.isArray( path ) )
+	{
+		if ( typeof path !== 'string' ) { throw new Error( "Argument #1 'path' should be a string" ) ; }
+		path = path.split( '.' ) ;
+	}
+	
+	if ( ! schema || typeof schema !== 'object' )
+	{
+		throw new doormen.SchemaError( element.path + " is not a schema (not an object or an array of object)." ) ;
+	}
+	
+	
+	length = path.length ;
+	
+	// Remove empty path
+	while ( length && ! path[ 0 ] ) { path.shift() ; length -- ; }
+	
+	// Found it! return now!
+	if ( ! length ) { return schema ; }
+	
+	key = path[ 0 ] ;
+	
+	
+	// 0) Arrays are alternatives
+	if ( Array.isArray( schema ) )
+	{
+		throw new Error( "Schema alternatives are not supported for path matching ATM." ) ;
+	}
+	
+	// 1) Recursivity
+	if ( schema.properties !== undefined )
+	{
+		if ( ! schema.properties || typeof schema.properties !== 'object' )
+		{
+			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'properties' should be an object." ) ;
+		}
+		
+		if ( schema.properties[ key ] )
+		{
+			path.shift() ;
+			return doormen.path( schema.properties[ key ] , path ) ;
+		}
+	}
+	
+	if ( schema.of !== undefined )
+	{
+		if ( ! schema.of || typeof schema.of !== 'object' )
+		{
+			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'of' should contains a schema object." ) ;
+		}
+		
+		path.shift() ;
+		return doormen.path( schema.of , path ) ;
+	}
+	
+	// "element" is not supported ATM
+	//if ( schema.elements !== undefined ) {}
+	
+	return null ;
+}
+
+
+
 			/* Specific Error class */
 
 

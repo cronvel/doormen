@@ -89,6 +89,7 @@ Common meta types:
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
+   - [Path in the schema](#path-in-the-schema)
    - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
 <a name=""></a>
@@ -1958,6 +1959,97 @@ doormen( 'should be an empty array' , [] ) ;
 doormen( 'should be an empty Array' , [] ) ;
 doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
 doormen( 'should be an array' , [ 1,2,3 ] ) ;
+```
+
+<a name="path-in-the-schema"></a>
+# Path in the schema
+should find the schema for an object path.
+
+```js
+var schema = {
+	type: 'strictObject' ,
+	properties: {
+		key1: {
+			type: 'integer' ,
+			custom: 'field'
+		} ,
+		key2: {
+			type: 'string' ,
+			another: 'custom'
+		} ,
+		key3: {
+			type: 'strictObject' ,
+			properties: {
+				subkey1: {
+					type: 'integer' ,
+					some: 'data'
+				}
+			}
+		} ,
+		key4: {
+			type: 'strictObject' ,
+			of: {
+				type: 'string' ,
+				another: 'custom'
+			}
+		}
+	}
+} ;
+
+doormen.equals(
+	doormen.path( schema , '' ) ,
+	schema
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key1' ) ,
+	schema.properties.key1
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key2' ) ,
+	schema.properties.key2
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key3' ) ,
+	schema.properties.key3
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'unexistant' ) ,
+	null
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key3.subkey1' ) ,
+	schema.properties.key3.properties.subkey1
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key4.anything' ) ,
+	schema.properties.key4.of
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key4.anythingelse' ) ,
+	schema.properties.key4.of
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'unexistant.unexistant' ) ,
+	null
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key2.unexistant' ) ,
+	null
+) ;
+
+doormen.equals(
+	doormen.path( schema , 'key3.unexistant' ) ,
+	null
+) ;
 ```
 
 <a name="mongodbs-objectid"></a>
