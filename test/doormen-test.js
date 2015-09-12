@@ -1864,6 +1864,99 @@ describe( "Schema as a sentence" , function() {
 
 
 
+describe( "Path in the schema" , function() {
+	
+	it( "should find the schema for an object path" , function() {
+		
+		var schema = {
+			type: 'strictObject' ,
+			properties: {
+				key1: {
+					type: 'integer' ,
+					custom: 'field'
+				} ,
+				key2: {
+					type: 'string' ,
+					another: 'custom'
+				} ,
+				key3: {
+					type: 'strictObject' ,
+					properties: {
+						subkey1: {
+							type: 'integer' ,
+							some: 'data'
+						}
+					}
+				} ,
+				key4: {
+					type: 'strictObject' ,
+					of: {
+						type: 'string' ,
+						another: 'custom'
+					}
+				}
+			}
+		} ;
+		
+		doormen.equals(
+			doormen.path( schema , '' ) ,
+			schema
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key1' ) ,
+			schema.properties.key1
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key2' ) ,
+			schema.properties.key2
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key3' ) ,
+			schema.properties.key3
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'unexistant' ) ,
+			null
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key3.subkey1' ) ,
+			schema.properties.key3.properties.subkey1
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key4.anything' ) ,
+			schema.properties.key4.of
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key4.anythingelse' ) ,
+			schema.properties.key4.of
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'unexistant.unexistant' ) ,
+			null
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key2.unexistant' ) ,
+			null
+		) ;
+		
+		doormen.equals(
+			doormen.path( schema , 'key3.unexistant' ) ,
+			null
+		) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "MongoDB's ObjectID" , function() {
 	
 	it( "should validate MongoDB's ObjectID" , function() {
