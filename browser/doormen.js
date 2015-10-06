@@ -246,17 +246,19 @@ function check( schema , data_ , element )
 	
 	// 6) Recursivity
 	
-	if ( schema.of !== undefined )
+	if ( schema.of !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
 	{
 		if ( ! schema.of || typeof schema.of !== 'object' )
 		{
 			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'of' should contains a schema object." ) ;
 		}
 		
+		/* Not an error anymore, should use 'type' to enforce object or array
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) )
 		{
 			this.validatorError( element.path + " can't have elements (not an array, nor an object, nor a function)." , element ) ;
 		}
+		*/
 		
 		if ( Array.isArray( data ) )
 		{
@@ -280,17 +282,19 @@ function check( schema , data_ , element )
 		}
 	}
 	
-	if ( schema.keys !== undefined )
+	if ( schema.keys !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
 	{
 		if ( ! schema.keys || typeof schema.keys !== 'object' )
 		{
 			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'keys' should contains a schema object." ) ;
 		}
 		
+		/* Not an error anymore, should use 'type' to enforce object
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) || Array.isArray( data ) )
 		{
 			this.validatorError( element.path + " can't have keys (not a strict object, nor a function)." , element ) ;
 		}
+		*/
 		
 		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
 		else { src = data ; }
@@ -312,17 +316,19 @@ function check( schema , data_ , element )
 		}
 	}
 	
-	if ( schema.properties !== undefined )
+	if ( schema.properties !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
 	{
 		if ( ! schema.properties || typeof schema.properties !== 'object' )
 		{
 			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'properties' should be an object." ) ;
 		}
 		
+		/* Not an error anymore, should use 'type' to enforce object
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) )
 		{
 			this.validatorError( element.path + " can't have properties (not an object nor a function)." , element ) ;
 		}
+		*/
 		
 		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
 		else { src = data ; }
@@ -435,17 +441,19 @@ function check( schema , data_ , element )
 		}
 	}
 	
-	if ( schema.elements !== undefined )
+	if ( schema.elements !== undefined && Array.isArray( data ) )
 	{
 		if ( ! Array.isArray( schema.elements ) )
 		{
 			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'elements' should be an array." ) ;
 		}
 		
+		/* Not an error anymore, should use 'type' to enforce array
 		if ( ! Array.isArray( data ) )
 		{
 			this.validatorError( element.path + " can't have elements (not an array)." , element ) ;
 		}
+		*/
 		
 		if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
 		else { src = data ; }
@@ -1174,9 +1182,8 @@ function mask( schema , data , criteria )
 	if ( ! criteria || typeof criteria !== 'object' ) { criteria = {} ; }
 	
 	var context = {
-		tierMin: 0 ,
-		tierMax: criteria.tier !== undefined ? criteria.tier : Infinity ,
-		schemaDefaultTier: criteria.schemaDefaultTier || 0 ,
+		tier: criteria.tier ,
+		tags: criteria.tags ,
 		iterate: iterate ,
 		check: mask.check
 	} ;
@@ -1190,7 +1197,7 @@ module.exports = mask ;
 
 function iterate( schema , data_ )
 {
-	var i , key , data = data_ , src , returnValue ;
+	var i , key , data = data_ , src , returnValue , checkValue ;
 	
 	if ( ! schema || typeof schema !== 'object' ) { return ; }
 	
@@ -1214,8 +1221,11 @@ function iterate( schema , data_ )
 	
 	
 	// 1) Mask
-	if ( ! this.check( schema ) ) { return ; }
+	checkValue = this.check( schema ) ;
 	
+	if ( checkValue === false ) { return ; }
+	else if ( checkValue === true ) { return data ; }
+	// if it's undefined, then recursivity can be checked
 	
 	// 2) Recursivity
 	
@@ -1297,11 +1307,31 @@ function iterate( schema , data_ )
 
 mask.check = function maskCheck( schema )
 {
-	var schemaTier = schema.tier || this.schemaDefaultTier ;
+	var i , iMax ;
 	
-	if ( schemaTier < this.tierMin || schemaTier > this.tierMax ) { return false ; }
+	if ( this.tier !== undefined )
+	{
+		if ( schema.tier === undefined ) { return ; }
+		
+		if ( this.tier < schema.tier ) { return false ; }
+		
+		return true ;
+	}
+	else if ( this.tags )
+	{
+		if ( ! Array.isArray( schema.tags ) || ! schema.tags.length ) { return ; }
+		
+		iMax = this.tags.length ;
+		
+		for ( i = 0 ; i < iMax ; i ++ )
+		{
+			if ( schema.tags.indexOf( this.tags[ i ] ) !== -1 ) { return true ; }
+		}
+		
+		return false ;
+	}
 	
-	return true ;
+	return ;
 } ;
 
 
@@ -1349,7 +1379,9 @@ var singleSchema = {
 		default: { optional: true } ,
 		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
 		filter: { optional: true , type: 'strictObject' } ,
+		
 		tier: { optional: true , type: 'integer' } ,
+		tags: { optional: true , type: 'array' , of: { type: 'string' } } ,
 		
 		// Top-level filters
 		instanceOf: { optional: true , type: 'classId' } ,
