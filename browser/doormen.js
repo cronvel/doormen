@@ -1176,7 +1176,7 @@ function mask( schema , data , criteria )
 	var context = {
 		tierMin: 0 ,
 		tierMax: criteria.tier !== undefined ? criteria.tier : Infinity ,
-		defaultTier: criteria.defaultTier || 0 ,
+		schemaDefaultTier: criteria.schemaDefaultTier || 0 ,
 		iterate: iterate ,
 		check: mask.check
 	} ;
@@ -1297,7 +1297,7 @@ function iterate( schema , data_ )
 
 mask.check = function maskCheck( schema )
 {
-	var schemaTier = schema.tier || this.defaultTier ;
+	var schemaTier = schema.tier || this.schemaDefaultTier ;
 	
 	if ( schemaTier < this.tierMin || schemaTier > this.tierMax ) { return false ; }
 	
