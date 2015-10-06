@@ -80,6 +80,7 @@ Common meta types:
    - [Filters](#filters)
    - [Children and recursivity](#children-and-recursivity)
    - [Properties having 'when'](#properties-having-when)
+   - [Mask](#mask)
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
@@ -1282,6 +1283,119 @@ var schema = {
 
 // Circular 'when' throw
 doormen.not( schema , { a: 0, b: 'text' } ) ;
+```
+
+<a name="mask"></a>
+# Mask
+Should mask data using a tier-level.
+
+```js
+var schema = {
+	properties: {
+		a: {
+			type: 'number' ,
+			tier: 1
+		} ,
+		b: {
+			type: 'boolean' ,
+			tier: 3
+		} ,
+		c: {
+			type: 'string' ,
+			tier: 2
+		}
+	}
+} ;
+
+var data = {
+	a: 1 ,
+	b: true ,
+	c: 'blah!'
+} ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tier: 0 } ) ,
+	{} 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 1 } ) ,
+	{ a: 1 } 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 2 } ) ,
+	{ a: 1 , c: 'blah!' } 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 3 } ) ,
+	{ a: 1 , b: true , c: 'blah!' } 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 4 } ) ,
+	{ a: 1 , b: true , c: 'blah!' } 
+) ;
+```
+
+Should mask nested data using a tier-level.
+
+```js
+var schema = {
+	properties: {
+		a: {
+			type: 'number' ,
+			tier: 1
+		} ,
+		b: {
+			type: 'boolean' ,
+			tier: 3
+		} ,
+		c: {
+			type: 'string' ,
+			tier: 2
+		} ,
+		d: {
+			type: 'strictObject' ,
+			tier: 2 ,
+			properties: {
+				e: {
+					type: 'number' ,
+					tier: 1
+				} ,
+				f: {
+					type: 'boolean' ,
+					tier: 3
+				} ,
+				g: {
+					type: 'string' ,
+					tier: 2
+				}
+			}
+		}
+	}
+} ;
+
+var data = {
+	a: 1 ,
+	b: true ,
+	c: 'blah!' ,
+	d: {
+		e: 7 ,
+		f: false ,
+		g: 'bob'
+	}
+} ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tier: 1 } ) ,
+	{ a: 1 } 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 2 } ) ,
+	{ a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } } 
+) ;
+doormen.equals(
+	doormen.mask( schema , data , { tier: 3 } ) ,
+	{ a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } } 
+) ;
 ```
 
 <a name="numbers-meta-types"></a>

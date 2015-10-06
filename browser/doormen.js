@@ -75,7 +75,7 @@ function doormen()
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
-		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
+		throw new doormen.SchemaError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
 	
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
@@ -127,6 +127,7 @@ doormen.isEqual = require( './isEqual.js' ) ;
 doormen.typeChecker = require( './typeChecker.js' ) ;
 doormen.sanitizer = require( './sanitizer.js' ) ;
 doormen.filter = require( './filter.js' ) ;
+doormen.mask = require( './mask.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
 doormen.purifySchema = require( './purifySchema.js' ) ;
@@ -175,7 +176,7 @@ function check( schema , data_ , element )
 		return ;
 	}
 	
-	// 1) if the data has a default value or is optional, and it's value is null or undefined, it's ok!
+	// 1) if the data has a default value or is optional, and its value is null or undefined, it's ok!
 	if ( ( data === null || data === undefined ) )
 	{
 		if ( 'default' in schema ) { return schema.default ; }
@@ -470,7 +471,7 @@ function check( schema , data_ , element )
 
 
 
-doormen.path = function path( schema , path )
+doormen.path = function schemaPath( schema , path )
 {
 	var length , key ;
 	
@@ -482,7 +483,7 @@ doormen.path = function path( schema , path )
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
-		throw new doormen.SchemaError( element.path + " is not a schema (not an object or an array of object)." ) ;
+		throw new doormen.SchemaError( path + " is not a schema (not an object or an array of object)." ) ;
 	}
 	
 	
@@ -508,7 +509,7 @@ doormen.path = function path( schema , path )
 	{
 		if ( ! schema.properties || typeof schema.properties !== 'object' )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'properties' should be an object." ) ;
+			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'properties' should be an object." ) ;
 		}
 		
 		if ( schema.properties[ key ] )
@@ -522,7 +523,7 @@ doormen.path = function path( schema , path )
 	{
 		if ( ! schema.of || typeof schema.of !== 'object' )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'of' should contains a schema object." ) ;
+			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contains a schema object." ) ;
 		}
 		
 		path.shift() ;
@@ -533,7 +534,7 @@ doormen.path = function path( schema , path )
 	//if ( schema.elements !== undefined ) {}
 	
 	return null ;
-}
+} ;
 
 
 
@@ -662,7 +663,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./purifySchema.js":6,"./sanitizer.js":7,"./sentence.js":8,"./typeChecker.js":9}],3:[function(require,module,exports){
+},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./purifySchema.js":7,"./sanitizer.js":8,"./sentence.js":9,"./typeChecker.js":10}],3:[function(require,module,exports){
 (function (global){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -1162,6 +1163,176 @@ module.exports = {
 
 
 
+//mask( schema , data , criteria )
+function mask( schema , data , criteria )
+{
+	if ( ! schema || typeof schema !== 'object' )
+	{
+		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
+	}
+	
+	if ( ! criteria || typeof criteria !== 'object' ) { criteria = {} ; }
+	
+	var context = {
+		tierMin: 0 ,
+		tierMax: criteria.tier !== undefined ? criteria.tier : Infinity ,
+		defaultTier: criteria.defaultTier || 0 ,
+		iterate: iterate ,
+		check: mask.check
+	} ;
+	
+	return context.iterate( schema , data ) ;
+}
+
+module.exports = mask ;
+
+
+
+function iterate( schema , data_ )
+{
+	var i , key , data = data_ , src , returnValue ;
+	
+	if ( ! schema || typeof schema !== 'object' ) { return ; }
+	
+	// 0) Arrays are alternatives
+	if ( Array.isArray( schema ) )
+	{
+		for ( i = 0 ; i < schema.length ; i ++ )
+		{
+			try {
+				data = mask( schema[ i ] , data_ ) ;
+			}
+			catch( error ) {
+				continue ;
+			}
+			
+			return data ;
+		}
+		
+		return ;
+	}
+	
+	
+	// 1) Mask
+	if ( ! this.check( schema ) ) { return ; }
+	
+	
+	// 2) Recursivity
+	
+	if ( schema.of && typeof schema.of === 'object' )
+	{
+		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) ) { return data ; }
+		
+		if ( Array.isArray( data ) )
+		{
+			if ( data === data_ ) { data = [] ; src = data_ ; }
+			else { src = data ; }
+			
+			for ( i = 0 ; i < src.length ; i ++ )
+			{
+				data[ i ] = this.iterate( schema.of , src[ i ] ) ;
+			}
+		}
+		else
+		{
+			if ( data === data_ ) { data = {} ; src = data_ ; }
+			else { src = data ; }
+			
+			for ( key in src )
+			{
+				data[ key ] = this.iterate( schema.of , src[ key ] ) ;
+			}
+		}
+	}
+	
+	if ( schema.properties && typeof schema.properties === 'object' )
+	{
+		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) ) { return data ; }
+		
+		if ( data === data_ ) { data = {} ; src = data_ ; }
+		else { src = data ; }
+		
+		if ( Array.isArray( schema.properties ) )
+		{
+			for ( i = 0 ; i < schema.properties.length ; i ++ )
+			{
+				key = schema.properties[ i ] ;
+				data[ key ] = src[ key ] ;
+			}
+		}
+		else
+		{
+			for ( key in schema.properties )
+			{
+				if ( ! schema.properties[ key ] || typeof schema.properties[ key ] !== 'object' )
+				{
+					continue ;
+				}
+				
+				returnValue = this.iterate( schema.properties[ key ] , src[ key ] ) ;
+				
+				// Do not create new properties with undefined
+				if ( returnValue !== undefined ) { data[ key ] = returnValue ; }
+			}
+		}
+	}
+	
+	if ( Array.isArray( schema.elements ) )
+	{
+		if ( ! Array.isArray( data ) ) { return data ; }
+		
+		if ( data === data_ ) { data = [] ; src = data_ ; }
+		else { src = data ; }
+		
+		for ( i = 0 ; i < schema.elements.length ; i ++ )
+		{
+			data[ i ] = this.iterate( schema.elements[ i ] , src[ i ] ) ;
+		}
+	}
+	
+	return data ;
+}
+
+
+
+mask.check = function maskCheck( schema )
+{
+	var schemaTier = schema.tier || this.defaultTier ;
+	
+	if ( schemaTier < this.tierMin || schemaTier > this.tierMax ) { return false ; }
+	
+	return true ;
+} ;
+
+
+
+},{}],7:[function(require,module,exports){
+/*
+	Copyright (c) 2015 Cédric Ronvel 
+	
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+
+
 // Load modules
 var doormen = require( './doormen.js' ) ;
 
@@ -1178,6 +1349,7 @@ var singleSchema = {
 		default: { optional: true } ,
 		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
 		filter: { optional: true , type: 'strictObject' } ,
+		tier: { optional: true , type: 'integer' } ,
 		
 		// Top-level filters
 		instanceOf: { optional: true , type: 'classId' } ,
@@ -1256,7 +1428,7 @@ module.exports = function( schema )
 
 
 
-},{"./doormen.js":2}],7:[function(require,module,exports){
+},{"./doormen.js":2}],8:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -1452,7 +1624,7 @@ sanitizer.mongoId = function mongoId( data )
 	}
 } ;
 
-},{"./doormen.js":2,"mongodb":10}],8:[function(require,module,exports){
+},{"./doormen.js":2,"mongodb":11}],9:[function(require,module,exports){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
 	
@@ -1664,7 +1836,7 @@ module.exports = sentence ;
 
 
 
-},{"./doormen.js":2}],9:[function(require,module,exports){
+},{"./doormen.js":2}],10:[function(require,module,exports){
 (function (Buffer){
 /*
 	Copyright (c) 2015 Cédric Ronvel 
@@ -1693,7 +1865,7 @@ module.exports = sentence ;
 
 
 // Load modules
-var doormen = require( './doormen.js' ) ;
+//var doormen = require( './doormen.js' ) ;
 
 
 
@@ -1961,7 +2133,7 @@ check.mongoId = function mongoId( data )
 
 
 }).call(this,require("buffer").Buffer)
-},{"./doormen.js":2,"buffer":10}],10:[function(require,module,exports){
+},{"buffer":11}],11:[function(require,module,exports){
 
 },{}]},{},[1])(1)
 });
