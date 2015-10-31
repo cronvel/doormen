@@ -1495,6 +1495,13 @@ describe( "Numbers meta types" , function() {
 
 describe( "Strings meta types" , function() {
 	
+	it( "should validate hex accordingly" , function() {
+		doormen( { type: 'hex' } , '1234' ) ;
+		doormen( { type: 'hex' } , '12af34' ) ;
+		doormen( { type: 'hex' } , '12AF34' ) ;
+		doormen.not( { type: 'hex' } , '12g34' ) ;
+	} ) ;
+		
 	it( "should validate ipv4 accordingly" , function() {
 		doormen( { type: 'ipv4' } , '127.0.0.1' ) ;
 		doormen( { type: 'ipv4' } , '127.000.00.001' ) ;
