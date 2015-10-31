@@ -879,7 +879,9 @@ doormen.not( { filter: { '<': 3 } } , 3 ) ;
 'of' should perform the check recursively for each children, using the same given schema for all of them..
 
 ```js
-var schema = {
+var schema ;
+
+schema = {
 	of: { type: 'string' }
 } ;
 
@@ -899,11 +901,6 @@ doormen.not( schema , [ 'text' , 'string' , null ] ) ;
 doormen.not( schema , [ 1 , 'text' , 'string' ] ) ;
 doormen.not( schema , [ 'text' , 'string' , null ] ) ;
 doormen.not( schema , [ true ] ) ;
-
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an array, it should check if the value has all listed properties, no extra properties are allowed.
@@ -918,11 +915,6 @@ doormen( schema , { a: 'text', b: 3 } ) ;
 doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
 doormen.not( schema , { b: 'text' } ) ;
 doormen.not( schema , { a: 1 } ) ;
-
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an array and 'extraProperties' is set, it should allow non-listed extra-properties.
@@ -938,11 +930,6 @@ doormen( schema , { a: 'text', b: 3 } ) ;
 doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
 doormen.not( schema , { b: 'text' } ) ;
 doormen.not( schema , { a: 1 } ) ;
-
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an object, it should perform the check recursively for each listed child, no extra properties are allowed.
@@ -960,11 +947,6 @@ doormen.not( schema , { a: 'text', b: 3 } ) ;
 doormen.not( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
 doormen.not( schema , { b: 'text' } ) ;
 doormen.not( schema , { a: 1 } ) ;
-
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 when 'properties' is an object and 'extraProperties' is set, it should allow extra-properties.
@@ -983,11 +965,6 @@ doormen.not( schema , { a: 'text', b: 3 } ) ;
 doormen( schema , { A: 'TEXT', a: 1, b: 'text' , c: 5 } ) ;
 doormen.not( schema , { b: 'text' } ) ;
 doormen.not( schema , { a: 1 } ) ;
-
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 'elements' should perform the check recursively for each children elements, using a specific schema for each one, extra-element are not allowed.
@@ -1006,13 +983,6 @@ doormen.not( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
 doormen.not( schema , [] ) ;
 doormen.not( schema , [ 'text' , 3 ] ) ;
 doormen.not( schema , [ true ] ) ;
-
-doormen.not( schema , {} ) ;
-doormen.not( schema , { b: 'text' } ) ;
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 when 'elements' is used in conjunction with 'extraElements', extra-elements are allowed.
@@ -1032,13 +1002,6 @@ doormen( schema , [ 'text' , 3 , false , 'extra' , true ] ) ;
 doormen.not( schema , [] ) ;
 doormen.not( schema , [ 'text' , 3 ] ) ;
 doormen.not( schema , [ true ] ) ;
-
-doormen.not( schema , {} ) ;
-doormen.not( schema , { b: 'text' } ) ;
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 <a name="properties-having-when"></a>
@@ -1283,6 +1246,23 @@ var schema = {
 		} ,
 		d: {
 			type: 'strictObject' ,
+			properties: {
+				e: {
+					type: 'number' ,
+					tier: 1
+				} ,
+				f: {
+					type: 'boolean' ,
+					tier: 3
+				} ,
+				g: {
+					type: 'string' ,
+					tier: 2
+				}
+			}
+		} ,
+		d2: {
+			type: 'strictObject' ,
 			tier: 2 ,
 			properties: {
 				e: {
@@ -1310,20 +1290,173 @@ var data = {
 		e: 7 ,
 		f: false ,
 		g: 'bob'
+	} ,
+	d2: {
+		e: 7 ,
+		f: false ,
+		g: 'bob'
 	}
 } ;
 
 doormen.equals(
 	doormen.mask( schema , data , { tier: 1 } ) ,
-	{ a: 1 } 
+	{ a: 1 , d: { e: 7 } } 
 ) ;
 doormen.equals(
 	doormen.mask( schema , data , { tier: 2 } ) ,
-	{ a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } } 
+	{ a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' } } 
 ) ;
 doormen.equals(
 	doormen.mask( schema , data , { tier: 3 } ) ,
-	{ a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } } 
+	{ a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' } } 
+) ;
+```
+
+Should mask data using tags.
+
+```js
+var schema = {
+	properties: {
+		_id: { tags: [] } ,
+		slug: { tags: [ 'internal' , 'meta' ] } ,
+		access: { tags: [ 'internal' ] } ,
+		title: { tags: [ 'meta' ] } ,
+		post: { tags: [ 'content' ] }
+	}
+} ;
+
+var data = {
+	_id: '1978f09ac3e' ,
+	slug: 'ten-things-about-nothing' ,
+	access: 'public' ,
+	title: '10 things you should know about nothing' ,
+	post: 'blah blah blah blah'
+} ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'meta' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		title: '10 things you should know about nothing'
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		access: 'public'
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' , 'content' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		access: 'public' ,
+		post: 'blah blah blah blah'
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' , 'meta' , 'content' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		access: 'public' ,
+		title: '10 things you should know about nothing' ,
+		post: 'blah blah blah blah'
+	}
+) ;
+```
+
+Should mask nested data using tags.
+
+```js
+var schema = {
+	properties: {
+		_id: {} ,
+		slug: { tags: [ 'internal' , 'meta' ] } ,
+		accesses: {
+			of: {
+				properties: {
+					userId: {} ,
+					accessLevel: { tags: [ 'internal' ] }
+				}
+			}
+		} ,
+		title: { tags: [ 'meta' ] } ,
+		post: { tags: [ 'content' ] }
+	}
+} ;
+
+var data = {
+	_id: '1978f09ac3e' ,
+	slug: 'ten-things-about-nothing' ,
+	accesses: [
+		{
+			userId: 'bob' ,
+			accessLevel: 2
+		} ,
+		{
+			userId: 'bill' ,
+			accessLevel: 3
+		}
+	] ,
+	title: '10 things you should know about nothing' ,
+	post: 'blah blah blah blah'
+} ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'meta' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [ { userId: 'bob' }, { userId: 'bill' } ],
+		title: '10 things you should know about nothing'
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [
+			{ userId: 'bob', accessLevel: 2 },
+			{ userId: 'bill', accessLevel: 3 }
+		]
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' , 'content' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [
+			{ userId: 'bob', accessLevel: 2 },
+			{ userId: 'bill', accessLevel: 3 }
+		] ,
+		post: 'blah blah blah blah'
+	}
+) ;
+
+doormen.equals(
+	doormen.mask( schema , data , { tags: [ 'internal' , 'meta' , 'content' ] } ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [
+			{ userId: 'bob', accessLevel: 2 },
+			{ userId: 'bill', accessLevel: 3 }
+		] ,
+		title: '10 things you should know about nothing' ,
+		post: 'blah blah blah blah'
+	}
 ) ;
 ```
 
@@ -1383,6 +1516,15 @@ doormen.not( { type: 'integer' } , [] ) ;
 
 <a name="strings-meta-types"></a>
 # Strings meta types
+should validate hex accordingly.
+
+```js
+doormen( { type: 'hex' } , '1234' ) ;
+doormen( { type: 'hex' } , '12af34' ) ;
+doormen( { type: 'hex' } , '12AF34' ) ;
+doormen.not( { type: 'hex' } , '12g34' ) ;
+```
+
 should validate ipv4 accordingly.
 
 ```js
@@ -1690,13 +1832,6 @@ doormen( schema , { a: 'text' } ) ;
 doormen.not( schema , { a2: 1 } ) ;
 doormen( schema , { a: 'text', b: 'string' } ) ;
 doormen.not( schema , { a: 'text', b2: 'string' } ) ;
-
-// Array
-doormen.not( schema , [] ) ;
-doormen.not( schema , 'text' ) ;
-doormen.not( schema , 5 ) ;
-doormen.not( schema , null ) ;
-doormen.not( schema , undefined ) ;
 ```
 
 'keys' and sanitizer..

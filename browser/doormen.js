@@ -1957,6 +1957,11 @@ check.integer = function checkInteger( data ) { return typeof data === 'number' 
 
 
 
+check.hex = function checkHex( data )
+{
+	return typeof data === 'string' && /^[0-9a-fA-F]+$/.test( data ) ;
+} ;
+
 
 
 // IP
