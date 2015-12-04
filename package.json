@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {

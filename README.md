@@ -1771,11 +1771,15 @@ should sanitize to 'toDate' accordingly.
 ```js
 var date = new Date() ;
 var timestamp = date.getTime() ;
+var dateString = date.toString() ;
 doormen.equals( doormen( { sanitize: 'toDate' } , date ) , date ) ;
 doormen.equals( doormen( { sanitize: 'toDate' } , timestamp ) , date ) ;
+doormen.equals( doormen( { sanitize: 'toDate' } , dateString ) , date ) ;
 
 //console.log( doormen( { sanitize: 'toDate' } , 123456789 ) ) ;
 //console.log( doormen( { sanitize: 'toDate' } , timestamp ) ) ;
+//console.log( doormen( { sanitize: 'toDate' } , dateString ) ) ;
+//console.log( doormen( { sanitize: 'toDate' } , 'bob' ) ) ;
 
 doormen.equals( doormen( { sanitize: 'toDate' } , 'bob' ) , 'bob' ) ;
 doormen.equals( doormen( { sanitize: 'toDate' } , [] ) , [] ) ;
