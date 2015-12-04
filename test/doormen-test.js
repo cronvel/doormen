@@ -1662,6 +1662,21 @@ describe( "Sanitize" , function() {
 		doormen.equals( Array.isArray( arguments ) , false ) ;
 	} ) ;
 	
+	it( "should sanitize to 'toDate' accordingly" , function() {
+		var date = new Date() ;
+		var timestamp = date.getTime() ;
+		doormen.equals( doormen( { sanitize: 'toDate' } , date ) , date ) ;
+		doormen.equals( doormen( { sanitize: 'toDate' } , timestamp ) , date ) ;
+		
+		//console.log( doormen( { sanitize: 'toDate' } , 123456789 ) ) ;
+		//console.log( doormen( { sanitize: 'toDate' } , timestamp ) ) ;
+		
+		doormen.equals( doormen( { sanitize: 'toDate' } , 'bob' ) , 'bob' ) ;
+		doormen.equals( doormen( { sanitize: 'toDate' } , [] ) , [] ) ;
+		doormen.equals( doormen( { sanitize: 'toDate' } , [ 1,2,3 ] ) , [ 1,2,3 ] ) ;
+		doormen.equals( doormen( { sanitize: 'toDate' } , { a: 'Ah!' , b: 'bee' } ) , { a: 'Ah!' , b: 'bee' } ) ;
+	} ) ;
+	
 	it( "should remove extra properties accordingly" , function() {
 		
 		var schema ;
