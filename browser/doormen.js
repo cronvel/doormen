@@ -56,8 +56,15 @@ module.exports.isBrowser = true ;
 
 
 
-//doormen( schema , data )
-//doormen( options , schema , data )
+/*
+	doormen( schema , data )
+	doormen( options , schema , data )
+	
+	options:
+		* userContext: a context that can be accessed by user-land type-checker and sanitizer
+		* report: activate the report mode: report as many error as possible (same as doormen.report())
+		* export: activate the export mode: sanitizers export into a new object (same as doormen.export())
+*/
 function doormen()
 {
 	var data , schema , options ;
@@ -81,6 +88,7 @@ function doormen()
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
 	
 	var context = {
+		userContext: options.userContext ,
 		validate: true ,
 		errors: [] ,
 		check: check ,
@@ -1533,6 +1541,23 @@ sanitizer.toArray = function toArray( data )
 	}
 	
 	return [ data ] ;
+} ;
+
+
+
+sanitizer.toDate = function toDate( data )
+{
+	var parsed ;
+	
+	if ( data instanceof Date ) { return data ; }
+	
+	if ( typeof data === 'number' || typeof data === 'string' )
+	{
+		parsed = new Date( data ) ;
+		return isNaN( parsed ) ? data : parsed ;
+	}
+	
+	return data ;
 } ;
 
 
