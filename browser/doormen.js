@@ -610,7 +610,7 @@ doormen.SchemaError.prototype.name = 'SchemaError' ;
 
 
 
-function extend( base , extension )
+function extend( base , extension , overwrite )
 {
 	var key ;
 	
@@ -621,16 +621,16 @@ function extend( base , extension )
 	
 	for ( key in extension )
 	{
-		if ( key in base || typeof extension[ key ] !== 'function' ) { continue ; }
+		if ( ( ( key in base ) && ! overwrite ) || typeof extension[ key ] !== 'function' ) { continue ; }
 		base[ key ] = extension[ key ] ;
 	}
 }
 
 
 
-doormen.extendTypeChecker = function extendTypeChecker( extension ) { extend( doormen.typeChecker , extension ) ; } ;
-doormen.extendSanitizer = function extendSanitizer( extension ) { extend( doormen.sanitizer , extension ) ; } ;
-doormen.extendFilter = function extendFilter( extension ) { extend( doormen.filter , extension ) ; } ;
+doormen.extendTypeChecker = function extendTypeChecker( extension , overwrite ) { extend( doormen.typeChecker , extension , overwrite ) ; } ;
+doormen.extendSanitizer = function extendSanitizer( extension , overwrite ) { extend( doormen.sanitizer , extension , overwrite ) ; } ;
+doormen.extendFilter = function extendFilter( extension , overwrite ) { extend( doormen.filter , extension , overwrite ) ; } ;
 
 
 
@@ -953,6 +953,10 @@ filter.notIn = function notIn( data , params , element )
 
 
 
+/*
+	Should be FAST! Some critical application part are depending on it.
+	When a reporter will be coded, it should be plugged in a way that do not slow down it.
+*/
 function isEqual( left , right , extra )
 {
 	var index , key , leftIndexOf , rightIndexOf , r ;
@@ -1060,7 +1064,6 @@ function isEqual( left , right , extra )
 
 
 module.exports = isEqual ;
-
 
 
 
@@ -1551,7 +1554,7 @@ sanitizer.toDate = function toDate( data )
 	
 	if ( data instanceof Date ) { return data ; }
 	
-	if ( typeof data === 'number' || typeof data === 'string' )
+	if ( typeof data === 'number' || typeof data === 'string' || ( data && typeof data === 'object' && data.constructor.name === 'Date' ) )
 	{
 		parsed = new Date( data ) ;
 		return isNaN( parsed ) ? data : parsed ;
