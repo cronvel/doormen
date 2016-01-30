@@ -85,7 +85,7 @@ Common meta types:
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
-   - [zzz Patch validation](#zzz-patch-validation)
+   - [Patch validation](#patch-validation)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Purify](#purify)
@@ -1911,8 +1911,8 @@ doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } 
 doormen.equals( report.errors.length , 2 ) ;
 ```
 
-<a name="zzz-patch-validation"></a>
-# zzz Patch validation
+<a name="patch-validation"></a>
+# Patch validation
 should validate a patch.
 
 ```js

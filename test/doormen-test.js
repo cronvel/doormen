@@ -1800,7 +1800,7 @@ describe( "Full report mode" , function() {
 
 
 
-describe( "zzz Patch validation" , function() {
+describe( "Patch validation" , function() {
 	
 	it( "should validate a patch" , function() {
 		
