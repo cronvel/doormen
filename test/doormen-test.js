@@ -1800,7 +1800,7 @@ describe( "Full report mode" , function() {
 
 
 
-describe( "Patch validation" , function() {
+describe( "zzz Patch validation" , function() {
 	
 	it( "should validate a patch" , function() {
 		
@@ -1826,7 +1826,7 @@ describe( "Patch validation" , function() {
 		doormen.equals( doormen.patch( schema , { a: 1, b: 'two' } ) , { a: '1', b: 'two' } ) ;
 	} ) ;
 		
-	it( "unexistant path in a patch should be removed" , function() {
+	it( "forbidden path in a patch should throw" , function() {
 		
 		var schema ;
 		
@@ -1839,8 +1839,23 @@ describe( "Patch validation" , function() {
 			}
 		} ;
 		
-		doormen.equals( doormen.patch( schema , { d: 'four' } ) , {} ) ;
-		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' } ) ;
+		doormen.patch.not( schema , { d: 'four' } ) ;
+		doormen.patch.not( schema , { c: 'three' , d: 'four' } ) ;
+		
+		// Now allow extra properties, it should be ok
+		schema.extraProperties = true ;
+		
+		doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
+		
+		// Now allow any properties, it should still be ok
+		schema = {
+			type: 'strictObject' ,
+			of: { type: 'string' , sanitize: 'toString' }
+		} ;
+		
+		doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
 	} ) ;
 	
 	it( "non-object patch should not validate" , function() {
@@ -1895,8 +1910,12 @@ describe( "Patch validation" , function() {
 		doormen.patch( schema , { a: "one", "sub.b": "two" } ) ;
 		doormen.equals( doormen.patch( schema , { a: 1, "sub.b": "two" } ) , { a: "1", "sub.b": "two" } ) ;
 		
+		doormen.patch.not( schema , { a: "one", "sub.d": "four" } ) ;
+		
+		// Now allow extra-properties
+		schema.properties.sub.extraProperties = true ;
 		doormen.patch( schema , { a: "one", "sub.d": "four" } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1, "sub.d": "four" } ) , { a: "1" } ) ;
+		doormen.equals( doormen.patch( schema , { a: 1, "sub.d": "four" } ) , { a: "1", "sub.d": "four" } ) ;
 	} ) ;
 	
 	it( "test doormen.reportPatch()" ) ;
@@ -2290,10 +2309,9 @@ describe( "Path in the schema" , function() {
 			schema.properties.key3
 		) ;
 		
-		doormen.equals(
-			doormen.path( schema , 'unexistant' ) ,
-			null
-		) ;
+		doormen.shouldThrow( function() {
+			doormen.path( schema , 'unexistant' ) ;
+		} ) ;
 		
 		doormen.equals(
 			doormen.path( schema , 'key3.subkey1' ) ,
@@ -2310,20 +2328,18 @@ describe( "Path in the schema" , function() {
 			schema.properties.key4.of
 		) ;
 		
-		doormen.equals(
-			doormen.path( schema , 'unexistant.unexistant' ) ,
-			null
-		) ;
+		doormen.shouldThrow( function() {
+			doormen.path( schema , 'unexistant.unexistant' ) ;
+		} ) ;
 		
 		doormen.equals(
 			doormen.path( schema , 'key2.unexistant' ) ,
-			null
+			{}
 		) ;
 		
-		doormen.equals(
-			doormen.path( schema , 'key3.unexistant' ) ,
-			null
-		) ;
+		doormen.shouldThrow( function() {
+			doormen.path( schema , 'key3.unexistant' ) ;
+		} ) ;
 	} ) ;
 } ) ;
 

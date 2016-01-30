@@ -14,7 +14,7 @@
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
-   - [Patch validation](#patch-validation)
+   - [zzz Patch validation](#zzz-patch-validation)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Purify](#purify)
@@ -1840,8 +1840,8 @@ doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } 
 doormen.equals( report.errors.length , 2 ) ;
 ```
 
-<a name="patch-validation"></a>
-# Patch validation
+<a name="zzz-patch-validation"></a>
+# zzz Patch validation
 should validate a patch.
 
 ```js
@@ -1867,7 +1867,7 @@ doormen.patch( schema , { a: 'one', b: 'two' } ) ;
 doormen.equals( doormen.patch( schema , { a: 1, b: 'two' } ) , { a: '1', b: 'two' } ) ;
 ```
 
-unexistant path in a patch should be removed.
+forbidden path in a patch should throw.
 
 ```js
 var schema ;
@@ -1881,8 +1881,23 @@ schema = {
 	}
 } ;
 
-doormen.equals( doormen.patch( schema , { d: 'four' } ) , {} ) ;
-doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' } ) ;
+doormen.patch.not( schema , { d: 'four' } ) ;
+doormen.patch.not( schema , { c: 'three' , d: 'four' } ) ;
+
+// Now allow extra properties, it should be ok
+schema.extraProperties = true ;
+
+doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
+
+// Now allow any properties, it should still be ok
+schema = {
+	type: 'strictObject' ,
+	of: { type: 'string' , sanitize: 'toString' }
+} ;
+
+doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
 ```
 
 non-object patch should not validate.
@@ -1939,8 +1954,12 @@ doormen.patch.not( schema , { a: "one", sub: { b: "two" } } ) ;
 doormen.patch( schema , { a: "one", "sub.b": "two" } ) ;
 doormen.equals( doormen.patch( schema , { a: 1, "sub.b": "two" } ) , { a: "1", "sub.b": "two" } ) ;
 
+doormen.patch.not( schema , { a: "one", "sub.d": "four" } ) ;
+
+// Now allow extra-properties
+schema.properties.sub.extraProperties = true ;
 doormen.patch( schema , { a: "one", "sub.d": "four" } ) ;
-doormen.equals( doormen.patch( schema , { a: 1, "sub.d": "four" } ) , { a: "1" } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, "sub.d": "four" } ) , { a: "1", "sub.d": "four" } ) ;
 ```
 
 <a name="keys-attribute"></a>
@@ -2319,10 +2338,9 @@ doormen.equals(
 	schema.properties.key3
 ) ;
 
-doormen.equals(
-	doormen.path( schema , 'unexistant' ) ,
-	null
-) ;
+doormen.shouldThrow( function() {
+	doormen.path( schema , 'unexistant' ) ;
+} ) ;
 
 doormen.equals(
 	doormen.path( schema , 'key3.subkey1' ) ,
@@ -2339,20 +2357,18 @@ doormen.equals(
 	schema.properties.key4.of
 ) ;
 
-doormen.equals(
-	doormen.path( schema , 'unexistant.unexistant' ) ,
-	null
-) ;
+doormen.shouldThrow( function() {
+	doormen.path( schema , 'unexistant.unexistant' ) ;
+} ) ;
 
 doormen.equals(
 	doormen.path( schema , 'key2.unexistant' ) ,
-	null
+	{}
 ) ;
 
-doormen.equals(
-	doormen.path( schema , 'key3.unexistant' ) ,
-	null
-) ;
+doormen.shouldThrow( function() {
+	doormen.path( schema , 'key3.unexistant' ) ;
+} ) ;
 ```
 
 <a name="mongodbs-objectid"></a>

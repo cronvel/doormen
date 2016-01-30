@@ -533,6 +533,10 @@ doormen.path = function schemaPath( schema , path )
 			path.shift() ;
 			return doormen.path( schema.properties[ key ] , path ) ;
 		}
+		else if ( ! schema.extraProperties )
+		{
+			throw new doormen.SchemaError( "Bad path (at " + path + "), property '" + key + "' not found and the schema does not allow extra properties." ) ;
+		}
 	}
 	
 	if ( schema.of !== undefined )
@@ -549,7 +553,8 @@ doormen.path = function schemaPath( schema , path )
 	// "element" is not supported ATM
 	//if ( schema.elements !== undefined ) {}
 	
-	return null ;
+	// Sub-schema not found, it should be open to anything, so return {}
+	return {} ;
 } ;
 
 
@@ -606,21 +611,14 @@ doormen.patch = function schemaPatch()
 	
 	for ( key in patch )
 	{
+		// Don't try-catch! Let it throw!
 		subSchema = doormen.path( schema , key ) ;
 		
-		if ( subSchema )
-		{
-			//sanitized[ key ] = doormen( options , subSchema , patch[ key ] ) ;
-			sanitized[ key ] = context.check( subSchema , patch[ key ] , {
-				path: 'patch.' + key ,
-				key: key
-			} ) ;
-		}
-		else
-		{
-			// /!\ Should we throw an error here?
-			delete sanitized[ key ] ;
-		}
+		//sanitized[ key ] = doormen( options , subSchema , patch[ key ] ) ;
+		sanitized[ key ] = context.check( subSchema , patch[ key ] , {
+			path: 'patch.' + key ,
+			key: key
+		} ) ;
 	}
 	
 	if ( context.report )
@@ -1073,6 +1071,10 @@ function isEqual( left , right , extra )
 	
 	// If it's strictly equals, then early exit now.
 	if ( left === right ) { return true ; }
+	
+	// If one is truthy and the other falsy, early exit now
+	// It is an important test since it catch the "null is an object" case that can confuse things later
+	if ( ! left !== ! right ) { return false ; }	// jshint ignore:line
 	
 	// If the type mismatch exit now.
 	if ( typeof left !== typeof right ) { return false ; }
