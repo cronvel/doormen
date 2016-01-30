@@ -1,8 +1,8 @@
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
-   - [Optional and default data](#optional-and-default-data)
    - [Basic types](#basic-types)
+   - [Optional and default data](#optional-and-default-data)
    - [Built-in types](#built-in-types)
    - [Mixed types](#mixed-types)
    - [Top-level filters](#top-level-filters)
@@ -14,6 +14,7 @@
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
    - [Full report mode](#full-report-mode)
+   - [Patch validation](#patch-validation)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Purify](#purify)
@@ -211,6 +212,120 @@ b.c = b ;
 doormen.equals( a , b ) ;
 ```
 
+<a name="basic-types"></a>
+# Basic types
+should validate undefined accordingly.
+
+```js
+doormen( { type: 'undefined' } , undefined ) ;
+doormen.not( { type: 'undefined' } , null ) ;
+doormen.not( { type: 'undefined' } , false ) ;
+doormen.not( { type: 'undefined' } , true ) ;
+doormen.not( { type: 'undefined' } , 0 ) ;
+doormen.not( { type: 'undefined' } , 1 ) ;
+doormen.not( { type: 'undefined' } , '' ) ;
+doormen.not( { type: 'undefined' } , 'text' ) ;
+doormen.not( { type: 'undefined' } , {} ) ;
+doormen.not( { type: 'undefined' } , [] ) ;
+```
+
+should validate null accordingly.
+
+```js
+doormen.not( { type: 'null' } , undefined ) ;
+doormen( { type: 'null' } , null ) ;
+doormen.not( { type: 'null' } , false ) ;
+doormen.not( { type: 'null' } , true ) ;
+doormen.not( { type: 'null' } , 0 ) ;
+doormen.not( { type: 'null' } , 1 ) ;
+doormen.not( { type: 'null' } , '' ) ;
+doormen.not( { type: 'null' } , 'text' ) ;
+doormen.not( { type: 'null' } , {} ) ;
+doormen.not( { type: 'null' } , [] ) ;
+```
+
+should validate boolean accordingly.
+
+```js
+doormen.not( { type: 'boolean' } , undefined ) ;
+doormen.not( { type: 'boolean' } , null ) ;
+doormen( { type: 'boolean' } , false ) ;
+doormen( { type: 'boolean' } , true ) ;
+doormen.not( { type: 'boolean' } , 0 ) ;
+doormen.not( { type: 'boolean' } , 1 ) ;
+doormen.not( { type: 'boolean' } , '' ) ;
+doormen.not( { type: 'boolean' } , 'text' ) ;
+doormen.not( { type: 'boolean' } , {} ) ;
+doormen.not( { type: 'boolean' } , [] ) ;
+```
+
+should validate number accordingly.
+
+```js
+doormen.not( { type: 'number' } , undefined ) ;
+doormen.not( { type: 'number' } , null ) ;
+doormen.not( { type: 'number' } , false ) ;
+doormen.not( { type: 'number' } , true ) ;
+doormen( { type: 'number' } , 0 ) ;
+doormen( { type: 'number' } , 1 ) ;
+doormen( { type: 'number' } , Infinity ) ;
+doormen( { type: 'number' } , NaN ) ;
+doormen.not( { type: 'number' } , '' ) ;
+doormen.not( { type: 'number' } , 'text' ) ;
+doormen.not( { type: 'number' } , {} ) ;
+doormen.not( { type: 'number' } , [] ) ;
+```
+
+should validate string accordingly.
+
+```js
+doormen.not( { type: 'string' } , undefined ) ;
+doormen.not( { type: 'string' } , null ) ;
+doormen.not( { type: 'string' } , false ) ;
+doormen.not( { type: 'string' } , true ) ;
+doormen.not( { type: 'string' } , 0 ) ;
+doormen.not( { type: 'string' } , 1 ) ;
+doormen( { type: 'string' } , '' ) ;
+doormen( { type: 'string' } , 'text' ) ;
+doormen.not( { type: 'string' } , {} ) ;
+doormen.not( { type: 'string' } , [] ) ;
+```
+
+should validate object accordingly.
+
+```js
+doormen.not( { type: 'object' } , undefined ) ;
+doormen.not( { type: 'object' } , null ) ;
+doormen.not( { type: 'object' } , false ) ;
+doormen.not( { type: 'object' } , true ) ;
+doormen.not( { type: 'object' } , 0 ) ;
+doormen.not( { type: 'object' } , 1 ) ;
+doormen.not( { type: 'object' } , '' ) ;
+doormen.not( { type: 'object' } , 'text' ) ;
+doormen( { type: 'object' } , {} ) ;
+doormen( { type: 'object' } , { a:1 , b:2 } ) ;
+doormen( { type: 'object' } , [] ) ;
+doormen( { type: 'object' } , [ 1,2,3 ] ) ;
+doormen( { type: 'object' } , new Date() ) ;
+doormen.not( { type: 'object' } , function(){} ) ;
+```
+
+should validate function accordingly.
+
+```js
+doormen.not( { type: 'function' } , undefined ) ;
+doormen.not( { type: 'function' } , null ) ;
+doormen.not( { type: 'function' } , false ) ;
+doormen.not( { type: 'function' } , true ) ;
+doormen.not( { type: 'function' } , 0 ) ;
+doormen.not( { type: 'function' } , 1 ) ;
+doormen.not( { type: 'function' } , '' ) ;
+doormen.not( { type: 'function' } , 'text' ) ;
+doormen.not( { type: 'function' } , {} ) ;
+doormen.not( { type: 'function' } , [] ) ;
+doormen( { type: 'function' } , function(){} ) ;
+```
+
 <a name="optional-and-default-data"></a>
 # Optional and default data
 when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate.
@@ -344,120 +459,6 @@ doormen.equals(
 		{} ) ,
 	{ a: 'default!' , b: { c: 5 } }
 ) ;
-```
-
-<a name="basic-types"></a>
-# Basic types
-should validate undefined accordingly.
-
-```js
-doormen( { type: 'undefined' } , undefined ) ;
-doormen.not( { type: 'undefined' } , null ) ;
-doormen.not( { type: 'undefined' } , false ) ;
-doormen.not( { type: 'undefined' } , true ) ;
-doormen.not( { type: 'undefined' } , 0 ) ;
-doormen.not( { type: 'undefined' } , 1 ) ;
-doormen.not( { type: 'undefined' } , '' ) ;
-doormen.not( { type: 'undefined' } , 'text' ) ;
-doormen.not( { type: 'undefined' } , {} ) ;
-doormen.not( { type: 'undefined' } , [] ) ;
-```
-
-should validate null accordingly.
-
-```js
-doormen.not( { type: 'null' } , undefined ) ;
-doormen( { type: 'null' } , null ) ;
-doormen.not( { type: 'null' } , false ) ;
-doormen.not( { type: 'null' } , true ) ;
-doormen.not( { type: 'null' } , 0 ) ;
-doormen.not( { type: 'null' } , 1 ) ;
-doormen.not( { type: 'null' } , '' ) ;
-doormen.not( { type: 'null' } , 'text' ) ;
-doormen.not( { type: 'null' } , {} ) ;
-doormen.not( { type: 'null' } , [] ) ;
-```
-
-should validate boolean accordingly.
-
-```js
-doormen.not( { type: 'boolean' } , undefined ) ;
-doormen.not( { type: 'boolean' } , null ) ;
-doormen( { type: 'boolean' } , false ) ;
-doormen( { type: 'boolean' } , true ) ;
-doormen.not( { type: 'boolean' } , 0 ) ;
-doormen.not( { type: 'boolean' } , 1 ) ;
-doormen.not( { type: 'boolean' } , '' ) ;
-doormen.not( { type: 'boolean' } , 'text' ) ;
-doormen.not( { type: 'boolean' } , {} ) ;
-doormen.not( { type: 'boolean' } , [] ) ;
-```
-
-should validate number accordingly.
-
-```js
-doormen.not( { type: 'number' } , undefined ) ;
-doormen.not( { type: 'number' } , null ) ;
-doormen.not( { type: 'number' } , false ) ;
-doormen.not( { type: 'number' } , true ) ;
-doormen( { type: 'number' } , 0 ) ;
-doormen( { type: 'number' } , 1 ) ;
-doormen( { type: 'number' } , Infinity ) ;
-doormen( { type: 'number' } , NaN ) ;
-doormen.not( { type: 'number' } , '' ) ;
-doormen.not( { type: 'number' } , 'text' ) ;
-doormen.not( { type: 'number' } , {} ) ;
-doormen.not( { type: 'number' } , [] ) ;
-```
-
-should validate string accordingly.
-
-```js
-doormen.not( { type: 'string' } , undefined ) ;
-doormen.not( { type: 'string' } , null ) ;
-doormen.not( { type: 'string' } , false ) ;
-doormen.not( { type: 'string' } , true ) ;
-doormen.not( { type: 'string' } , 0 ) ;
-doormen.not( { type: 'string' } , 1 ) ;
-doormen( { type: 'string' } , '' ) ;
-doormen( { type: 'string' } , 'text' ) ;
-doormen.not( { type: 'string' } , {} ) ;
-doormen.not( { type: 'string' } , [] ) ;
-```
-
-should validate object accordingly.
-
-```js
-doormen.not( { type: 'object' } , undefined ) ;
-doormen.not( { type: 'object' } , null ) ;
-doormen.not( { type: 'object' } , false ) ;
-doormen.not( { type: 'object' } , true ) ;
-doormen.not( { type: 'object' } , 0 ) ;
-doormen.not( { type: 'object' } , 1 ) ;
-doormen.not( { type: 'object' } , '' ) ;
-doormen.not( { type: 'object' } , 'text' ) ;
-doormen( { type: 'object' } , {} ) ;
-doormen( { type: 'object' } , { a:1 , b:2 } ) ;
-doormen( { type: 'object' } , [] ) ;
-doormen( { type: 'object' } , [ 1,2,3 ] ) ;
-doormen( { type: 'object' } , new Date() ) ;
-doormen.not( { type: 'object' } , function(){} ) ;
-```
-
-should validate function accordingly.
-
-```js
-doormen.not( { type: 'function' } , undefined ) ;
-doormen.not( { type: 'function' } , null ) ;
-doormen.not( { type: 'function' } , false ) ;
-doormen.not( { type: 'function' } , true ) ;
-doormen.not( { type: 'function' } , 0 ) ;
-doormen.not( { type: 'function' } , 1 ) ;
-doormen.not( { type: 'function' } , '' ) ;
-doormen.not( { type: 'function' } , 'text' ) ;
-doormen.not( { type: 'function' } , {} ) ;
-doormen.not( { type: 'function' } , [] ) ;
-doormen( { type: 'function' } , function(){} ) ;
 ```
 
 <a name="built-in-types"></a>
@@ -1837,6 +1838,109 @@ report = doormen.report( schema , { a: '  abc  ', b: 3 , c: { d: true , e: 'def 
 doormen.equals( report.validate , false ) ;
 doormen.equals( report.sanitized , { a: 'abc', b: 3 , c: { d: true , e: 'def' } } ) ;
 doormen.equals( report.errors.length , 2 ) ;
+```
+
+<a name="patch-validation"></a>
+# Patch validation
+should validate a patch.
+
+```js
+var schema ;
+
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen( schema , { a: 'one', b: 'two' , c: 'three' } ) ;
+doormen.equals( doormen( schema , { a: 1, b: 'two' , c: 'three' } ) , { a: '1', b: 'two' , c: 'three' } ) ;
+doormen.not( schema , { a: 'one', b: 'two' } ) ;
+
+doormen.patch( schema , {} ) ;
+doormen.patch( schema , { a: 'one', b: 'two' , c: 'three' } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, b: 'two' , c: 'three' } ) , { a: '1', b: 'two' , c: 'three' } ) ;
+doormen.patch( schema , { a: 'one', b: 'two' } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, b: 'two' } ) , { a: '1', b: 'two' } ) ;
+```
+
+unexistant path in a patch should be removed.
+
+```js
+var schema ;
+
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen.equals( doormen.patch( schema , { d: 'four' } ) , {} ) ;
+doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' } ) ;
+```
+
+non-object patch should not validate.
+
+```js
+var schema ;
+
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen.patch.not( schema , null ) ;
+doormen.patch.not( schema , false ) ;
+doormen.patch.not( schema , 'mldjsr' ) ;
+doormen.patch.not( schema , 8 ) ;
+```
+
+should validate a patch with deep path.
+
+```js
+var schema ;
+
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		sub: {
+			type: 'strictObject' ,
+			properties: {
+				b: { type: 'string' } ,
+				c: { type: 'string' }
+			}
+		}
+	}
+} ;
+
+doormen( schema , { a: "one", sub: { b: "two" , c: "three" } } ) ;
+doormen.equals( doormen( schema , { a: 1, sub: { b: "two" , c: "three" } } ) , { a: "1", sub: { b: "two" , c: "three" } } ) ;
+doormen.not( schema , { a: "one", sub: { b: "two" } } ) ;
+
+doormen.patch( schema , {} ) ;
+doormen.patch( schema , { a: "one", sub: { b: "two" , c: "three" } } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, sub: { b: "two" , c: "three" } } ) , { a: "1", sub: { b: "two" , c: "three" } } ) ;
+
+// Shall not pass! This patch means: replace "sub" by { b: "two" }, thus sub.c is missing
+doormen.patch.not( schema , { a: "one", sub: { b: "two" } } ) ;
+
+// Pass: only replace sub.b, but keep existing value for sub.c
+doormen.patch( schema , { a: "one", "sub.b": "two" } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, "sub.b": "two" } ) , { a: "1", "sub.b": "two" } ) ;
+
+doormen.patch( schema , { a: "one", "sub.d": "four" } ) ;
+doormen.equals( doormen.patch( schema , { a: 1, "sub.d": "four" } ) , { a: "1" } ) ;
 ```
 
 <a name="keys-attribute"></a>

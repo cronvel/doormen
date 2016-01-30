@@ -67,7 +67,7 @@ module.exports.isBrowser = true ;
 */
 function doormen()
 {
-	var data , schema , options ;
+	var data , schema , options , context , sanitized ;
 	
 	if ( arguments.length < 2 || arguments.length > 3 )
 	{
@@ -87,17 +87,17 @@ function doormen()
 	
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
 	
-	var context = {
+	context = {
 		userContext: options.userContext ,
 		validate: true ,
 		errors: [] ,
 		check: check ,
 		validatorError: validatorError ,
-		report: !! options.report,
+		report: !! options.report ,
 		export: !! options.export
 	} ;
 	
-	var sanitized = context.check( schema , data , {
+	sanitized = context.check( schema , data , {
 		path: data === null ? 'null' : ( Array.isArray( data ) ? 'array' : typeof data ) ,
 		key: ''
 	} ) ;
@@ -554,6 +554,99 @@ doormen.path = function schemaPath( schema , path )
 
 
 
+/*
+	doormen.patch( schema , patch )
+	doormen.patch( options , schema , patch )
+	
+	Validate the 'patch' format
+*/
+doormen.patch = function schemaPatch()
+{
+	var patch , schema , options , context , sanitized , key , subSchema ;
+	
+	
+	// Share a lot of code with the doormen() function
+	
+	
+	if ( arguments.length < 2 || arguments.length > 3 )
+	{
+		throw new Error( 'doormen.patch() needs at least 2 and at most 3 arguments' ) ;
+	}
+	
+	if ( arguments.length === 2 ) { schema = arguments[ 0 ] ; patch = arguments[ 1 ] ; }
+	else { options = arguments[ 0 ] ; schema = arguments[ 1 ] ; patch = arguments[ 2 ] ; }
+	
+	// Schema as a sentence
+	if ( typeof schema === 'string' ) { schema = doormen.sentence( schema ) ; }
+	
+	if ( ! schema || typeof schema !== 'object' )
+	{
+		throw new doormen.SchemaError( 'Bad schema, it should be an object or an array of object!' ) ;
+	}
+	
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	// End of common part
+	
+	if ( ! patch || typeof patch !== 'object' ) { throw new Error( 'The patch should be an object' ) ; }
+	
+	// If in the 'export' mode, create a new object, else modify it in place
+	
+	sanitized = options.export ? {} : patch ;
+	
+	context = {
+		userContext: options.userContext ,
+		validate: true ,
+		errors: [] ,
+		check: check ,
+		validatorError: validatorError ,
+		report: !! options.report ,
+		export: !! options.export
+	} ;
+	
+	for ( key in patch )
+	{
+		subSchema = doormen.path( schema , key ) ;
+		
+		if ( subSchema )
+		{
+			//sanitized[ key ] = doormen( options , subSchema , patch[ key ] ) ;
+			sanitized[ key ] = context.check( subSchema , patch[ key ] , {
+				path: 'patch.' + key ,
+				key: key
+			} ) ;
+		}
+		else
+		{
+			// /!\ Should we throw an error here?
+			delete sanitized[ key ] ;
+		}
+	}
+	
+	if ( context.report )
+	{
+		return {
+			validate: context.validate ,
+			sanitized: sanitized ,
+			errors: context.errors
+		} ;
+	}
+	else
+	{
+		return sanitized ;
+	}
+} ;
+
+
+
+// Shorthand
+doormen.patchReport = doormen.patch.bind( doormen , { report: true } ) ;
+doormen.patchExport = doormen.patch.bind( doormen , { export: true } ) ;
+
+
+
+
+
 			/* Specific Error class */
 
 
@@ -661,6 +754,15 @@ doormen.not = function not()
 	var args = arguments ;
 	doormen.shouldThrow( function() {
 		doormen.apply( doormen , args ) ;
+	} ) ;
+} ;
+
+// Inverse validation for patch
+doormen.patch.not = function patchNot()
+{
+	var args = arguments ;
+	doormen.shouldThrow( function() {
+		doormen.patch.apply( doormen , args ) ;
 	} ) ;
 } ;
 
@@ -1509,6 +1611,21 @@ module.exports = sanitizer ;
 
 
 			/* Cast sanitizers */
+
+
+
+sanitizer.toString = function toString( data )
+{
+	if ( typeof data === 'string' ) { return data ; }
+	
+	// Calling .toString() may throw an error
+	try {
+		return '' + data ;
+	}
+	catch ( error ) {
+		return data ;
+	}
+} ;
 
 
 
