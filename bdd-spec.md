@@ -13,6 +13,7 @@
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
+   - [Sanitize + Patch reporting](#sanitize--patch-reporting)
    - [Full report mode](#full-report-mode)
    - [Patch validation](#patch-validation)
    - ['keys' attribute](#keys-attribute)
@@ -1800,6 +1801,78 @@ doormen.equals( doormen(
 		{ a: ' toto  ' , b: 'text  ' } ) ,
 	{ a: 'toto' , b: 'text' }
 ) ;
+```
+
+<a name="sanitize--patch-reporting"></a>
+# Sanitize + Patch reporting
+sanitize should should report in the provided patch object.
+
+```js
+var schema , patch ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: ' toto  ' , b: 'text  ' }
+) ;
+doormen.equals( patch , { a: 'toto' , b: 'text' } ) ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: 'toto' , b: 'text  ' }
+) ;
+doormen.equals( patch , { b: 'text' } ) ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: 'toto' , b: 'text' }
+) ;
+doormen.equals( patch , {} ) ;
+
+schema = {
+	properties: {
+		a: { sanitize: 'trim' } ,
+		sub: {
+			properties: {
+				b: { sanitize: 'trim' } ,
+				sub: {
+					properties: {
+						c: { sanitize: 'trim' }
+					}
+				}
+			}
+		}
+	}
+} ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: ' toto  ' , sub: { b: 'text  ' , sub: { c: ' weee! ' } } }
+) ;
+doormen.equals( patch , { "a": "toto" , "sub.b": "text" , "sub.sub.c": "weee!" } ) ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: 'toto' , sub: { b: 'text  ' , sub: { c: 'weee!' } } }
+) ;
+doormen.equals( patch , { "sub.b": "text" } ) ;
+
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: ' toto  ' , sub: { b: 'text' , sub: { c: ' weee! ' } } }
+) ;
+doormen.equals( patch , { "a": "toto" , "sub.sub.c": "weee!" } ) ;
 ```
 
 <a name="full-report-mode"></a>

@@ -1755,6 +1755,80 @@ describe( "Sanitize" , function() {
 		) ;
 	} ) ;
 } ) ;
+	
+
+
+describe( "Sanitize + Patch reporting" , function() {
+	
+	it( "sanitize should should report in the provided patch object" , function() {
+		
+		var schema , patch ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+			{ a: ' toto  ' , b: 'text  ' }
+		) ;
+		doormen.equals( patch , { a: 'toto' , b: 'text' } ) ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+			{ a: 'toto' , b: 'text  ' }
+		) ;
+		doormen.equals( patch , { b: 'text' } ) ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+			{ a: 'toto' , b: 'text' }
+		) ;
+		doormen.equals( patch , {} ) ;
+		
+		schema = {
+			properties: {
+				a: { sanitize: 'trim' } ,
+				sub: {
+					properties: {
+						b: { sanitize: 'trim' } ,
+						sub: {
+							properties: {
+								c: { sanitize: 'trim' }
+							}
+						}
+					}
+				}
+			}
+		} ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			schema ,
+			{ a: ' toto  ' , sub: { b: 'text  ' , sub: { c: ' weee! ' } } }
+		) ;
+		doormen.equals( patch , { "a": "toto" , "sub.b": "text" , "sub.sub.c": "weee!" } ) ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			schema ,
+			{ a: 'toto' , sub: { b: 'text  ' , sub: { c: 'weee!' } } }
+		) ;
+		doormen.equals( patch , { "sub.b": "text" } ) ;
+		
+		patch = {} ;
+		doormen(
+			{ patch: patch } ,
+			schema ,
+			{ a: ' toto  ' , sub: { b: 'text' , sub: { c: ' weee! ' } } }
+		) ;
+		doormen.equals( patch , { "a": "toto" , "sub.sub.c": "weee!" } ) ;
+	} ) ;
+} ) ;
 
 
 
