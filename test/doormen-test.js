@@ -1623,6 +1623,24 @@ describe( "Strings meta types" , function() {
 
 describe( "Sanitize" , function() {
 	
+	it( "should sanitize to 'toString' accordingly" ) ;
+	
+	it( "should sanitize to 'toBoolean' accordingly" , function() {
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , 0 ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , '0' ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , 1 ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , '1' ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , 123 ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "on" ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "On" ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "ON" ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "off" ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "Off" ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "OFF" ) , false ) ;
+		
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , '123' ) , true ) ;
+	} ) ;
+	
 	it( "should sanitize to 'toNumber' accordingly" , function() {
 		doormen.equals( doormen( { sanitize: 'toNumber' } , 0 ) , 0 ) ;
 		doormen.equals( doormen( { sanitize: 'toNumber' } , '0' ) , 0 ) ;

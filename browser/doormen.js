@@ -1649,6 +1649,37 @@ sanitizer.toNumber = function toNumber( data )
 
 
 
+sanitizer.toBoolean = function toBoolean( data )
+{
+	if ( typeof data === 'boolean' ) { return data ; }
+	
+	switch ( data )
+	{
+		case 1 :
+		case '1' :
+		case 'on' :
+		case 'On' :
+		case 'ON' :
+		case 'true' :
+		case 'True' :
+		case 'TRUE' :
+			return true ;
+		case 0 :
+		case '0' :
+		case 'off' :
+		case 'Off' :
+		case 'OFF' :
+		case 'false' :
+		case 'False' :
+		case 'FALSE' :
+			return false ;
+		default :
+			return !! data ;
+	}
+} ;
+
+
+
 sanitizer.toInteger = function toInteger( data )
 {
 	if ( typeof data === 'number' ) { return Math.round( data ) ; }

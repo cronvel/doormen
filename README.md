@@ -1723,6 +1723,24 @@ doormen.not( { type: 'email' } , 'b b@gmail.com' ) ;
 
 <a name="sanitize"></a>
 # Sanitize
+should sanitize to 'toBoolean' accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'toBoolean' } , 0 ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , '0' ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , 1 ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , '1' ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , 123 ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "on" ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "On" ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "ON" ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "off" ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "Off" ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "OFF" ) , false ) ;
+
+doormen.equals( doormen( { sanitize: 'toBoolean' } , '123' ) , true ) ;
+```
+
 should sanitize to 'toNumber' accordingly.
 
 ```js
