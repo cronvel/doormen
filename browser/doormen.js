@@ -148,14 +148,14 @@ doormen.purifySchema = require( './purifySchema.js' ) ;
 
 
 
-doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength' , 'maxLength' , 'match' , 'in' , 'notIn' ] ;
+doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength' , 'maxLength' , 'match' , 'in' , 'notIn' , 'eq' ] ;
 
 
 
 function check( schema , data_ , element )
 {
 	var i , key , newKey , sanitizerList , hashmap , data = data_ , src , returnValue , alternativeErrors ,
-		when , keys , nextKeys , bkup , addToPath ;
+		when , ifArray , keys , nextKeys , bkup , addToPath ;
 	
 	if ( ! schema || typeof schema !== 'object' )
 	{
@@ -487,6 +487,26 @@ function check( schema , data_ , element )
 			this.validatorError( element.displayPath + " has extra elements (" +
 				src.length + " instead of " + schema.elements.length + ")." ,
 				element ) ;
+		}
+	}
+	
+	// 7) Conditionnal schema
+	
+	if ( schema.if )
+	{
+		ifArray = Array.isArray( schema.if ) ? schema.if : [ schema.if ] ;
+		
+		for ( i = 0 ; i < ifArray.length ; i ++ )
+		{
+			try {
+				doormen( ifArray[ i ].verify , data ) ;
+			}
+			catch ( error ) {
+				// normal case, it does not match, so continue to the next alternative
+				continue ;
+			}
+			
+			data = this.check( ifArray[ i ].then , data , element ) ;
 		}
 	}
 	
@@ -842,6 +862,16 @@ filter.instanceOf = function instanceOf( data , params , element )
 	if ( ! ( data instanceof params ) )
 	{
 		this.validatorError( element.path + " is not an instance of " + params + "." , element ) ;
+	}
+} ;
+
+
+
+filter.eq = filter[ '===' ] = function eq( data , params , element )
+{
+	if ( data !== params )
+	{
+		this.validatorError( element.path + " is not stricly equal to " + params + "." , element ) ;
 	}
 } ;
 
@@ -1550,8 +1580,25 @@ var doormenSchema = [
 	{ type: 'array', of: singleSchema }
 ] ;
 
+var ifSchema = {
+	optional: true ,
+	type: 'strictObject' ,
+	properties: {
+		verify: doormenSchema ,
+		then: doormenSchema
+	}
+} ;
+
 // Recursivity
 singleSchema.properties.of = doormenSchema ;
+
+singleSchema.properties.if = [
+	ifSchema ,
+	{
+		type: 'array' ,
+		of: ifSchema
+	}
+] ;
 
 singleSchema.properties.properties = [
 	{

@@ -18,6 +18,7 @@
    - [Patch validation](#patch-validation)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
+   - [Conditionnal schema: 'if - verify - then' syntaxe.](#conditionnal-schema-if---verify---then-syntaxe)
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
@@ -2102,6 +2103,101 @@ doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
 doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
 ```
 
+<a name="conditionnal-schema-if---verify---then-syntaxe"></a>
+# Conditionnal schema: 'if - verify - then' syntaxe.
+'if' as an object.
+
+```js
+var schema = {
+	if: {
+		verify: {
+			extraProperties: true ,
+			properties: {
+				type: { eq: 'alt1' }
+			}
+		} ,
+		then: {
+			extraProperties: true ,
+			properties: {
+				a: { type: 'string' }
+			}
+		}
+	} ,
+	extraProperties: true ,
+	properties: {
+		type: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+```
+
+'if' as an array of objects.
+
+```js
+var schema = {
+	if: [
+		{
+			verify: {
+				extraProperties: true ,
+				properties: {
+					type: { eq: 'alt1' }
+				}
+			} ,
+			then: {
+				extraProperties: true ,
+				properties: {
+					a: { type: 'string' }
+				}
+			}
+		} ,
+		{
+			verify: {
+				extraProperties: true ,
+				properties: {
+					type: { eq: 'alt2' }
+				}
+			} ,
+			then: {
+				extraProperties: true ,
+				properties: {
+					b: { type: 'string' }
+				}
+			}
+		}
+	] ,
+	extraProperties: true ,
+	properties: {
+		type: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+
+doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+```
+
 <a name="purify"></a>
 # Purify
 Purify a basic schema.
@@ -2134,6 +2230,8 @@ doormen.equals( doormen.purifySchema(
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
 			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+			s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
+			t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 		}
 	}
 	) ,
@@ -2158,6 +2256,8 @@ doormen.equals( doormen.purifySchema(
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
 			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
 			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+			s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
+			t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 		}
 	}
 ) ;
