@@ -2069,9 +2069,9 @@ describe( "Alternatives" , function() {
 
 
 
-describe( "Conditionnal schema: 'if - verify - then' syntaxe." , function() {
+describe( "Conditionnal schema." , function() {
 	
-	it( "'if' as an object" , function() {
+	it( "'if - verify - then' syntaxe using an object in the 'if'" , function() {
 		
 		var schema = {
 			if: {
@@ -2106,7 +2106,7 @@ describe( "Conditionnal schema: 'if - verify - then' syntaxe." , function() {
 		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
 	} ) ;
 	
-	it( "'if' as an array of objects" , function() {
+	it( "'if - verify - then' syntaxe using an array of object in the 'if'" , function() {
 		
 		var schema = {
 			if: [
@@ -2139,6 +2139,47 @@ describe( "Conditionnal schema: 'if - verify - then' syntaxe." , function() {
 					}
 				}
 			] ,
+			extraProperties: true ,
+			properties: {
+				type: { type: 'string' } ,
+				c: { type: 'string' }
+			}
+		} ;
+		
+		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+		
+		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+		
+		doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+	} ) ;
+	
+	it( "'switch - case' syntaxe" , function() {
+		
+		var schema = {
+			switch: 'type' ,
+			case: {
+				alt1: {
+					extraProperties: true ,
+					properties: {
+						a: { type: 'string' }
+					}
+				} ,
+				alt2: {
+					extraProperties: true ,
+					properties: {
+						b: { type: 'string' }
+					}
+				}
+			} ,
 			extraProperties: true ,
 			properties: {
 				type: { type: 'string' } ,

@@ -490,9 +490,19 @@ function check( schema , data_ , element )
 		}
 	}
 	
+	
 	// 7) Conditionnal schema
 	
-	if ( schema.if )
+	if (
+		typeof schema.switch === 'string' &&
+		data && typeof data === 'object' && typeof data[ schema.switch ] === 'string' &&
+		schema.case && typeof schema.case === 'object' && schema.case[ data[ schema.switch ] ]
+	)
+	{
+		data = this.check( schema.case[ data[ schema.switch ] ] , data , element ) ;
+	}
+	
+	if ( schema.if && typeof schema.if === 'object' )
 	{
 		ifArray = Array.isArray( schema.if ) ? schema.if : [ schema.if ] ;
 		

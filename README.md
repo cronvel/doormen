@@ -89,7 +89,7 @@ Common meta types:
    - [Patch validation](#patch-validation)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
-   - [Conditionnal schema: 'if - verify - then' syntaxe.](#conditionnal-schema-if---verify---then-syntaxe)
+   - [Conditionnal schema.](#conditionnal-schema)
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
@@ -2174,9 +2174,9 @@ doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
 doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
 ```
 
-<a name="conditionnal-schema-if---verify---then-syntaxe"></a>
-# Conditionnal schema: 'if - verify - then' syntaxe.
-'if' as an object.
+<a name="conditionnal-schema"></a>
+# Conditionnal schema.
+'if - verify - then' syntaxe using an object in the 'if'.
 
 ```js
 var schema = {
@@ -2212,7 +2212,7 @@ doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
 doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
 ```
 
-'if' as an array of objects.
+'if - verify - then' syntaxe using an array of object in the 'if'.
 
 ```js
 var schema = {
@@ -2246,6 +2246,48 @@ var schema = {
 			}
 		}
 	] ,
+	extraProperties: true ,
+	properties: {
+		type: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+
+doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+```
+
+'switch - case' syntaxe.
+
+```js
+var schema = {
+	switch: 'type' ,
+	case: {
+		alt1: {
+			extraProperties: true ,
+			properties: {
+				a: { type: 'string' }
+			}
+		} ,
+		alt2: {
+			extraProperties: true ,
+			properties: {
+				b: { type: 'string' }
+			}
+		}
+	} ,
 	extraProperties: true ,
 	properties: {
 		type: { type: 'string' } ,
