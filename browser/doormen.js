@@ -23,6 +23,8 @@
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 // Load doormen.js, export it, and set isBrowser to true
@@ -53,6 +55,8 @@ module.exports.isBrowser = true ;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
+
+"use strict" ;
 
 
 
@@ -843,6 +847,8 @@ doormen.not.equals = function notEquals( left , right )
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 // Load modules
@@ -1099,6 +1105,8 @@ filter.notIn = function notIn( data , params , element )
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 /*
@@ -1244,6 +1252,8 @@ module.exports = isEqual ;
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 module.exports = {
@@ -1331,6 +1341,8 @@ module.exports = {
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
+
+"use strict" ;
 
 
 
@@ -1524,6 +1536,8 @@ mask.check = function maskCheck( schema )
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 // Load modules
@@ -1664,6 +1678,8 @@ module.exports = function( schema )
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
+
+"use strict" ;
 
 
 
@@ -1924,6 +1940,8 @@ sanitizer.mongoId = function mongoId( data )
 	SOFTWARE.
 */
 
+"use strict" ;
+
 
 
 var doormen = require( './doormen.js' ) ;
@@ -2136,6 +2154,8 @@ module.exports = sentence ;
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
+
+"use strict" ;
 
 
 
