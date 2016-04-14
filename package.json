@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
@@ -8,12 +8,12 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "browserify": "^12.0.1",
-    "jshint": "^2.5.6",
-    "mocha": "^2.2.5",
+    "browserify": "^13.0.0",
+    "jshint": "^2.9.1",
+    "mocha": "^2.4.5",
     "testling": "^1.7.1",
-    "tree-kit": "^0.5.5",
-    "uglify-js": "^2.4.23"
+    "tree-kit": "^0.5.19",
+    "uglify-js": "^2.6.2"
   },
   "testling": {
     "harness": "mocha",
