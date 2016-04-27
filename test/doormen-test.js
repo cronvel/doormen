@@ -2645,6 +2645,34 @@ describe( "Misc" , function() {
 		) ;
 	} ) ;
 	
+	it( "pathsMaxTier()" , function() {
+		
+		var schema = {
+			type: 'strictObject' ,
+			properties: {
+				a: {
+					type: 'number',
+					tier: 3
+				},
+				b: {
+					type: 'string',
+					tier: 1
+				},
+				c: {
+					type: 'string',
+					tier: 4
+				}
+			}
+		} ;
+		
+		doormen.equals(  doormen.patchTier( schema , {} )  ,  0  ) ;
+		doormen.equals(  doormen.patchTier( schema , { a: 'some' , b: 'useless' , c: 'values' } )  ,  4  ) ;
+		doormen.equals(  doormen.patchTier( schema , { a: 'some' } )  ,  3  ) ;
+		doormen.equals(  doormen.patchTier( schema , { b: 'some' } )  ,  1  ) ;
+		doormen.equals(  doormen.patchTier( schema , { a: 'some' , c: 'values' } )  ,  4  ) ;
+		doormen.equals(  doormen.patchTier( schema , { a: 'some' , b: 'useless' } )  ,  3  ) ;
+	} ) ;
+	
 	it( "real world use case" , function() {
 		
 		doormen.typeChecker.password = function( data ) {
