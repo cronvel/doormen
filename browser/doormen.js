@@ -611,7 +611,7 @@ function schemaPath_( schema , path , index )
 doormen.patchTier = function pathsMaxTier( schema , patch )
 {
 	var i , iMax , path ,
-		maxTier = 0 ,
+		maxTier = 1 ,
 		paths = Object.keys( patch ) ;
 	
 	for ( i = 0 , iMax = paths.length ; i < iMax ; i ++ )
@@ -620,7 +620,7 @@ doormen.patchTier = function pathsMaxTier( schema , patch )
 		
 		while ( path.length )
 		{
-			maxTier = Math.max( maxTier , doormen.path( schema , path ).tier || 0 ) ;
+			maxTier = Math.max( maxTier , doormen.path( schema , path ).tier || 1 ) ;
 			path.pop() ;
 		}
 	}
