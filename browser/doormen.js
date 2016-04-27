@@ -531,7 +531,7 @@ function check( schema , data_ , element )
 
 doormen.path = function schemaPath( schema , path )
 {
-	var length , key ;
+	var index = 0 ;
 	
 	if ( ! Array.isArray( path ) )
 	{
@@ -544,16 +544,22 @@ doormen.path = function schemaPath( schema , path )
 		throw new doormen.SchemaError( schema + " is not a schema (not an object or an array of object)." ) ;
 	}
 	
+	// Skip empty path
+	while ( index < path.length && ! path[ index ] ) { index ++ ; }
 	
-	length = path.length ;
-	
-	// Remove empty path
-	while ( length && ! path[ 0 ] ) { path.shift() ; length -- ; }
+	return schemaPath_( schema , path , index ) ;
+} ;
+
+
+
+function schemaPath_( schema , path , index )
+{
+	var key ;
 	
 	// Found it! return now!
-	if ( ! length ) { return schema ; }
+	if ( index >= path.length ) { return schema ; }
 	
-	key = path[ 0 ] ;
+	key = path[ index ] ;
 	
 	
 	// 0) Arrays are alternatives
@@ -572,8 +578,8 @@ doormen.path = function schemaPath( schema , path )
 		
 		if ( schema.properties[ key ] )
 		{
-			path.shift() ;
-			return doormen.path( schema.properties[ key ] , path ) ;
+			//path.shift() ;
+			return schemaPath_( schema.properties[ key ] , path , index + 1 ) ;
 		}
 		else if ( ! schema.extraProperties )
 		{
@@ -588,8 +594,8 @@ doormen.path = function schemaPath( schema , path )
 			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contains a schema object." ) ;
 		}
 		
-		path.shift() ;
-		return doormen.path( schema.of , path ) ;
+		//path.shift() ;
+		return schemaPath_( schema.of , path , index + 1 ) ;
 	}
 	
 	// "element" is not supported ATM
@@ -597,18 +603,26 @@ doormen.path = function schemaPath( schema , path )
 	
 	// Sub-schema not found, it should be open to anything, so return {}
 	return {} ;
-} ;
+}
 
 
 
 // Get the tier of a patch, i.e. the highest tier for all path of the patch.
 doormen.patchTier = function pathsMaxTier( schema , patch )
 {
-	var i , iMax , maxTier = 0 , paths = Object.keys( patch ) ;
+	var i , iMax , path ,
+		maxTier = 0 ,
+		paths = Object.keys( patch ) ;
 	
 	for ( i = 0 , iMax = paths.length ; i < iMax ; i ++ )
 	{
-		maxTier = Math.max( maxTier , doormen.path( schema , paths[ i ] ).tier ) ;
+		path = paths[ i ].split( '.' ) ;
+		
+		while ( path.length )
+		{
+			maxTier = Math.max( maxTier , doormen.path( schema , path ).tier || 0 ) ;
+			path.pop() ;
+		}
 	}
 	
 	return maxTier ;

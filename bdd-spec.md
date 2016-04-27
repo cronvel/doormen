@@ -2686,6 +2686,21 @@ var schema = {
 		c: {
 			type: 'string',
 			tier: 4
+		},
+		embedded: {
+			type: 'strictObject',
+			tier: 3 ,
+			extraProperties: true,
+			properties: {
+				d: {
+					type: 'number',
+					tier: 2
+				},
+				e: {
+					type: 'string',
+					tier: 4
+				}
+			}
 		}
 	}
 } ;
@@ -2696,6 +2711,12 @@ doormen.equals(  doormen.patchTier( schema , { a: 'some' } )  ,  3  ) ;
 doormen.equals(  doormen.patchTier( schema , { b: 'some' } )  ,  1  ) ;
 doormen.equals(  doormen.patchTier( schema , { a: 'some' , c: 'values' } )  ,  4  ) ;
 doormen.equals(  doormen.patchTier( schema , { a: 'some' , b: 'useless' } )  ,  3  ) ;
+doormen.equals(  doormen.patchTier( schema , { embedded: 'useless' } )  ,  3  ) ;
+doormen.equals(  doormen.patchTier( schema , { b: 'some' , 'embedded.e': 'useless' } )  ,  4  ) ;
+doormen.equals(  doormen.patchTier( schema , { b: 'some' , 'embedded.unexistant': 'useless' } )  ,  3  ) ;
+doormen.equals(  doormen.patchTier( schema , { 'embedded.e': 'useless' } )  ,  4  ) ;
+doormen.equals(  doormen.patchTier( schema , { 'embedded.d': 'useless' } )  ,  3  ) ;
+doormen.equals(  doormen.patchTier( schema , { 'embedded.unexistant': 'useless' } )  ,  3  ) ;
 ```
 
 real world use case.
