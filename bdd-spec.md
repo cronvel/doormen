@@ -1792,6 +1792,12 @@ should sanitize to 'toLowerCase' accordingly.
 doormen.equals( doormen( { sanitize: 'toLowerCase' } , 'aBc dE f' ) , 'abc de f' ) ;
 ```
 
+should sanitize to 'capitalize' accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+```
+
 should sanitize to 'dashToCamelCase' accordingly.
 
 ```js

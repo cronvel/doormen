@@ -1749,6 +1749,10 @@ describe( "Sanitize" , function() {
 		doormen.equals( doormen( { sanitize: 'toLowerCase' } , 'aBc dE f' ) , 'abc de f' ) ;
 	} ) ;
 	
+	it( "should sanitize to 'capitalize' accordingly" , function() {
+		doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+	} ) ;
+	
 	it( "should sanitize to 'dashToCamelCase' accordingly" , function() {
 		doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'to-upper-case' ) , 'toUpperCase' ) ;
 		doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'toUpperCase' ) , 'toUpperCase' ) ;
