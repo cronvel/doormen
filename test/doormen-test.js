@@ -1758,6 +1758,10 @@ describe( "Sanitize" , function() {
 		doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'toUpperCase' ) , 'toUpperCase' ) ;
 	} ) ;
 	
+	it( "should sanitize to 'latinize' accordingly" , function() {
+		doormen.equals( doormen( { sanitize: 'latinize' } , 'éàèùâêîôûÂÊÎÔÛäëïöüÄËÏÖÜæÆŧøþßðđħł' ) , 'eaeuaeiouAEIOUaeiouAEIOUaeAEtothssdhdhl' ) ;
+	} ) ;
+	
 	it( "sanitize should work recursively as well" , function() {
 		doormen.equals( doormen( { of: { sanitize: 'trim' } } , {} ) , {} ) ;
 		doormen.equals( doormen( { of: { sanitize: 'trim' } } , { a: ' toto  ' } ) , { a: 'toto' } ) ;

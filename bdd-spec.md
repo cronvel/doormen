@@ -1805,6 +1805,12 @@ doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'to-upper-case' ) , '
 doormen.equals( doormen( { sanitize: 'dashToCamelCase' } , 'toUpperCase' ) , 'toUpperCase' ) ;
 ```
 
+should sanitize to 'latinize' accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'latinize' } , 'éàèùâêîôûÂÊÎÔÛäëïöüÄËÏÖÜæÆŧøþßðđħł' ) , 'eaeuaeiouAEIOUaeiouAEIOUaeAEtothssdhdhl' ) ;
+```
+
 sanitize should work recursively as well.
 
 ```js
