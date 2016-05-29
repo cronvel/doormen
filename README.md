@@ -4,7 +4,7 @@
 
 Validate, sanitize and assert: the silver bullet of data!
 
-Early alpha.
+Beta version.
 
 **/!\\ This documentation is still a Work In Progress /!\\**
 
