@@ -33,16 +33,13 @@ var tree = require( 'tree-kit' ) ;
 
 var doormen ;
 
-if ( process.argv.length )
+if ( process.browser )
 {
-	// We are running in Node.js
-	doormen = require( '../lib/doormen.js' ) ;
+	doormen = require( '../lib/browser.js' ) ;
 }
 else
 {
-	// We are running in a browser
-	//console.log( 'Running browser version' ) ;
-	doormen = require( '../lib/browser.js' ) ;
+	doormen = require( '../lib/doormen.js' ) ;
 }
 
 
@@ -2588,16 +2585,16 @@ describe( "Path in the schema" , function() {
 
 
 
-describe( "MongoDB's ObjectID" , function() {
-	
-	it( "should validate MongoDB's ObjectID" , function() {
+if ( ! process.browser )
+{
+	describe( "MongoDB's ObjectID" , function() {
 		
-		var mongodb ;
-		
-		doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
-		
-		if ( ! doormen.isBrowser )
-		{
+		it( "should validate MongoDB's ObjectID" , function() {
+			
+			var mongodb ;
+			
+			doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
+			
 			try {
 				mongodb = require( 'mongodb' ) ;
 			}
@@ -2607,15 +2604,12 @@ describe( "MongoDB's ObjectID" , function() {
 			}	// skip the remaining tests if the module is not found
 			
 			doormen( { type: 'mongoId' } , new mongodb.ObjectID() ) ;
-		}
-	} ) ;
-	
-	it( "should sanitize string to MongoDB's ObjectID" , function() {
+		} ) ;
 		
-		var mongodb ;
-		
-		if ( ! doormen.isBrowser )
-		{
+		it( "should sanitize string to MongoDB's ObjectID" , function() {
+			
+			var mongodb ;
+			
 			try {
 				mongodb = require( 'mongodb' ) ;
 			}
@@ -2625,10 +2619,9 @@ describe( "MongoDB's ObjectID" , function() {
 			}	// skip the remaining tests if the module is not found
 			
 			doormen( { instanceOf: mongodb.ObjectID } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;
-		}
+		} ) ;
 	} ) ;
-} ) ;
-
+}
 
 
 describe( "Misc" , function() {
