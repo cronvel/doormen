@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.4.24",
+  "version": "0.4.25",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
@@ -51,5 +51,13 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cronvel/doormen/issues"
+  },
+  "copyright": {
+    "title": "Doormen",
+    "years": [
+      2015,
+      2016
+    ],
+    "owner": "Cédric Ronvel"
   }
 }
