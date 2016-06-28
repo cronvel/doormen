@@ -64,6 +64,10 @@ module.exports.isBrowser = true ;
 
 
 
+var clone = require( 'tree-kit/lib/clone.js' ) ;
+
+
+
 /*
 	doormen( schema , data )
 	doormen( options , schema , data )
@@ -206,7 +210,10 @@ function check( schema , data_ , element )
 	// 1) if the data has a default value or is optional, and its value is null or undefined, it's ok!
 	if ( ( data === null || data === undefined ) )
 	{
-		if ( 'default' in schema ) { return schema.default ; }
+		if ( 'default' in schema ) {
+			if ( schema.default && typeof schema.default === 'object' ) { return clone( schema.default ) ; }
+			return schema.default ;
+		}
 		if ( schema.optional ) { return data ; }
 	}
 	
@@ -872,7 +879,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10}],3:[function(require,module,exports){
+},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10,"tree-kit/lib/clone.js":14}],3:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -2563,5 +2570,95 @@ module.exports = function( str )
 
             
 
-},{"./latinize-map.json":12}]},{},[1])(1)
+},{"./latinize-map.json":12}],14:[function(require,module,exports){
+/*
+	Tree Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
+	
+	The MIT License (MIT)
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+/*
+	Stand-alone fork of extend.js, without options.
+*/
+
+module.exports = function clone( originalObject , circular )
+{
+	// First create an empty object with
+	// same prototype of our original source
+	
+	var propertyIndex , descriptor , keys , current , nextSource , indexOf ,
+		copies = [ { source: originalObject , target: Object.create( Object.getPrototypeOf( originalObject ) ) } ] ,
+		cloneObject = copies[ 0 ].target ,
+		sourceReferences = [ originalObject ] ,
+		targetReferences = [ cloneObject ] ;
+	
+	// First in, first out
+	while ( current = copies.shift() )	// jshint ignore:line
+	{
+		keys = Object.getOwnPropertyNames( current.source ) ;
+
+		for ( propertyIndex = 0 ; propertyIndex < keys.length ; propertyIndex ++ )
+		{
+			// Save the source's descriptor
+			descriptor = Object.getOwnPropertyDescriptor( current.source , keys[ propertyIndex ] ) ;
+			
+			if ( ! descriptor.value || typeof descriptor.value !== 'object' )
+			{
+				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+				continue ;
+			}
+			
+			nextSource = descriptor.value ;
+			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( Object.getPrototypeOf( nextSource ) ) ;
+			
+			if ( circular )
+			{
+				indexOf = sourceReferences.indexOf( nextSource ) ;
+				
+				if ( indexOf !== -1 )
+				{
+					// The source is already referenced, just assign reference
+					descriptor.value = targetReferences[ indexOf ] ;
+					Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+					continue ;
+				}
+				
+				sourceReferences.push( nextSource ) ;
+				targetReferences.push( descriptor.value ) ;
+			}
+			
+			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+			
+			copies.push( { source: nextSource , target: descriptor.value } ) ;
+		}
+	}
+	
+	return cloneObject ;
+} ;
+
+},{}]},{},[1])(1)
 });
