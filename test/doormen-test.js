@@ -2215,9 +2215,20 @@ describe( "Conditionnal schema." , function() {
 
 
 
-describe( "Validate a schema" , function() {
+describe( "Schema validation" , function() {
 	
-	it( "Validate a schema" ) ;
+	it( "Validate a schema" , function() {
+		
+		var schema ;
+		
+		schema = { properties: { a: { optional: true, type: 'string' } } } ;
+		doormen.validateSchema( schema ) ;
+		doormen( { type: "schema" } , schema ) ;
+		
+		schema = { type: true } ;
+		doormen.shouldThrow( function() { doormen.validateSchema( schema ) ; } ) ;
+		doormen.not( { type: "schema" } , schema ) ;
+	} ) ;
 } ) ;
 
 
