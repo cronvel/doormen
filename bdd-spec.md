@@ -19,6 +19,7 @@
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Conditionnal schema.](#conditionnal-schema)
+   - [Validate a schema](#validate-a-schema)
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
@@ -2252,6 +2253,8 @@ doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
 doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
 ```
 
+<a name="validate-a-schema"></a>
+# Validate a schema
 <a name="purify"></a>
 # Purify
 Purify a basic schema.

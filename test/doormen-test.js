@@ -2215,6 +2215,13 @@ describe( "Conditionnal schema." , function() {
 
 
 
+describe( "Validate a schema" , function() {
+	
+	it( "Validate a schema" ) ;
+} ) ;
+
+
+
 describe( "Purify" , function() {
 	
 	it( "Purify a basic schema" , function() {

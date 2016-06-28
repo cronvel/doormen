@@ -151,7 +151,13 @@ doormen.filter = require( './filter.js' ) ;
 doormen.mask = require( './mask.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
-doormen.purifySchema = require( './purifySchema.js' ) ;
+doormen.schemaSchema = require( './schemaSchema.js' ) ;
+
+doormen.validateSchema = function( schema ) { return doormen( doormen.schemaSchema , schema ) ; } ;
+doormen.purifySchema = function( schema ) { return doormen.export( doormen.schemaSchema , schema ) ; } ;
+
+
+
 //doormen.expect = require( './expect.js' ) ;
 
 
@@ -866,7 +872,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./purifySchema.js":7,"./sanitizer.js":8,"./sentence.js":9,"./typeChecker.js":10}],3:[function(require,module,exports){
+},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10}],3:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -1591,151 +1597,6 @@ mask.check = function maskCheck( schema )
 
 // Load modules
 var doormen = require( './doormen.js' ) ;
-
-
-
-var singleSchema = {
-	optional: true ,	// For recursivity...
-	type: 'strictObject' ,
-	extraProperties: true ,
-	properties: {
-		type: { optional: true , type: 'string' } ,
-		optional: { optional: true , type: 'boolean' } ,
-		extraProperties: { optional: true , type: 'boolean' } ,
-		default: { optional: true } ,
-		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
-		filter: { optional: true , type: 'strictObject' } ,
-		
-		tier: { optional: true , type: 'integer' } ,
-		tags: { optional: true , type: 'array' , of: { type: 'string' } } ,
-		
-		// Top-level filters
-		instanceOf: { optional: true , type: 'classId' } ,
-		min: { optional: true , type: 'integer' } ,
-		max: { optional: true , type: 'integer' } ,
-		length: { optional: true , type: 'integer' } ,
-		minLength: { optional: true , type: 'integer' } ,
-		maxLength: { optional: true , type: 'integer' } ,
-		match: { optional: true , type: 'regexp' } ,
-		in: {
-			optional: true ,
-			type: 'array'
-		} ,
-		notIn: {
-			optional: true ,
-			type: 'array'
-		} ,
-		when: {
-			optional: true ,
-			type: 'strictObject' ,
-			properties: {
-				sibling: { type: 'string' } ,
-				//verify: // recursive
-				set: { optional: true }
-			}
-		} ,
-		
-		// Commons
-		hooks: {
-			optional: true,
-			type: 'strictObject',
-			of: {
-				type: 'array',
-				sanitize: 'toArray',
-				of: { type: 'function' }
-			}
-		},
-	} ,
-} ;
-
-var doormenSchema = [
-	singleSchema ,
-	{ type: 'array', of: singleSchema }
-] ;
-
-var ifSchema = {
-	optional: true ,
-	type: 'strictObject' ,
-	properties: {
-		verify: doormenSchema ,
-		then: doormenSchema
-	}
-} ;
-
-// Recursivity
-singleSchema.properties.of = doormenSchema ;
-
-singleSchema.properties.if = [
-	ifSchema ,
-	{
-		type: 'array' ,
-		of: ifSchema
-	}
-] ;
-
-singleSchema.properties.properties = [
-	{
-		optional: true,
-		type: 'strictObject',
-		of: doormenSchema
-	} ,
-	{
-		optional: true,
-		type: 'array',
-		of: { type: 'string' }
-	}
-] ;
-
-singleSchema.properties.elements = {
-	optional: true,
-	type: 'array',
-	of: doormenSchema
-} ;
-
-singleSchema.properties.when.properties.verify = doormenSchema ;
-
-
-
-module.exports = function( schema ) 
-{
-	return doormen.export( doormenSchema , schema ) ;
-} ;
-
-
-
-},{"./doormen.js":2}],8:[function(require,module,exports){
-/*
-	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
-	The MIT License (MIT)
-	
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-	
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
-
-"use strict" ;
-
-
-
-// Load modules
-var doormen = require( './doormen.js' ) ;
 var latinize = require( 'string-kit/lib/latinize.js' ) ;
 
 
@@ -1983,7 +1844,144 @@ sanitizer.mongoId = function mongoId( data )
 	}
 } ;
 
-},{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":13}],9:[function(require,module,exports){
+},{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":13}],8:[function(require,module,exports){
+/*
+	Doormen
+	
+	Copyright (c) 2015 - 2016 Cédric Ronvel
+	
+	The MIT License (MIT)
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+var singleSchema = {
+	optional: true ,	// For recursivity...
+	type: 'strictObject' ,
+	extraProperties: true ,
+	properties: {
+		type: { optional: true , type: 'string' } ,
+		optional: { optional: true , type: 'boolean' } ,
+		extraProperties: { optional: true , type: 'boolean' } ,
+		default: { optional: true } ,
+		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
+		filter: { optional: true , type: 'strictObject' } ,
+		
+		tier: { optional: true , type: 'integer' } ,
+		tags: { optional: true , type: 'array' , of: { type: 'string' } } ,
+		
+		// Top-level filters
+		instanceOf: { optional: true , type: 'classId' } ,
+		min: { optional: true , type: 'integer' } ,
+		max: { optional: true , type: 'integer' } ,
+		length: { optional: true , type: 'integer' } ,
+		minLength: { optional: true , type: 'integer' } ,
+		maxLength: { optional: true , type: 'integer' } ,
+		match: { optional: true , type: 'regexp' } ,
+		in: {
+			optional: true ,
+			type: 'array'
+		} ,
+		notIn: {
+			optional: true ,
+			type: 'array'
+		} ,
+		when: {
+			optional: true ,
+			type: 'strictObject' ,
+			properties: {
+				sibling: { type: 'string' } ,
+				//verify: // recursive
+				set: { optional: true }
+			}
+		} ,
+		
+		// Commons
+		hooks: {
+			optional: true,
+			type: 'strictObject',
+			of: {
+				type: 'array',
+				sanitize: 'toArray',
+				of: { type: 'function' }
+			}
+		},
+	} ,
+} ;
+
+var schemaSchema = [
+	singleSchema ,
+	{ type: 'array', of: singleSchema }
+] ;
+
+var ifSchema = {
+	optional: true ,
+	type: 'strictObject' ,
+	properties: {
+		verify: schemaSchema ,
+		then: schemaSchema
+	}
+} ;
+
+// Recursivity
+singleSchema.properties.of = schemaSchema ;
+
+singleSchema.properties.if = [
+	ifSchema ,
+	{
+		type: 'array' ,
+		of: ifSchema
+	}
+] ;
+
+singleSchema.properties.properties = [
+	{
+		optional: true,
+		type: 'strictObject',
+		of: schemaSchema
+	} ,
+	{
+		optional: true,
+		type: 'array',
+		of: { type: 'string' }
+	}
+] ;
+
+singleSchema.properties.elements = {
+	optional: true,
+	type: 'array',
+	of: schemaSchema
+} ;
+
+singleSchema.properties.when.properties.verify = schemaSchema ;
+
+
+
+module.exports = schemaSchema ;
+
+
+
+},{}],9:[function(require,module,exports){
 /*
 	Doormen
 	
