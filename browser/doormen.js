@@ -228,6 +228,7 @@ function check( schema , data_ , element )
 		{
 			if ( ! doormen.sanitizer[ sanitizerList[ i ] ] )
 			{
+				if ( doormen.clientMode ) { continue ; }
 				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant sanitizer '" + sanitizerList[ i ] + "'." ) ;
 			}
 			
@@ -246,10 +247,12 @@ function check( schema , data_ , element )
 	{
 		if ( ! doormen.typeChecker[ schema.type ] )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant type '" + schema.type + "'." ) ;
+			if ( ! doormen.clientMode )
+			{
+				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant type '" + schema.type + "'." ) ;
+			}
 		}
-		
-		if ( ! doormen.typeChecker[ schema.type ].call( this , data ) )
+		else if ( ! doormen.typeChecker[ schema.type ].call( this , data ) )
 		{
 			this.validatorError( element.displayPath + " is not a " + schema.type + "." , element ) ;
 		}
@@ -278,6 +281,7 @@ function check( schema , data_ , element )
 		{
 			if ( ! doormen.filter[ key ] )
 			{
+				if ( doormen.clientMode ) { continue ; }
 				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant filter '" + key + "'." ) ;
 			}
 			
@@ -810,6 +814,10 @@ function extend( base , extension , overwrite )
 doormen.extendTypeChecker = function extendTypeChecker( extension , overwrite ) { extend( doormen.typeChecker , extension , overwrite ) ; } ;
 doormen.extendSanitizer = function extendSanitizer( extension , overwrite ) { extend( doormen.sanitizer , extension , overwrite ) ; } ;
 doormen.extendFilter = function extendFilter( extension , overwrite ) { extend( doormen.filter , extension , overwrite ) ; } ;
+
+// Client mode does not throw when type checker, a sanitizer or a filter is not found
+doormen.clientMode = false ;
+doormen.setClientMode = function setClientMode( clientMode ) { doormen.clientMode = !! clientMode ; } ;
 
 
 
