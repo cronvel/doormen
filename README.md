@@ -537,6 +537,21 @@ doormen.equals(
 
 <a name="built-in-types"></a>
 # Built-in types
+should validate 'unset' accordingly (undefined or null).
+
+```js
+doormen( { type: 'unset' } , undefined ) ;
+doormen( { type: 'unset' } , null ) ;
+doormen.not( { type: 'unset' } , false ) ;
+doormen.not( { type: 'unset' } , true ) ;
+doormen.not( { type: 'unset' } , 0 ) ;
+doormen.not( { type: 'unset' } , 1 ) ;
+doormen.not( { type: 'unset' } , '' ) ;
+doormen.not( { type: 'unset' } , 'text' ) ;
+doormen.not( { type: 'unset' } , {} ) ;
+doormen.not( { type: 'unset' } , [] ) ;
+```
+
 should validate array accordingly.
 
 ```js
@@ -1164,7 +1179,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'a',
-				verify: { in: [ undefined , null ] },
+				verify: { type: 'unset' },
 				clone: true
 			}
 		}

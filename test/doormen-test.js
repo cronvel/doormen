@@ -474,6 +474,19 @@ describe( "Optional and default data" , function() {
 
 describe( "Built-in types" , function() {
 	
+	it( "should validate 'unset' accordingly (undefined or null)" , function() {
+		doormen( { type: 'unset' } , undefined ) ;
+		doormen( { type: 'unset' } , null ) ;
+		doormen.not( { type: 'unset' } , false ) ;
+		doormen.not( { type: 'unset' } , true ) ;
+		doormen.not( { type: 'unset' } , 0 ) ;
+		doormen.not( { type: 'unset' } , 1 ) ;
+		doormen.not( { type: 'unset' } , '' ) ;
+		doormen.not( { type: 'unset' } , 'text' ) ;
+		doormen.not( { type: 'unset' } , {} ) ;
+		doormen.not( { type: 'unset' } , [] ) ;
+	} ) ;
+	
 	it( "should validate array accordingly" , function() {
 		doormen.not( { type: 'array' } , undefined ) ;
 		doormen.not( { type: 'array' } , null ) ;
@@ -1068,7 +1081,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'a',
-						verify: { in: [ undefined , null ] },
+						verify: { type: 'unset' },
 						clone: true
 					}
 				}
