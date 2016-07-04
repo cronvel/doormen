@@ -1010,7 +1010,7 @@ doormen.not( schema , [ true ] ) ;
 
 <a name="properties-having-when"></a>
 # Properties having 'when'
-when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'.
+when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'siblingVerify' condition is met for the 'sibling'.
 
 ```js
 var schema = {
@@ -1022,7 +1022,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'a',
-				verify: { in: [ 1 ] },
+				siblingVerify: { in: [ 1 ] },
 				set: undefined
 			}
 		}
@@ -1053,7 +1053,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'a',
-				verify: { in: [ 1 ] },
+				siblingVerify: { in: [ 1 ] },
 				set: undefined
 			}
 		},
@@ -1081,6 +1081,41 @@ doormen.equals(
 ) ;
 ```
 
+'when' and 'clone'.
+
+```js
+var schema = {
+	properties: {
+		a: {
+			type: 'number'
+		},
+		b: {
+			type: 'string' ,
+			when: {
+				sibling: 'a',
+				verify: { in: [ undefined , null ] },
+				clone: true
+			}
+		}
+	}
+} ;
+
+doormen.equals(
+	doormen( schema , { a: 2, b: '1' } ) ,
+	{ a: 2, b: '1' }
+) ;
+
+doormen.equals(
+	doormen( schema , { a: 2, b: null } ) ,
+	{ a: 2, b: 2 }
+) ;
+
+doormen.equals(
+	doormen( schema , { a: 2 } ) ,
+	{ a: 2, b: 2 }
+) ;
+```
+
 complex dependencies tests.
 
 ```js
@@ -1090,7 +1125,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'b',
-				verify: { in: [ undefined , 'text' ] },
+				siblingVerify: { in: [ undefined , 'text' ] },
 				set: undefined
 			}
 		},
@@ -1098,7 +1133,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'a',
-				verify: { in: [ 1 ] },
+				siblingVerify: { in: [ 1 ] },
 				set: undefined
 			}
 		},
@@ -1146,7 +1181,7 @@ var schema = {
 			type: 'number',
 			when: {
 				sibling: 'b',
-				verify: { in: [ 'text' ] },
+				siblingVerify: { in: [ 'text' ] },
 				set: undefined
 			}
 		},
@@ -1154,7 +1189,7 @@ var schema = {
 			type: 'string' ,
 			when: {
 				sibling: 'a',
-				verify: { in: [ 1 ] },
+				siblingVerify: { in: [ 1 ] },
 				set: undefined
 			}
 		}
@@ -1170,7 +1205,7 @@ var schema = {
 			type: 'number',
 			when: {
 				sibling: 'a',
-				verify: { in: [ 1 ] },
+				siblingVerify: { in: [ 1 ] },
 				set: undefined
 			}
 		}
@@ -2299,8 +2334,8 @@ doormen.equals( doormen.purifySchema(
 			n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
 			o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
-			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
-			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+			q: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] }, set: 'bob' } },
+			r: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] } } },
 			s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
 			t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 		}
@@ -2325,8 +2360,8 @@ doormen.equals( doormen.purifySchema(
 			n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
 			o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
-			q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
-			r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+			q: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] }, set: 'bob' } },
+			r: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] } } },
 			s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
 			t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 		}

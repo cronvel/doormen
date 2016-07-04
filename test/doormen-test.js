@@ -985,7 +985,7 @@ describe( "Children and recursivity" , function() {
 
 describe( "Properties having 'when'" , function() {
 	
-	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'verify' condition is met for the 'sibling'" , function() {
+	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'siblingVerify' condition is met for the 'sibling'" , function() {
 		
 		var schema = {
 			properties: {
@@ -996,7 +996,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'a',
-						verify: { in: [ 1 ] },
+						siblingVerify: { in: [ 1 ] },
 						set: undefined
 					}
 				}
@@ -1027,7 +1027,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'a',
-						verify: { in: [ 1 ] },
+						siblingVerify: { in: [ 1 ] },
 						set: undefined
 					}
 				},
@@ -1055,6 +1055,42 @@ describe( "Properties having 'when'" , function() {
 		) ;
 	} ) ;
 	
+	it( "'verify' vs 'siblingVerify'" ) ;
+	
+	it( "'when' and 'clone'" , function() {
+		
+		var schema = {
+			properties: {
+				a: {
+					type: 'number'
+				},
+				b: {
+					type: 'string' ,
+					when: {
+						sibling: 'a',
+						verify: { in: [ undefined , null ] },
+						clone: true
+					}
+				}
+			}
+		} ;
+		
+		doormen.equals(
+			doormen( schema , { a: 2, b: '1' } ) ,
+			{ a: 2, b: '1' }
+		) ;
+		
+		doormen.equals(
+			doormen( schema , { a: 2, b: null } ) ,
+			{ a: 2, b: 2 }
+		) ;
+		
+		doormen.equals(
+			doormen( schema , { a: 2 } ) ,
+			{ a: 2, b: 2 }
+		) ;
+	} ) ;
+	
 	it( "complex dependencies tests" , function() {
 		
 		var schema = {
@@ -1063,7 +1099,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'b',
-						verify: { in: [ undefined , 'text' ] },
+						siblingVerify: { in: [ undefined , 'text' ] },
 						set: undefined
 					}
 				},
@@ -1071,7 +1107,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'a',
-						verify: { in: [ 1 ] },
+						siblingVerify: { in: [ 1 ] },
 						set: undefined
 					}
 				},
@@ -1118,7 +1154,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'number',
 					when: {
 						sibling: 'b',
-						verify: { in: [ 'text' ] },
+						siblingVerify: { in: [ 'text' ] },
 						set: undefined
 					}
 				},
@@ -1126,7 +1162,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'string' ,
 					when: {
 						sibling: 'a',
-						verify: { in: [ 1 ] },
+						siblingVerify: { in: [ 1 ] },
 						set: undefined
 					}
 				}
@@ -1142,7 +1178,7 @@ describe( "Properties having 'when'" , function() {
 					type: 'number',
 					when: {
 						sibling: 'a',
-						verify: { in: [ 1 ] },
+						siblingVerify: { in: [ 1 ] },
 						set: undefined
 					}
 				}
@@ -2261,8 +2297,8 @@ describe( "Purify" , function() {
 					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
 					o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
-					q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
-					r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+					q: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] }, set: 'bob' } },
+					r: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] } } },
 					s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
 					t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 				}
@@ -2287,8 +2323,8 @@ describe( "Purify" , function() {
 					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } },
 					o: { elements: [ { type: 'array' } , { type: 'string' } ] },
 					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] },
-					q: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] }, set: 'bob' } },
-					r: { type: 'string' , when: { sibling: 'a', verify: { in: [ null , false ] } } },
+					q: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] }, set: 'bob' } },
+					r: { type: 'string' , when: { sibling: 'a', siblingVerify: { in: [ null , false ] } } },
 					s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } },
 					t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] },
 				}

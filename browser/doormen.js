@@ -64,10 +64,6 @@ module.exports.isBrowser = true ;
 
 
 
-var clone = require( 'tree-kit/lib/clone.js' ) ;
-
-
-
 /*
 	doormen( schema , data )
 	doormen( options , schema , data )
@@ -210,10 +206,7 @@ function check( schema , data_ , element )
 	// 1) if the data has a default value or is optional, and its value is null or undefined, it's ok!
 	if ( ( data === null || data === undefined ) )
 	{
-		if ( 'default' in schema ) {
-			if ( schema.default && typeof schema.default === 'object' ) { return clone( schema.default ) ; }
-			return schema.default ;
-		}
+		if ( 'default' in schema ) { return clone( schema.default ) ; }
 		if ( schema.optional ) { return data ; }
 	}
 	
@@ -428,10 +421,13 @@ function check( schema , data_ , element )
 						if (
 							typeof when !== 'object' ||
 							typeof when.sibling !== 'string' ||
-							! when.verify || typeof when.verify !== 'object'
+							(
+								( ! when.siblingVerify || typeof when.siblingVerify !== 'object' ) &&
+								( ! when.verify || typeof when.verify !== 'object' )
+							)
 						)
 						{
-							throw new doormen.SchemaError( element.displayPath + '.' + key + ".when should be an object with a 'sibling' (string), 'verify' (schema object) and 'set' properties." ) ;
+							throw new doormen.SchemaError( element.displayPath + '.' + key + ".when should be an object with a 'sibling' (string), 'siblingVerify'/'verify' (schema object) and 'set'/'clone' properties." ) ;
 						}
 						
 						if ( ! hashmap[ when.sibling ] && schema.properties[ when.sibling ] )
@@ -444,10 +440,12 @@ function check( schema , data_ , element )
 						
 						try {
 							//console.log( "try" ) ;
-							doormen( when.verify , data[ when.sibling ] ) ;
+							if ( when.siblingVerify ) { doormen( when.siblingVerify , data[ when.sibling ] ) ; }
+							if ( when.verify ) { doormen( when.verify , data[ key ] ) ; }
 							
-							if ( when.set === undefined ) { delete data[ key ] ; }
-							else { data[ key ] = when.set ; }
+							if ( when.clone ) { data[ key ] = clone( data[ when.sibling ] ) ; }
+							else if ( when.set === undefined ) { delete data[ key ] ; }
+							else { data[ key ] = clone( when.set ) ; }
 							
 							hashmap[ key ] = true ;	// Add it anyway
 							continue ;
@@ -546,6 +544,16 @@ function check( schema , data_ , element )
 	}
 	
 	return data ;
+}
+
+
+
+var clone_ = require( 'tree-kit/lib/clone.js' ) ;
+
+function clone( value )
+{
+	if ( value && typeof value === 'object' ) { return clone_( value ) ; }
+	return value ;
 }
 
 
@@ -1927,7 +1935,8 @@ var singleSchema = {
 			properties: {
 				sibling: { type: 'string' } ,
 				//verify: // recursive
-				set: { optional: true }
+				set: { optional: true } ,
+				clone: { optional: true , type: 'boolean' }
 			}
 		} ,
 		
@@ -1989,6 +1998,7 @@ singleSchema.properties.elements = {
 } ;
 
 singleSchema.properties.when.properties.verify = schemaSchema ;
+singleSchema.properties.when.properties.siblingVerify = schemaSchema ;
 
 
 
