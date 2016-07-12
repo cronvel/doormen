@@ -113,7 +113,7 @@ function doormen()
 		path: '' ,
 		displayPath: data === null ? 'null' : ( Array.isArray( data ) ? 'array' : typeof data ) ,
 		key: ''
-	} ) ;
+	} , false ) ;
 	
 	if ( context.report )
 	{
@@ -166,7 +166,7 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 
 
-function check( schema , data_ , element )
+function check( schema , data_ , element , isPatch )
 {
 	var i , key , newKey , sanitizerList , hashmap , data = data_ , src , returnValue , alternativeErrors ,
 		when , ifArray , keys , nextKeys , bkup , addToPath ;
@@ -305,7 +305,7 @@ function check( schema , data_ , element )
 					path: element.path + addToPath ,
 					displayPath: element.displayPath + addToPath ,
 					key: i
-				} ) ;
+				} , isPatch ) ;
 			}
 		}
 		else
@@ -320,7 +320,7 @@ function check( schema , data_ , element )
 					path: element.path ? element.path + addToPath : key ,
 					displayPath: element.displayPath + addToPath ,
 					key: key
-				} ) ;
+				} , isPatch ) ;
 			}
 		}
 	}
@@ -343,7 +343,7 @@ function check( schema , data_ , element )
 				path: element.path + addToPath ,
 				displayPath: element.displayPath + addToPath ,
 				key: key
-			} ) ;
+			} , isPatch ) ;
 			
 			if ( newKey in data && newKey !== key )
 			{
@@ -414,7 +414,7 @@ function check( schema , data_ , element )
 						throw new doormen.SchemaError( element.displayPath + '.' + key + " is not a schema (not an object or an array of object)." ) ;
 					}
 					
-					if ( schema.properties[ key ].when )
+					if ( schema.properties[ key ].when && ! isPatch )
 					{
 						when = schema.properties[ key ].when ;
 						
@@ -462,7 +462,7 @@ function check( schema , data_ , element )
 						path: element.path ? element.path + addToPath : key ,
 						displayPath: element.displayPath + addToPath ,
 						key: key
-					} ) ;
+					} , isPatch ) ;
 					
 					// Do not create new properties with undefined
 					if ( returnValue !== undefined || key in src ) { data[ key ] = returnValue ; }
@@ -502,7 +502,7 @@ function check( schema , data_ , element )
 				path: element.path + addToPath ,
 				displayPath: element.displayPath + addToPath ,
 				key: i
-			} ) ;
+			} , isPatch ) ;
 		}
 		
 		if ( ! schema.extraElements && src.length > schema.elements.length )
@@ -522,7 +522,7 @@ function check( schema , data_ , element )
 		schema.case && typeof schema.case === 'object' && schema.case[ data[ schema.switch ] ]
 	)
 	{
-		data = this.check( schema.case[ data[ schema.switch ] ] , data , element ) ;
+		data = this.check( schema.case[ data[ schema.switch ] ] , data , element , isPatch ) ;
 	}
 	
 	if ( schema.if && typeof schema.if === 'object' )
@@ -539,7 +539,7 @@ function check( schema , data_ , element )
 				continue ;
 			}
 			
-			data = this.check( ifArray[ i ].then , data , element ) ;
+			data = this.check( ifArray[ i ].then , data , element , isPatch ) ;
 		}
 	}
 	
@@ -718,7 +718,7 @@ doormen.patch = function schemaPatch()
 		sanitized[ key ] = context.check( subSchema , patch[ key ] , {
 			path: 'patch.' + key ,
 			key: key
-		} ) ;
+		} , true ) ;
 	}
 	
 	if ( context.report )
