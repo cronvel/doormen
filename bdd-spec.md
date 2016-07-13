@@ -2778,7 +2778,7 @@ var schema = {
 	}
 } ;
 
-doormen.equals(  doormen.patchTier( schema , {} )  ,  0  ) ;
+doormen.equals(  doormen.patchTier( schema , {} )  ,  1  ) ;
 doormen.equals(  doormen.patchTier( schema , { a: 'some' , b: 'useless' , c: 'values' } )  ,  4  ) ;
 doormen.equals(  doormen.patchTier( schema , { a: 'some' } )  ,  3  ) ;
 doormen.equals(  doormen.patchTier( schema , { b: 'some' } )  ,  1  ) ;
