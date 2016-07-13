@@ -643,6 +643,9 @@ doormen.patchTier = function pathsMaxTier( schema , patch )
 		maxTier = 1 ,
 		paths = Object.keys( patch ) ;
 	
+	// If no item, return 0 instead of 1
+	if ( ! paths.length ) { return 0 ; }
+	
 	for ( i = 0 , iMax = paths.length ; i < iMax ; i ++ )
 	{
 		path = paths[ i ].split( '.' ) ;
