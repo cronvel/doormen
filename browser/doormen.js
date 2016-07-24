@@ -34,6 +34,7 @@ module.exports = require( './doormen.js' ) ;
 module.exports.isBrowser = true ;
 
 },{"./doormen.js":2}],2:[function(require,module,exports){
+(function (global){
 /*
 	Doormen
 	
@@ -145,9 +146,6 @@ doormen.export = doormen.bind( doormen , { export: true } ) ;
 
 // Submodules
 doormen.isEqual = require( './isEqual.js' ) ;
-doormen.typeChecker = require( './typeChecker.js' ) ;
-doormen.sanitizer = require( './sanitizer.js' ) ;
-doormen.filter = require( './filter.js' ) ;
 doormen.mask = require( './mask.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
@@ -155,6 +153,19 @@ doormen.schemaSchema = require( './schemaSchema.js' ) ;
 
 doormen.validateSchema = function( schema ) { return doormen( doormen.schemaSchema , schema ) ; } ;
 doormen.purifySchema = function( schema ) { return doormen.export( doormen.schemaSchema , schema ) ; } ;
+
+
+
+// Extendable things
+if ( ! global ) { global = window ; }	// jshint ignore:line
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker ) { global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer ) { global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.filter ) { global.DOORMEN_GLOBAL_EXTENSIONS.filter = {} ; }
+
+doormen.typeChecker = require( './typeChecker.js' ) ;
+doormen.sanitizer = require( './sanitizer.js' ) ;
+doormen.filter = require( './filter.js' ) ;
 
 
 
@@ -819,9 +830,9 @@ function extend( base , extension , overwrite )
 
 
 
-doormen.extendTypeChecker = function extendTypeChecker( extension , overwrite ) { extend( doormen.typeChecker , extension , overwrite ) ; } ;
-doormen.extendSanitizer = function extendSanitizer( extension , overwrite ) { extend( doormen.sanitizer , extension , overwrite ) ; } ;
-doormen.extendFilter = function extendFilter( extension , overwrite ) { extend( doormen.filter , extension , overwrite ) ; } ;
+doormen.extendTypeChecker = function extendTypeChecker( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker , extension , overwrite ) ; } ;
+doormen.extendSanitizer = function extendSanitizer( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer , extension , overwrite ) ; } ;
+doormen.extendFilter = function extendFilter( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.filter , extension , overwrite ) ; } ;
 
 // Client mode does not throw when type checker, a sanitizer or a filter is not found
 doormen.clientMode = false ;
@@ -895,6 +906,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10,"tree-kit/lib/clone.js":14}],3:[function(require,module,exports){
 (function (global){
 /*
@@ -927,13 +939,14 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-// Load modules
-var doormen = require( './doormen.js' ) ;
+if ( ! global ) { global = window ; }	// jshint ignore:line
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.filter ) { global.DOORMEN_GLOBAL_EXTENSIONS.filter = {} ; }
 
-
-
-var filter = {} ;
+var filter = Object.create( global.DOORMEN_GLOBAL_EXTENSIONS.filter ) ;
 module.exports = filter ;
+
+var doormen = require( './doormen.js' ) ;
 
 
 
@@ -1588,6 +1601,7 @@ mask.check = function maskCheck( schema )
 
 
 },{}],7:[function(require,module,exports){
+(function (global){
 /*
 	Doormen
 	
@@ -1619,13 +1633,18 @@ mask.check = function maskCheck( schema )
 
 
 // Load modules
-var doormen = require( './doormen.js' ) ;
 var latinize = require( 'string-kit/lib/latinize.js' ) ;
 
 
 
-var sanitizer = {} ;
+if ( ! global ) { global = window ; }	// jshint ignore:line
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer ) { global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer = {} ; }
+
+var sanitizer = Object.create( global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer ) ;
 module.exports = sanitizer ;
+
+var doormen = require( './doormen.js' ) ;
 
 
 
@@ -1867,6 +1886,7 @@ sanitizer.mongoId = function mongoId( data )
 	}
 } ;
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":13}],8:[function(require,module,exports){
 /*
 	Doormen
@@ -2223,7 +2243,7 @@ module.exports = sentence ;
 
 
 },{"./doormen.js":2}],10:[function(require,module,exports){
-(function (Buffer){
+(function (global,Buffer){
 /*
 	Doormen
 	
@@ -2254,65 +2274,66 @@ module.exports = sentence ;
 
 
 
-// Load modules
-//var doormen = require( './doormen.js' ) ;
+if ( ! global ) { global = window ; }	// jshint ignore:line
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker ) { global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker = {} ; }
 
-
-
-// Basic types
-var check = {
-	// Primitive types
-	"undefined": function( data ) { return data === undefined ; } ,
-	"null": function( data ) { return data === null ; } ,
-	"boolean": function( data ) { return typeof data === 'boolean' ; } ,
-	"number": function( data ) { return typeof data === 'number' ; } ,
-	"string": function( data ) { return typeof data === 'string' ; } ,
-	"object": function( data ) { return data && typeof data === 'object' ; } ,
-	"function": function( data ) { return typeof data === 'function' ; } ,
-	
-	// Built-in type
-	array: function( data ) { return Array.isArray( data ) ; } ,
-	error: function( data ) { return data instanceof Error ; } ,
-	date: function( data ) { return data instanceof Date ; } ,
-	"arguments": function( data ) { return Object.prototype.toString.call( data ) === '[object Arguments]' ; } ,
-	
-	buffer: function( data )
-	{
-		try {
-			// If we run in a browser, this does not exist
-			return data instanceof Buffer ;
-		}
-		catch ( error ) {
-			return false ;
-		}
-	} ,
-	
-	// Mixed
-	strictObject: function( data ) { return data && typeof data === 'object' && ! Array.isArray( data ) ; } ,
-	classId: function( data ) { return typeof data === 'function' || ( typeof data === 'string' && data.length ) ; } ,
-	unset: function( data ) { return data === undefined || data === null ; } ,
-	
-	regexp: function( data ) {
-		if ( data instanceof RegExp ) { return true ; }
-		if ( typeof data !== 'string' ) { return false ; }
-		
-		try {
-			new RegExp( data ) ;
-			return true ;
-		}
-		catch ( error ) {
-			return false ;
-		}
-	} ,
-} ;
-
-module.exports = check ;
+var typeChecker = Object.create( global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker ) ;
+module.exports = typeChecker ;
 
 var doormen = require( './doormen' ) ;
 
 
 
-check.schema = function checkSchema( data )
+// Basic types
+// Primitive types
+typeChecker.undefined = function( data ) { return data === undefined ; } ;
+typeChecker.null = function( data ) { return data === null ; } ;
+typeChecker.boolean = function( data ) { return typeof data === 'boolean' ; } ;
+typeChecker.number = function( data ) { return typeof data === 'number' ; } ;
+typeChecker.string = function( data ) { return typeof data === 'string' ; } ;
+typeChecker.object = function( data ) { return data && typeof data === 'object' ; } ;
+typeChecker.function = function( data ) { return typeof data === 'function' ; } ;
+
+// Built-in type
+typeChecker.array = function( data ) { return Array.isArray( data ) ; } ;
+typeChecker.error = function( data ) { return data instanceof Error ; } ;
+typeChecker.date = function( data ) { return data instanceof Date ; } ;
+typeChecker.arguments = function( data ) { return Object.prototype.toString.call( data ) === '[object Arguments]' ; } ;
+
+typeChecker.buffer = function( data )
+{
+	try {
+		// If we run in a browser, this does not exist
+		return data instanceof Buffer ;
+	}
+	catch ( error ) {
+		return false ;
+	}
+} ;
+
+// Mixed
+typeChecker.strictObject = function( data ) { return data && typeof data === 'object' && ! Array.isArray( data ) ; } ;
+typeChecker.classId = function( data ) { return typeof data === 'function' || ( typeof data === 'string' && data.length ) ; } ;
+typeChecker.unset = function( data ) { return data === undefined || data === null ; } ;
+
+typeChecker.regexp = function( data )
+{
+	if ( data instanceof RegExp ) { return true ; }
+	if ( typeof data !== 'string' ) { return false ; }
+	
+	try {
+		new RegExp( data ) ;
+		return true ;
+	}
+	catch ( error ) {
+		return false ;
+	}
+} ;
+
+
+
+typeChecker.schema = function checkSchema( data )
 {
 	try {
 		doormen.validateSchema( data ) ;
@@ -2327,12 +2348,12 @@ check.schema = function checkSchema( data )
 
 
 // Meta type of numbers
-check.real = function checkReal( data ) { return typeof data === 'number' && ! isNaN( data ) && isFinite( data ) ; } ;
-check.integer = function checkInteger( data ) { return typeof data === 'number' && isFinite( data ) && data === Math.round( data ) ; } ;
+typeChecker.real = function checkReal( data ) { return typeof data === 'number' && ! isNaN( data ) && isFinite( data ) ; } ;
+typeChecker.integer = function checkInteger( data ) { return typeof data === 'number' && isFinite( data ) && data === Math.round( data ) ; } ;
 
 
 
-check.hex = function checkHex( data )
+typeChecker.hex = function checkHex( data )
 {
 	return typeof data === 'string' && /^[0-9a-fA-F]+$/.test( data ) ;
 } ;
@@ -2340,15 +2361,15 @@ check.hex = function checkHex( data )
 
 
 // IP
-check.ip = function checkIp( data )
+typeChecker.ip = function checkIp( data )
 {
-	return check.ipv4( data ) || check.ipv6( data ) ;
+	return typeChecker.ipv4( data ) || typeChecker.ipv6( data ) ;
 } ;
 
 
 
 // IPv4
-check.ipv4 = function checkIpv4( data , skipRegExp )
+typeChecker.ipv4 = function checkIpv4( data , skipRegExp )
 {
 	var i , parts , tmp ;
 	
@@ -2376,7 +2397,7 @@ check.ipv4 = function checkIpv4( data , skipRegExp )
 
 
 // IPv6
-check.ipv6 = function checkIpv6( data , skipRegExp )
+typeChecker.ipv6 = function checkIpv6( data , skipRegExp )
 {
 	var i , parts , hasDoubleColon = false , startWithDoubleColon = false , endWithDoubleColon = false ;
 	
@@ -2427,7 +2448,7 @@ check.ipv6 = function checkIpv6( data , skipRegExp )
 
 
 
-check.hostname = function checkHostname( data , skipRegExp )
+typeChecker.hostname = function checkHostname( data , skipRegExp )
 {
 	var i , parts ;
 	
@@ -2452,15 +2473,15 @@ check.hostname = function checkHostname( data , skipRegExp )
 
 
 // hostname or ip
-check.host = function checkHost( data )
+typeChecker.host = function checkHost( data )
 {
-	return check.ip( data ) || check.hostname( data ) ;
+	return typeChecker.ip( data ) || typeChecker.hostname( data ) ;
 } ;
 
 
 
 // URLs
-check.url = function checkUrl( data , restrictToWebUrl )
+typeChecker.url = function checkUrl( data , restrictToWebUrl )
 {
 	if ( typeof data !== 'string' ) { return false ; }
 	
@@ -2475,28 +2496,28 @@ check.url = function checkUrl( data , restrictToWebUrl )
 	
 	if ( matches[ 6 ] )
 	{
-		if ( ! check.ipv4( matches[ 6 ] , true ) ) { return false ; }
+		if ( ! typeChecker.ipv4( matches[ 6 ] , true ) ) { return false ; }
 	}
 	
 	if ( matches[ 7 ] )
 	{
-		if ( ! check.ipv6( matches[ 7 ] , true ) ) { return false ; }
+		if ( ! typeChecker.ipv6( matches[ 7 ] , true ) ) { return false ; }
 	}
 	
 	if ( matches[ 8 ] )
 	{
-		if ( ! check.hostname( matches[ 8 ] , true ) ) { return false ; }
+		if ( ! typeChecker.hostname( matches[ 8 ] , true ) ) { return false ; }
 	}
 	
 	return true ;
 } ;
 
-check.weburl = function checkWeburl( data ) { return check.url( data , true ) ; } ;
+typeChecker.weburl = function checkWeburl( data ) { return typeChecker.url( data , true ) ; } ;
 
 
 
 // Emails
-check.email = function checkEmail( data )
+typeChecker.email = function checkEmail( data )
 {
 	var matches , i , parts ;
 	
@@ -2523,7 +2544,7 @@ check.email = function checkEmail( data )
 		if ( ! parts[ i ].length ) { return false ; }
 	}
 	
-	if ( ! check.hostname( matches[ 2 ] , true ) ) { return false ; }
+	if ( ! typeChecker.hostname( matches[ 2 ] , true ) ) { return false ; }
 	
 	return true ;
 } ;
@@ -2531,7 +2552,7 @@ check.email = function checkEmail( data )
 
 
 // MongoDB ObjectID
-check.mongoId = function mongoId( data )
+typeChecker.mongoId = function mongoId( data )
 {
 	if ( data && typeof data === 'object' && data.constructor.name === 'ObjectID' && data.id && typeof data.toString === 'function' )
 	{
@@ -2544,7 +2565,7 @@ check.mongoId = function mongoId( data )
 
 
 
-}).call(this,require("buffer").Buffer)
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 },{"./doormen":2,"buffer":11}],11:[function(require,module,exports){
 
 },{}],12:[function(require,module,exports){
