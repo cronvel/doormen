@@ -360,7 +360,8 @@ function check( schema , data_ , element , isPatch )
 			{
 				this.validatorError(
 					"'keys' cannot overwrite another existing key: " + element.displayPath +
-					" want to rename '" + key + "' to '" + newKey + "' but it already exists."
+					" want to rename '" + key + "' to '" + newKey + "' but it already exists." ,
+					element
 				) ;
 			}
 			
