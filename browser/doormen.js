@@ -780,7 +780,7 @@ doormen.ValidatorError = function ValidatorError( message , element )
 {
 	this.message = message ;
 	
-	if ( element ) { this.path = element.path ; }
+	if ( element ) { this.at = this.path = element.path ; }
 	
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
 	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
