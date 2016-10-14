@@ -301,7 +301,7 @@ function check( schema , data_ , element , isPatch )
 	{
 		if ( ! schema.of || typeof schema.of !== 'object' )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'of' should contains a schema object." ) ;
+			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'of' should contain a schema object." ) ;
 		}
 		
 		if ( Array.isArray( data ) )
@@ -341,7 +341,7 @@ function check( schema , data_ , element , isPatch )
 	{
 		if ( ! schema.keys || typeof schema.keys !== 'object' )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'keys' should contains a schema object." ) ;
+			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'keys' should contain a schema object." ) ;
 		}
 		
 		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
@@ -632,7 +632,7 @@ function schemaPath_( schema , path , index )
 	{
 		if ( ! schema.of || typeof schema.of !== 'object' )
 		{
-			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contains a schema object." ) ;
+			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contain a schema object." ) ;
 		}
 		
 		//path.shift() ;
@@ -856,7 +856,7 @@ doormen.shouldThrow = function shouldThrow( fn )
 	
 	if ( ! thrown )
 	{
-		throw new Error( "Function '" + ( fn.name || '(anonymous)' ) + "' should had thrown." ) ;
+		throw new Error( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown." ) ;
 	}
 } ;
 
@@ -888,7 +888,7 @@ doormen.equals = function equals( left , right )
 	
 	if ( ! doormen.isEqual( left , right ) )
 	{
-		error = new doormen.ValidatorError( 'should had been equal' ) ;
+		error = new doormen.ValidatorError( 'should have been equal' ) ;
 		
 		// This will make Mocha show the diff:
 		error.actual = left ;
@@ -902,7 +902,7 @@ doormen.equals = function equals( left , right )
 // Inverse of equals
 doormen.not.equals = function notEquals( left , right )
 {
-	if ( doormen.isEqual( left , right ) ) { throw new doormen.ValidatorError( 'should not had been equal' ) ; }
+	if ( doormen.isEqual( left , right ) ) { throw new doormen.ValidatorError( 'should not have been equal' ) ; }
 } ;
 
 
