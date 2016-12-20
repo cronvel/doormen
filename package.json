@@ -52,6 +52,13 @@
   "bugs": {
     "url": "https://github.com/cronvel/doormen/issues"
   },
+  "config": {
+    "tea-time": {
+      "coverDir": [
+        "lib"
+      ]
+    }
+  },
   "copyright": {
     "title": "Doormen",
     "years": [
