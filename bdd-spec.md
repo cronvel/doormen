@@ -1,3 +1,5 @@
+WARNING: MongoDB module not found, the end of the test is skipped.
+WARNING: MongoDB module not found, the end of the test is skipped.
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
