@@ -1848,7 +1848,15 @@ doormen.equals( doormen( { sanitize: 'toLowerCase' } , 'aBc dE f' ) , 'abc de f'
 should sanitize to 'capitalize' accordingly.
 
 ```js
-doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'OneTWOthree' ) ;
+doormen.equals( doormen( { sanitize: 'capitalize' } , 'one TWO tHRee' ) , 'One TWO THRee' ) ;
+```
+
+should sanitize to 'titleCase' accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'titleCase' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+doormen.equals( doormen( { sanitize: 'titleCase' } , 'one TWO tHRee' ) , 'One TWO Three' ) ;
 ```
 
 should sanitize to 'dashToCamelCase' accordingly.

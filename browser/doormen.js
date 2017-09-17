@@ -908,7 +908,7 @@ doormen.not.equals = function notEquals( left , right )
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10,"tree-kit/lib/clone.js":14}],3:[function(require,module,exports){
+},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10,"tree-kit/lib/clone.js":15}],3:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -1635,6 +1635,7 @@ mask.check = function maskCheck( schema )
 
 // Load modules
 var latinize = require( 'string-kit/lib/latinize.js' ) ;
+var toTitleCase = require( 'string-kit/lib/toTitleCase.js' ) ;
 
 
 
@@ -1843,9 +1844,21 @@ sanitizer.toLowerCase = function toLowerCase( data )
 
 sanitizer.capitalize = function capitalize( data )
 {
-	if ( typeof data === 'string' ) { return data[ 0 ].toUpperCase() + data.slice( 1 ).toLowerCase() ; }
+	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizer.capitalize.toTitleCaseOptions ) ; }
 	else { return data ; }
 } ;
+
+sanitizer.capitalize.toTitleCaseOptions = {} ;
+
+
+
+sanitizer.titleCase = function titleCase( data )
+{
+	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizer.titleCase.toTitleCaseOptions ) ; }
+	else { return data ; }
+} ;
+
+sanitizer.titleCase.toTitleCaseOptions = { zealous: 1 , preserveAllCaps: true } ;
 
 
 
@@ -1888,7 +1901,7 @@ sanitizer.mongoId = function mongoId( data )
 } ;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":13}],8:[function(require,module,exports){
+},{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":13,"string-kit/lib/toTitleCase.js":14}],8:[function(require,module,exports){
 /*
 	Doormen
 	
@@ -2575,7 +2588,7 @@ module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A",
 /*
 	String Kit
 	
-	Copyright (c) 2014 - 2016 Cédric Ronvel
+	Copyright (c) 2014 - 2017 Cédric Ronvel
 	
 	The MIT License (MIT)
 	
@@ -2612,6 +2625,65 @@ module.exports = function( str )
             
 
 },{"./latinize-map.json":12}],14:[function(require,module,exports){
+/*
+	String Kit
+	
+	Copyright (c) 2014 - 2017 Cédric Ronvel
+	
+	The MIT License (MIT)
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+module.exports = function toTitleCase( str , options )
+{
+	if ( ! str || typeof str !== 'string' ) { return '' ; }
+	
+	options = options || {} ;
+	
+	return str.replace( /[^\s_-]+/g , function( part ) {
+		if ( options.zealous )
+		{
+			if ( options.preserveAllCaps && part === part.toUpperCase() )
+			{
+				// This is a ALLCAPS word
+				return part ;
+			}
+			else
+			{
+				return part[ 0 ].toUpperCase() + part.slice( 1 ).toLowerCase() ;
+			}
+		}
+		else
+		{
+			return part[ 0 ].toUpperCase() + part.slice( 1 ) ;
+		}
+	} ) ;
+} ;
+
+
+
+},{}],15:[function(require,module,exports){
 /*
 	Tree Kit
 	

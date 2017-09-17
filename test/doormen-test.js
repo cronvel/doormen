@@ -1798,7 +1798,13 @@ describe( "Sanitize" , function() {
 	} ) ;
 	
 	it( "should sanitize to 'capitalize' accordingly" , function() {
-		doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+		doormen.equals( doormen( { sanitize: 'capitalize' } , 'oneTWOthree' ) , 'OneTWOthree' ) ;
+		doormen.equals( doormen( { sanitize: 'capitalize' } , 'one TWO tHRee' ) , 'One TWO THRee' ) ;
+	} ) ;
+	
+	it( "should sanitize to 'titleCase' accordingly" , function() {
+		doormen.equals( doormen( { sanitize: 'titleCase' } , 'oneTWOthree' ) , 'Onetwothree' ) ;
+		doormen.equals( doormen( { sanitize: 'titleCase' } , 'one TWO tHRee' ) , 'One TWO Three' ) ;
 	} ) ;
 	
 	it( "should sanitize to 'dashToCamelCase' accordingly" , function() {
