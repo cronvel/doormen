@@ -288,6 +288,17 @@ b.c = b ;
 doormen.equals( a , b ) ;
 ```
 
+Buffers.
+
+```js
+var buf , buf2 , i ;
+buf = Buffer.allocUnsafe( 80 ) ;
+buf2 = Buffer.allocUnsafe( 80 ) ;
+for ( i = 0 ; i < 80 ; i ++ ) { buf[ i ] = i ; }
+buf.copy( buf2 ) ;
+doormen.equals( buf , buf2 ) ;
+```
+
 <a name="basic-types"></a>
 # Basic types
 should validate undefined accordingly.
