@@ -238,6 +238,8 @@ describe( "Equality checker" , function() {
 		for ( i = 0 ; i < 80 ; i ++ ) { buf[ i ] = i ; }
 		buf.copy( buf2 ) ;
 		doormen.equals( buf , buf2 ) ;
+		buf2[ 4 ] = 117 ;
+		doormen.not.equals( buf , buf2 ) ;
 	} ) ;
 } ) ;
 
