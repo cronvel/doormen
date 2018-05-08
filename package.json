@@ -8,28 +8,11 @@
   },
   "dependencies": {
     "string-kit": "^0.6.2",
-    "tree-kit": "^0.5.26"
+    "tree-kit": "^0.5.26",
+    "uglify-js-es6": "^2.8.9"
   },
   "devDependencies": {
-    "browserify": "^13.0.1",
-    "jshint": "^2.9.2",
-    "mocha": "^2.5.3",
-    "testling": "^1.7.1",
-    "uglify-js": "^2.7.0"
-  },
-  "testling": {
-    "harness": "mocha",
-    "files": "test/*.js",
-    "browsers": [
-      "ie/8..latest",
-      "chrome/35..latest",
-      "firefox/35..latest",
-      "safari/latest",
-      "opera/11.0..latest",
-      "iphone/6",
-      "ipad/6",
-      "android-browser/latest"
-    ]
+    "browserify": "^13.0.1"
   },
   "scripts": {
     "test": "mocha -R dot"
@@ -63,7 +46,7 @@
     "title": "Doormen",
     "years": [
       2015,
-      2016
+      2018
     ],
     "owner": "Cédric Ronvel"
   }

@@ -1,21 +1,21 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.doormen = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,21 +37,21 @@ module.exports.isBrowser = true ;
 (function (global){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -68,37 +68,34 @@ module.exports.isBrowser = true ;
 /*
 	doormen( schema , data )
 	doormen( options , schema , data )
-	
+
 	options:
 		* userContext: a context that can be accessed by user-land type-checker and sanitizer
 		* report: activate the report mode: report as many error as possible (same as doormen.report())
 		* export: activate the export mode: sanitizers export into a new object (same as doormen.export())
 */
-function doormen()
-{
+function doormen( ... args ) {
 	var options , data , schema , context , sanitized ;
-	
-	if ( arguments.length < 2 || arguments.length > 3 )
-	{
+
+	if ( args.length < 2 || args.length > 3 ) {
 		throw new Error( 'doormen() needs at least 2 and at most 3 arguments' ) ;
 	}
-	
-	if ( arguments.length === 2 ) { schema = arguments[ 0 ] ; data = arguments[ 1 ] ; }
-	else { options = arguments[ 0 ] ; schema = arguments[ 1 ] ; data = arguments[ 2 ] ; }
-	
+
+	if ( args.length === 2 ) { schema = args[ 0 ] ; data = args[ 1 ] ; }
+	else { options = args[ 0 ] ; schema = args[ 1 ] ; data = args[ 2 ] ; }
+
 	// Schema as a sentence
 	if ( typeof schema === 'string' ) { schema = doormen.sentence( schema ) ; }
-	
-	if ( ! schema || typeof schema !== 'object' )
-	{
+
+	if ( ! schema || typeof schema !== 'object' ) {
 		throw new doormen.SchemaError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
-	
+
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
-	
+
 	if ( ! options.patch || typeof options.patch !== 'object' || Array.isArray( options.patch ) ) { options.patch = false ; }
-	
-	
+
+
 	context = {
 		userContext: options.userContext ,
 		validate: true ,
@@ -109,25 +106,23 @@ function doormen()
 		report: !! options.report ,
 		export: !! options.export
 	} ;
-	
+
 	sanitized = context.check( schema , data , {
 		path: '' ,
-		displayPath: data === null ? 'null' : ( Array.isArray( data ) ? 'array' : typeof data ) ,
+		displayPath: data === null ? 'null' : ( Array.isArray( data ) ? 'array' : typeof data ) ,	// eslint-disable-line no-nested-ternary
 		key: ''
 	} , false ) ;
-	
-	if ( context.report )
-	{
+
+	if ( context.report ) {
 		return {
 			validate: context.validate ,
 			sanitized: sanitized ,
 			errors: context.errors
 		} ;
 	}
-	else
-	{
-		return sanitized ;
-	}
+
+	return sanitized ;
+
 }
 
 module.exports = doormen ;
@@ -156,8 +151,10 @@ doormen.purifySchema = function( schema ) { return doormen.export( doormen.schem
 
 
 
+// For browsers...
+if ( ! global ) { global = window ; }	// eslint-disable-line no-global-assign
+
 // Extendable things
-if ( ! global ) { global = window ; }	// jshint ignore:line
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker ) { global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer ) { global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer = {} ; }
@@ -177,23 +174,19 @@ doormen.topLevelFilters = [ 'instanceOf' , 'min' , 'max' , 'length' , 'minLength
 
 
 
-function check( schema , data_ , element , isPatch )
-{
+function check( schema , data_ , element , isPatch ) {
 	var i , key , newKey , sanitizerList , hashmap , data = data_ , src , returnValue , alternativeErrors ,
 		when , ifArray , keys , nextKeys , bkup , addToPath ;
-	
-	if ( ! schema || typeof schema !== 'object' )
-	{
+
+	if ( ! schema || typeof schema !== 'object' ) {
 		throw new doormen.SchemaError( element.displayPath + " is not a schema (not an object or an array of object)." ) ;
 	}
-	
+
 	// 0) Arrays are alternatives
-	if ( Array.isArray( schema ) )
-	{
+	if ( Array.isArray( schema ) ) {
 		alternativeErrors = [] ;
-		
-		for ( i = 0 ; i < schema.length ; i ++ )
-		{
+
+		for ( i = 0 ; i < schema.length ; i ++ ) {
 			try {
 				// using .export() is mandatory here: we should not modify the original data
 				// since we should check against alternative (and sanitize can change things, for example)
@@ -203,114 +196,95 @@ function check( schema , data_ , element , isPatch )
 				alternativeErrors.push( error.message.replace( /\.$/ , '' ) ) ;
 				continue ;
 			}
-			
+
 			return data ;
 		}
-		
+
 		this.validatorError(
 			element.displayPath + " does not validate any schema alternatives: ( " + alternativeErrors.join( ' ; ' ) + " )." ,
 			element ) ;
-		
+
 		return ;
 	}
-	
+
 	// 1) if the data has a default value or is optional, and its value is null or undefined, it's ok!
-	if ( ( data === null || data === undefined ) )
-	{
+	if ( ( data === null || data === undefined ) ) {
 		if ( 'default' in schema ) { return clone( schema.default ) ; }
 		if ( schema.optional ) { return data ; }
 	}
-	
+
 	// 2) apply available sanitizers before anything else
-	if ( schema.sanitize )
-	{
+	if ( schema.sanitize ) {
 		sanitizerList = Array.isArray( schema.sanitize ) ? schema.sanitize : [ schema.sanitize ] ;
-		
+
 		bkup = data ;
-		
-		for ( i = 0 ; i < sanitizerList.length ; i ++ )
-		{
-			if ( ! doormen.sanitizer[ sanitizerList[ i ] ] )
-			{
+
+		for ( i = 0 ; i < sanitizerList.length ; i ++ ) {
+			if ( ! doormen.sanitizer[ sanitizerList[ i ] ] ) {
 				if ( doormen.clientMode ) { continue ; }
 				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant sanitizer '" + sanitizerList[ i ] + "'." ) ;
 			}
-			
+
 			data = doormen.sanitizer[ sanitizerList[ i ] ].call( this , data , schema , this.export && data === data_ ) ;
 		}
-		
+
 		// if you want patch reporting
-		if ( this.patch && bkup !== data )
-		{
+		if ( this.patch && bkup !== data ) {
 			this.patch[ element.path ] = data ;
 		}
 	}
-	
+
 	// 3) check the type
-	if ( schema.type )
-	{
-		if ( ! doormen.typeChecker[ schema.type ] )
-		{
-			if ( ! doormen.clientMode )
-			{
+	if ( schema.type ) {
+		if ( ! doormen.typeChecker[ schema.type ] ) {
+			if ( ! doormen.clientMode ) {
 				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant type '" + schema.type + "'." ) ;
 			}
 		}
-		else if ( ! doormen.typeChecker[ schema.type ].call( this , data ) )
-		{
+		else if ( ! doormen.typeChecker[ schema.type ].call( this , data ) ) {
 			this.validatorError( element.displayPath + " is not a " + schema.type + "." , element ) ;
 		}
 	}
-	
+
 	// 4) check top-level built-in filters
-	for ( i = 0 ; i < doormen.topLevelFilters.length ; i ++ )
-	{
+	for ( i = 0 ; i < doormen.topLevelFilters.length ; i ++ ) {
 		key = doormen.topLevelFilters[ i ] ;
-		
-		if ( schema[ key ] !== undefined )
-		{
+
+		if ( schema[ key ] !== undefined ) {
 			doormen.filter[ key ].call( this , data , schema[ key ] , element ) ;
 		}
 	}
-	
+
 	// 5) check filters
-	if ( schema.filter )
-	{
-		if ( typeof schema.filter !== 'object' )
-		{
+	if ( schema.filter ) {
+		if ( typeof schema.filter !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'filter' should be an object." ) ;
 		}
-		
-		for ( key in schema.filter )
-		{
-			if ( ! doormen.filter[ key ] )
-			{
+
+		for ( key in schema.filter ) {
+			if ( ! doormen.filter[ key ] ) {
 				if ( doormen.clientMode ) { continue ; }
 				throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant filter '" + key + "'." ) ;
 			}
-			
+
 			doormen.filter[ key ].call( this , data , schema.filter[ key ] , element ) ;
 		}
 	}
-	
-	
+
+
 	// 6) Recursivity
-	
+
 	// of
-	if ( schema.of !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
-	{
-		if ( ! schema.of || typeof schema.of !== 'object' )
-		{
+	if ( schema.of !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) ) {
+		if ( ! schema.of || typeof schema.of !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'of' should contain a schema object." ) ;
 		}
-		
-		if ( Array.isArray( data ) )
-		{
+
+		if ( Array.isArray( data ) ) {
 			if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
 			else { src = data ; }
-			
-			for ( i = 0 ; i < src.length ; i ++ )
-			{
+
+			for ( i = 0 ; i < src.length ; i ++ ) {
 				addToPath = '[' + i + ']' ;
 				data[ i ] = this.check( schema.of , src[ i ] , {
 					path: element.path + addToPath ,
@@ -319,13 +293,11 @@ function check( schema , data_ , element , isPatch )
 				} , isPatch ) ;
 			}
 		}
-		else
-		{
+		else {
 			if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
 			else { src = data ; }
-			
-			for ( key in src )
-			{
+
+			for ( key in src ) {
 				addToPath = '.' + key ;
 				data[ key ] = this.check( schema.of , src[ key ] , {
 					path: element.path ? element.path + addToPath : key ,
@@ -335,101 +307,86 @@ function check( schema , data_ , element , isPatch )
 			}
 		}
 	}
-	
+
 	// keys
-	if ( schema.keys !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
-	{
-		if ( ! schema.keys || typeof schema.keys !== 'object' )
-		{
+	if ( schema.keys !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) ) {
+		if ( ! schema.keys || typeof schema.keys !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'keys' should contain a schema object." ) ;
 		}
-		
+
 		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
 		else { src = data ; }
-		
-		for ( key in src )
-		{
+
+		for ( key in src ) {
 			addToPath = ':' + key ;
 			newKey = this.check( schema.keys , key , {
 				path: element.path + addToPath ,
 				displayPath: element.displayPath + addToPath ,
 				key: key
 			} , isPatch ) ;
-			
-			if ( newKey in data && newKey !== key )
-			{
+
+			if ( newKey in data && newKey !== key ) {
 				this.validatorError(
 					"'keys' cannot overwrite another existing key: " + element.displayPath +
 					" want to rename '" + key + "' to '" + newKey + "' but it already exists." ,
 					element
 				) ;
 			}
-			
+
 			data[ newKey ] = src[ key ] ;
 			if ( newKey !== key ) { delete data[ key ] ; }
 		}
 	}
-	
+
 	// properties
-	if ( schema.properties !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) )
-	{
-		if ( ! schema.properties || typeof schema.properties !== 'object' )
-		{
+	if ( schema.properties !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) ) {
+		if ( ! schema.properties || typeof schema.properties !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'properties' should be an object." ) ;
 		}
-		
+
 		if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
 		else { src = data ; }
-		
+
 		hashmap = {} ;
-		
-		if ( Array.isArray( schema.properties ) )
-		{
-			for ( i = 0 ; i < schema.properties.length ; i ++ )
-			{
+
+		if ( Array.isArray( schema.properties ) ) {
+			for ( i = 0 ; i < schema.properties.length ; i ++ ) {
 				key = schema.properties[ i ] ;
-				
-				if ( ! ( key in src ) )
-				{
+
+				if ( ! ( key in src ) ) {
 					this.validatorError( element.displayPath + " does not have all required properties (" +
 						JSON.stringify( schema.properties ) + ")." ,
-						element ) ;
+					element ) ;
 				}
-				
+
 				data[ key ] = src[ key ] ;
-				
+
 				hashmap[ key ] = true ;
 			}
 		}
-		else
-		{
+		else {
 			//for ( key in schema.properties )
 			nextKeys = Object.keys( schema.properties ) ;
 			keys = [] ;
-			
-			while( nextKeys.length )
-			{
-				if ( keys.length === nextKeys.length )
-				{
+
+			while( nextKeys.length ) {
+				if ( keys.length === nextKeys.length ) {
 					throw new doormen.SchemaError( element.displayPath + " has 'when' properties with circular dependencies." ) ;
 				}
-				
+
 				keys = nextKeys ;
 				nextKeys = [] ;
-				
-				for ( i = 0 ; i < keys.length ; i ++ )
-				{
+
+				for ( i = 0 ; i < keys.length ; i ++ ) {
 					key = keys[ i ] ;
-					
-					if ( ! schema.properties[ key ] || typeof schema.properties[ key ] !== 'object' )
-					{
+
+					if ( ! schema.properties[ key ] || typeof schema.properties[ key ] !== 'object' ) {
 						throw new doormen.SchemaError( element.displayPath + '.' + key + " is not a schema (not an object or an array of object)." ) ;
 					}
-					
-					if ( schema.properties[ key ].when && ! isPatch )
-					{
+
+					if ( schema.properties[ key ].when && ! isPatch ) {
 						when = schema.properties[ key ].when ;
-						
+
 						if (
 							typeof when !== 'object' ||
 							typeof when.sibling !== 'string' ||
@@ -437,28 +394,26 @@ function check( schema , data_ , element , isPatch )
 								( ! when.siblingVerify || typeof when.siblingVerify !== 'object' ) &&
 								( ! when.verify || typeof when.verify !== 'object' )
 							)
-						)
-						{
+						) {
 							throw new doormen.SchemaError( element.displayPath + '.' + key + ".when should be an object with a 'sibling' (string), 'siblingVerify'/'verify' (schema object) and 'set'/'clone' properties." ) ;
 						}
-						
-						if ( ! hashmap[ when.sibling ] && schema.properties[ when.sibling ] )
-						{
+
+						if ( ! hashmap[ when.sibling ] && schema.properties[ when.sibling ] ) {
 							// Postpone
 							//console.log( "postpone:" , key ) ;
 							nextKeys.push( key ) ;
 							continue ;
 						}
-						
+
 						try {
 							//console.log( "try" ) ;
 							if ( when.siblingVerify ) { doormen( when.siblingVerify , data[ when.sibling ] ) ; }
 							if ( when.verify ) { doormen( when.verify , data[ key ] ) ; }
-							
+
 							if ( when.clone ) { data[ key ] = clone( data[ when.sibling ] ) ; }
 							else if ( when.set === undefined ) { delete data[ key ] ; }
 							else { data[ key ] = clone( when.set ) ; }
-							
+
 							hashmap[ key ] = true ;	// Add it anyway
 							continue ;
 						}
@@ -466,49 +421,43 @@ function check( schema , data_ , element , isPatch )
 							//console.log( "catch" ) ;
 						}
 					}
-					
+
 					hashmap[ key ] = true ;
-					
+
 					addToPath = '.' + key ;
 					returnValue = this.check( schema.properties[ key ] , src[ key ] , {
 						path: element.path ? element.path + addToPath : key ,
 						displayPath: element.displayPath + addToPath ,
 						key: key
 					} , isPatch ) ;
-					
+
 					// Do not create new properties with undefined
 					if ( returnValue !== undefined || key in src ) { data[ key ] = returnValue ; }
 				}
 			}
 		}
-		
-		if ( ! schema.extraProperties )
-		{
-			for ( key in src )
-			{
-				if ( ! ( key in hashmap ) )
-				{
+
+		if ( ! schema.extraProperties ) {
+			for ( key in src ) {
+				if ( ! ( key in hashmap ) ) {
 					this.validatorError( element.displayPath + " has extra properties ('" + key + "' is not in " +
 						JSON.stringify( Object.keys( hashmap ) ) + ")." ,
-						element ) ;
+					element ) ;
 				}
 			}
 		}
 	}
-	
+
 	// elements
-	if ( schema.elements !== undefined && Array.isArray( data ) )
-	{
-		if ( ! Array.isArray( schema.elements ) )
-		{
+	if ( schema.elements !== undefined && Array.isArray( data ) ) {
+		if ( ! Array.isArray( schema.elements ) ) {
 			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'elements' should be an array." ) ;
 		}
-		
+
 		if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
 		else { src = data ; }
-		
-		for ( i = 0 ; i < schema.elements.length ; i ++ )
-		{
+
+		for ( i = 0 ; i < schema.elements.length ; i ++ ) {
 			addToPath = '[' + i + ']' ;
 			data[ i ] = this.check( schema.elements[ i ] , src[ i ] , {
 				path: element.path + addToPath ,
@@ -516,33 +465,29 @@ function check( schema , data_ , element , isPatch )
 				key: i
 			} , isPatch ) ;
 		}
-		
-		if ( ! schema.extraElements && src.length > schema.elements.length )
-		{
+
+		if ( ! schema.extraElements && src.length > schema.elements.length ) {
 			this.validatorError( element.displayPath + " has extra elements (" +
 				src.length + " instead of " + schema.elements.length + ")." ,
-				element ) ;
+			element ) ;
 		}
 	}
-	
-	
+
+
 	// 7) Conditionnal schema
-	
+
 	if (
 		typeof schema.switch === 'string' &&
 		data && typeof data === 'object' && typeof data[ schema.switch ] === 'string' &&
 		schema.case && typeof schema.case === 'object' && schema.case[ data[ schema.switch ] ]
-	)
-	{
+	) {
 		data = this.check( schema.case[ data[ schema.switch ] ] , data , element , isPatch ) ;
 	}
-	
-	if ( schema.if && typeof schema.if === 'object' )
-	{
+
+	if ( schema.if && typeof schema.if === 'object' ) {
 		ifArray = Array.isArray( schema.if ) ? schema.if : [ schema.if ] ;
-		
-		for ( i = 0 ; i < ifArray.length ; i ++ )
-		{
+
+		for ( i = 0 ; i < ifArray.length ; i ++ ) {
 			try {
 				doormen( ifArray[ i ].verify , data ) ;
 			}
@@ -550,11 +495,11 @@ function check( schema , data_ , element , isPatch )
 				// normal case, it does not match, so continue to the next alternative
 				continue ;
 			}
-			
+
 			data = this.check( ifArray[ i ].then , data , element , isPatch ) ;
 		}
 	}
-	
+
 	return data ;
 }
 
@@ -562,86 +507,74 @@ function check( schema , data_ , element , isPatch )
 
 var clone_ = require( 'tree-kit/lib/clone.js' ) ;
 
-function clone( value )
-{
+function clone( value ) {
 	if ( value && typeof value === 'object' ) { return clone_( value ) ; }
 	return value ;
 }
 
 
 
-doormen.path = function schemaPath( schema , path )
-{
+doormen.path = function schemaPath( schema , path ) {
 	var index = 0 ;
-	
-	if ( ! Array.isArray( path ) )
-	{
+
+	if ( ! Array.isArray( path ) ) {
 		if ( typeof path !== 'string' ) { throw new Error( "Argument #1 'path' should be a string" ) ; }
 		path = path.split( '.' ) ;
 	}
-	
-	if ( ! schema || typeof schema !== 'object' )
-	{
+
+	if ( ! schema || typeof schema !== 'object' ) {
 		throw new doormen.SchemaError( schema + " is not a schema (not an object or an array of object)." ) ;
 	}
-	
+
 	// Skip empty path
 	while ( index < path.length && ! path[ index ] ) { index ++ ; }
-	
+
 	return schemaPath_( schema , path , index ) ;
 } ;
 
 
 
-function schemaPath_( schema , path , index )
-{
+function schemaPath_( schema , path , index ) {
 	var key ;
-	
+
 	// Found it! return now!
 	if ( index >= path.length ) { return schema ; }
-	
+
 	key = path[ index ] ;
-	
-	
+
+
 	// 0) Arrays are alternatives
-	if ( Array.isArray( schema ) )
-	{
+	if ( Array.isArray( schema ) ) {
 		throw new Error( "Schema alternatives are not supported for path matching ATM." ) ;
 	}
-	
+
 	// 1) Recursivity
-	if ( schema.properties !== undefined )
-	{
-		if ( ! schema.properties || typeof schema.properties !== 'object' )
-		{
+	if ( schema.properties !== undefined ) {
+		if ( ! schema.properties || typeof schema.properties !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'properties' should be an object." ) ;
 		}
-		
-		if ( schema.properties[ key ] )
-		{
+
+		if ( schema.properties[ key ] ) {
 			//path.shift() ;
 			return schemaPath_( schema.properties[ key ] , path , index + 1 ) ;
 		}
-		else if ( ! schema.extraProperties )
-		{
+		else if ( ! schema.extraProperties ) {
 			throw new doormen.SchemaError( "Bad path (at " + path + "), property '" + key + "' not found and the schema does not allow extra properties." ) ;
 		}
 	}
-	
-	if ( schema.of !== undefined )
-	{
-		if ( ! schema.of || typeof schema.of !== 'object' )
-		{
+
+	if ( schema.of !== undefined ) {
+		if ( ! schema.of || typeof schema.of !== 'object' ) {
 			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contain a schema object." ) ;
 		}
-		
+
 		//path.shift() ;
 		return schemaPath_( schema.of , path , index + 1 ) ;
 	}
-	
+
 	// "element" is not supported ATM
 	//if ( schema.elements !== undefined ) {}
-	
+
 	// Sub-schema not found, it should be open to anything, so return {}
 	return {} ;
 }
@@ -649,23 +582,20 @@ function schemaPath_( schema , path , index )
 
 
 // Get the tier of a patch, i.e. the highest tier for all path of the patch.
-doormen.patchTier = function pathsMaxTier( schema , patch )
-{
+doormen.patchTier = function pathsMaxTier( schema , patch ) {
 	var i , iMax , path ,
 		maxTier = 1 ,
 		paths = Object.keys( patch ) ;
-	
-	for ( i = 0 , iMax = paths.length ; i < iMax ; i ++ )
-	{
+
+	for ( i = 0 , iMax = paths.length ; i < iMax ; i ++ ) {
 		path = paths[ i ].split( '.' ) ;
-		
-		while ( path.length )
-		{
+
+		while ( path.length ) {
 			maxTier = Math.max( maxTier , doormen.path( schema , path ).tier || 1 ) ;
 			path.pop() ;
 		}
 	}
-	
+
 	return maxTier ;
 } ;
 
@@ -674,43 +604,40 @@ doormen.patchTier = function pathsMaxTier( schema , patch )
 /*
 	doormen.patch( schema , patch )
 	doormen.patch( options , schema , patch )
-	
+
 	Validate the 'patch' format
 */
-doormen.patch = function schemaPatch()
-{
+doormen.patch = function schemaPatch( ... args ) {
 	var patch , schema , options , context , sanitized , key , subSchema ;
-	
-	
+
+
 	// Share a lot of code with the doormen() function
-	
-	
-	if ( arguments.length < 2 || arguments.length > 3 )
-	{
+
+
+	if ( args.length < 2 || args.length > 3 ) {
 		throw new Error( 'doormen.patch() needs at least 2 and at most 3 arguments' ) ;
 	}
-	
-	if ( arguments.length === 2 ) { schema = arguments[ 0 ] ; patch = arguments[ 1 ] ; }
-	else { options = arguments[ 0 ] ; schema = arguments[ 1 ] ; patch = arguments[ 2 ] ; }
-	
+
+	if ( args.length === 2 ) { schema = args[ 0 ] ; patch = args[ 1 ] ; }
+	else { options = args[ 0 ] ; schema = args[ 1 ] ; patch = args[ 2 ] ; }
+
 	// Schema as a sentence
 	if ( typeof schema === 'string' ) { schema = doormen.sentence( schema ) ; }
-	
-	if ( ! schema || typeof schema !== 'object' )
-	{
+
+	if ( ! schema || typeof schema !== 'object' ) {
 		throw new doormen.SchemaError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
-	
+
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
-	
+
 	// End of common part
-	
+
 	if ( ! patch || typeof patch !== 'object' ) { throw new Error( 'The patch should be an object' ) ; }
-	
+
 	// If in the 'export' mode, create a new object, else modify it in place
-	
+
 	sanitized = options.export ? {} : patch ;
-	
+
 	context = {
 		userContext: options.userContext ,
 		validate: true ,
@@ -720,31 +647,28 @@ doormen.patch = function schemaPatch()
 		report: !! options.report ,
 		export: !! options.export
 	} ;
-	
-	for ( key in patch )
-	{
+
+	for ( key in patch ) {
 		// Don't try-catch! Let it throw!
 		subSchema = doormen.path( schema , key ) ;
-		
+
 		//sanitized[ key ] = doormen( options , subSchema , patch[ key ] ) ;
 		sanitized[ key ] = context.check( subSchema , patch[ key ] , {
 			path: 'patch.' + key ,
 			key: key
 		} , true ) ;
 	}
-	
-	if ( context.report )
-	{
+
+	if ( context.report ) {
 		return {
 			validate: context.validate ,
 			sanitized: sanitized ,
 			errors: context.errors
 		} ;
 	}
-	else
-	{
-		return sanitized ;
-	}
+
+	return sanitized ;
+
 } ;
 
 
@@ -757,32 +681,28 @@ doormen.patch.export = doormen.patch.bind( doormen , { export: true } ) ;
 
 
 
-			/* Specific Error class */
+/* Specific Error class */
 
 
 
-function validatorError( message , element )
-{
+function validatorError( message , element ) {
 	var error = new doormen.ValidatorError( message , element ) ;
-	
+
 	this.validate = false ;
-	
-	if ( this.report )
-	{
+
+	if ( this.report ) {
 		this.errors.push( error ) ;
 	}
-	else
-	{
+	else {
 		throw error ;
 	}
 }
 
-doormen.ValidatorError = function ValidatorError( message , element )
-{
+doormen.ValidatorError = function ValidatorError( message , element ) {
 	this.message = message ;
-	
+
 	if ( element ) { this.at = this.path = element.path ; }
-	
+
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
 	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
 } ;
@@ -793,10 +713,9 @@ doormen.ValidatorError.prototype.name = 'ValidatorError' ;
 
 
 
-doormen.SchemaError = function SchemaError( message )
-{
+doormen.SchemaError = function SchemaError( message ) {
 	this.message = message ;
-	
+
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , SchemaError ) ; }
 	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
 } ;
@@ -809,21 +728,18 @@ doormen.SchemaError.prototype.name = 'SchemaError' ;
 
 
 
-			/* Extend */
+/* Extend */
 
 
 
-function extend( base , extension , overwrite )
-{
+function extend( base , extension , overwrite ) {
 	var key ;
-	
-	if ( ! extension || typeof extension !== 'object' || Array.isArray( extension ) )
-	{
+
+	if ( ! extension || typeof extension !== 'object' || Array.isArray( extension ) ) {
 		throw new TypeError( '[doormen] .extend*(): Argument #0 should be a plain object' ) ;
 	}
-	
-	for ( key in extension )
-	{
+
+	for ( key in extension ) {
 		if ( ( ( key in base ) && ! overwrite ) || typeof extension[ key ] !== 'function' ) { continue ; }
 		base[ key ] = extension[ key ] ;
 	}
@@ -843,19 +759,17 @@ doormen.setClientMode = function setClientMode( clientMode ) { doormen.clientMod
 
 
 
-			/* Assertion specific utilities */
+/* Assertion specific utilities */
 
 
 
-doormen.shouldThrow = function shouldThrow( fn )
-{
+doormen.shouldThrow = function shouldThrow( fn ) {
 	var thrown = false ;
-	
+
 	try { fn() ; }
 	catch ( error ) { thrown = true ; }
-	
-	if ( ! thrown )
-	{
+
+	if ( ! thrown ) {
 		throw new Error( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown." ) ;
 	}
 } ;
@@ -863,46 +777,67 @@ doormen.shouldThrow = function shouldThrow( fn )
 
 
 // Inverse validation
-doormen.not = function not()
-{
-	var args = arguments ;
-	doormen.shouldThrow( function() {
-		doormen.apply( doormen , args ) ;
+doormen.not = function not( ... args ) {
+	doormen.shouldThrow( () => {
+		doormen( ... args ) ;
 	} ) ;
 } ;
+
+
 
 // Inverse validation for patch
-doormen.patch.not = function patchNot()
-{
-	var args = arguments ;
-	doormen.shouldThrow( function() {
-		doormen.patch.apply( doormen , args ) ;
+doormen.patch.not = function patchNot( ... args ) {
+	doormen.shouldThrow( () => {
+		doormen.patch( ... args ) ;
 	} ) ;
 } ;
 
 
 
-doormen.equals = function equals( left , right )
-{
+doormen.equals = function equals( left , right ) {
 	var error ;
-	
-	if ( ! doormen.isEqual( left , right ) )
-	{
+
+	if ( ! doormen.isEqual( left , right ) ) {
 		error = new doormen.ValidatorError( 'should have been equal' ) ;
-		
-		// This will make Mocha show the diff:
+
+		// This will make Mocha and Tea-Time show the diff:
 		error.actual = left ;
 		error.expected = right ;
 		error.showDiff = true ;
-		
+
 		throw error ;
 	}
 } ;
 
+
+
 // Inverse of equals
-doormen.not.equals = function notEquals( left , right )
-{
+doormen.not.equals = function notEquals( left , right ) {
 	if ( doormen.isEqual( left , right ) ) { throw new doormen.ValidatorError( 'should not have been equal' ) ; }
+} ;
+
+
+
+doormen.alike = function alike( left , right ) {
+	var error ;
+
+	if ( ! doormen.isEqual( left , right , true ) ) {
+		error = new doormen.ValidatorError( 'should have been alike' ) ;
+
+		// This will make Mocha and Tea-Time show the diff:
+		error.actual = left ;
+		error.expected = right ;
+		error.showDiff = true ;
+
+		throw error ;
+	}
+} ;
+
+
+
+// Inverse of alike
+doormen.not.alike = function notAlike( left , right ) {
+	if ( doormen.isEqual( left , right , true ) ) { throw new doormen.ValidatorError( 'should not have been alike' ) ; }
 } ;
 
 
@@ -912,21 +847,21 @@ doormen.not.equals = function notEquals( left , right )
 (function (global){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -940,7 +875,9 @@ doormen.not.equals = function notEquals( left , right )
 
 
 
-if ( ! global ) { global = window ; }	// jshint ignore:line
+// For browsers...
+if ( ! global ) { global = window ; }	// eslint-disable-line no-global-assign
+
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.filter ) { global.DOORMEN_GLOBAL_EXTENSIONS.filter = {} ; }
 
@@ -951,112 +888,92 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-filter.instanceOf = function instanceOf( data , params , element )
-{
-	if ( typeof params === 'string' )
-	{
+filter.instanceOf = function instanceOf( data , params , element ) {
+	if ( typeof params === 'string' ) {
 		params = doormen.isBrowser ?
-			window[ params ] :		// jshint ignore:line
+			window[ params ] :
 			global[ params ] ;
 	}
-	
-	if ( typeof params !== 'function' )
-	{
+
+	if ( typeof params !== 'function' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'instanceOf' should be a function or a global function's name." ) ;
 	}
-	
-	if ( ! ( data instanceof params ) )
-	{
+
+	if ( ! ( data instanceof params ) ) {
 		this.validatorError( element.path + " is not an instance of " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.eq = filter[ '===' ] = function eq( data , params , element )
-{
-	if ( data !== params )
-	{
+filter.eq = filter[ '===' ] = function eq( data , params , element ) {
+	if ( data !== params ) {
 		this.validatorError( element.path + " is not stricly equal to " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.min = filter.gte = filter.greaterThanOrEqual = filter[ '>=' ] = function min( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.min = filter.gte = filter.greaterThanOrEqual = filter[ '>=' ] = function min( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'min' should be a number." ) ;
 	}
-	
+
 	// Negative test here, because of NaN
-	if ( typeof data !== 'number' || ! ( data >= params ) )	// jshint ignore:line
-	{
+	if ( typeof data !== 'number' || ! ( data >= params ) )	{
 		this.validatorError( element.path + " is not greater than or equal to " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.max = filter.lte = filter.lesserThanOrEqual = filter[ '<=' ] = function max( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.max = filter.lte = filter.lesserThanOrEqual = filter[ '<=' ] = function max( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'max' should be a number." ) ;
 	}
-	
+
 	// Negative test here, because of NaN
-	if ( typeof data !== 'number' || ! ( data <= params ) )	// jshint ignore:line
-	{
+	if ( typeof data !== 'number' || ! ( data <= params ) )	{
 		this.validatorError( element.path + " is not lesser than or equal to " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.gt = filter.greaterThan = filter[ '>' ] = function greaterThan( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.gt = filter.greaterThan = filter[ '>' ] = function greaterThan( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'greaterThan' should be a number." ) ;
 	}
-	
+
 	// Negative test here, because of NaN
-	if ( typeof data !== 'number' || ! ( data > params ) )	// jshint ignore:line
-	{
+	if ( typeof data !== 'number' || ! ( data > params ) ) {
 		this.validatorError( element.path + " is not greater than " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.lt = filter.lesserThan = filter[ '<' ] = function lesserThan( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.lt = filter.lesserThan = filter[ '<' ] = function lesserThan( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'lesserThan' should be a number." ) ;
 	}
-	
+
 	// Negative test here, because of NaN
-	if ( typeof data !== 'number' || ! ( data < params ) )	// jshint ignore:line
-	{
+	if ( typeof data !== 'number' || ! ( data < params ) ) {
 		this.validatorError( element.path + " is not lesser than " + params + "." , element ) ;
 	}
 } ;
 
 
 
-filter.length = function length( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.length = function length( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'length' should be a number." ) ;
 	}
-	
+
 	// Nasty tricks ;)
 	try {
-		if ( ! ( data.length === params ) ) { throw true ; }	// jshint ignore:line
+		if ( ! ( data.length === params ) ) { throw true ; }
 	}
 	catch ( error ) {
 		this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
@@ -1065,16 +982,14 @@ filter.length = function length( data , params , element )
 
 
 
-filter.minLength = function minLength( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.minLength = function minLength( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'minLength' should be a number." ) ;
 	}
-	
+
 	// Nasty tricks ;)
 	try {
-		if ( ! ( data.length >= params ) ) { throw true ; }	// jshint ignore:line
+		if ( ! ( data.length >= params ) ) { throw true ; }
 	}
 	catch ( error ) {
 		this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
@@ -1083,16 +998,14 @@ filter.minLength = function minLength( data , params , element )
 
 
 
-filter.maxLength = function maxLength( data , params , element )
-{
-	if ( typeof params !== 'number' )
-	{
+filter.maxLength = function maxLength( data , params , element ) {
+	if ( typeof params !== 'number' ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'maxLength' should be a number." ) ;
 	}
-	
+
 	// Nasty tricks ;)
 	try {
-		if ( ! ( data.length <= params ) ) { throw true ; }	// jshint ignore:line
+		if ( ! ( data.length <= params ) ) { throw true ; }
 	}
 	catch ( error ) {
 		this.validatorError( element.path + " has not a length lesser than or equal to " + params + "." , element ) ;
@@ -1101,71 +1014,54 @@ filter.maxLength = function maxLength( data , params , element )
 
 
 
-filter.match = function match( data , params , element )
-{
-	if ( typeof params !== 'string' && ! ( params instanceof RegExp ) )
-	{
+filter.match = function match( data , params , element ) {
+	if ( typeof params !== 'string' && ! ( params instanceof RegExp ) ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'match' should be a RegExp or a string." ) ;
 	}
-	
-	if ( params instanceof RegExp )
-	{
-		if ( typeof data !== 'string' || ! data.match( params ) )
-		{
+
+	if ( params instanceof RegExp ) {
+		if ( typeof data !== 'string' || ! data.match( params ) ) {
 			this.validatorError( element.path + " does not match " + params + " ." , element ) ;
 		}
 	}
-	else
-	{
-		if ( typeof data !== 'string' || ! data.match( new RegExp( params ) ) )
-		{
-			this.validatorError( element.path + " does not match /" + params + "/ ." , element ) ;
-		}
+	else if ( typeof data !== 'string' || ! data.match( new RegExp( params ) ) ) {
+		this.validatorError( element.path + " does not match /" + params + "/ ." , element ) ;
 	}
 } ;
 
 
 
-filter.in = function in_( data , params , element )
-{
+filter.in = function in_( data , params , element ) {
 	var i , found = false ;
-	
-	if ( ! Array.isArray( params ) )
-	{
+
+	if ( ! Array.isArray( params ) ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'in' should be an array." ) ;
 	}
-	
-	for ( i = 0 ; i < params.length ; i ++ )
-	{
+
+	for ( i = 0 ; i < params.length ; i ++ ) {
 		if ( doormen.isEqual( data , params[ i ] ) ) { found = true ; break ; }
 	}
-	
-	if ( ! found )
-	{
+
+	if ( ! found ) {
 		this.validatorError( element.path + " should be in " + JSON.stringify( params ) + "." , element ) ;
 	}
 } ;
 
 
 
-filter.notIn = function notIn( data , params , element )
-{
+filter.notIn = function notIn( data , params , element ) {
 	var i ;
-	
-	if ( ! Array.isArray( params ) )
-	{
+
+	if ( ! Array.isArray( params ) ) {
 		throw new doormen.SchemaError( "Bad schema (at " + element.path + "), 'not-in' should be an array." ) ;
 	}
-	
-	for ( i = 0 ; i < params.length ; i ++ )
-	{
-		if ( doormen.isEqual( data , params[ i ] ) )
-		{
+
+	for ( i = 0 ; i < params.length ; i ++ ) {
+		if ( doormen.isEqual( data , params[ i ] ) ) {
 			this.validatorError( element.path + " should not be in " + JSON.stringify( params ) + "." , element ) ;
 		}
 	}
 } ;
-
 
 
 
@@ -1174,21 +1070,21 @@ filter.notIn = function notIn( data , params , element )
 (function (Buffer){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1206,109 +1102,111 @@ filter.notIn = function notIn( data , params , element )
 	Should be FAST! Some critical application part are depending on it.
 	When a reporter will be coded, it should be plugged in a way that does not slow down it.
 */
-function isEqual( left , right )
-{
+function isEqual( left , right , like ) {
 	var runtime = {
-		leftStack: [],
-		rightStack: []
+		leftStack: [] ,
+		rightStack: [] ,
+		like: like	// if true, the prototype of object are not compared
 	} ;
-	
-	return isEqual_( left , right , runtime ) ;
+
+	return isEqual_( runtime , left , right ) ;
 }
 
 
-	
-function isEqual_( left , right , runtime )
-{
-	var index , key , leftIndexOf , rightIndexOf , r ;
-	
+
+function isEqual_( runtime , left , right ) {
+	var index , indexMax , keys , key , leftIndexOf , rightIndexOf , recursiveTest ;
+
 	// If it's strictly equals, then early exit now.
 	if ( left === right ) { return true ; }
-	
+
 	// If one is truthy and the other falsy, early exit now
 	// It is an important test since it catch the "null is an object" case that can confuse things later
 	if ( ! left !== ! right ) { return false ; }	// jshint ignore:line
-	
+
 	// If the type mismatch exit now.
 	if ( typeof left !== typeof right ) { return false ; }
-	
+
 	// Below, left and rights have the same type
-	
+
 	// NaN check
 	if ( typeof left === 'number' && isNaN( left ) && isNaN( right ) ) { return true ; }
-	
+
 	// Should come after the NaN check
 	if ( ! left ) { return false ; }
-	
+
 	// Objects and arrays
-	if ( typeof left === 'object' )
-	{
+	if ( typeof left === 'object' ) {
 		// First, check circular references
 		leftIndexOf = runtime.leftStack.indexOf( left ) ;
 		rightIndexOf = runtime.rightStack.indexOf( right ) ;
-		
+
 		if ( leftIndexOf >= 0 ) { runtime.leftCircular = true ; }
 		if ( rightIndexOf >= 0 ) { runtime.rightCircular = true ; }
-		
+
 		if ( runtime.leftCircular && runtime.rightCircular ) { return true ; }
-		
-		if ( Array.isArray( left ) )
-		{
+
+		if ( ! runtime.like && Object.getPrototypeOf( left ) !== Object.getPrototypeOf( right ) ) { return false ; }
+
+		if ( Array.isArray( left ) ) {
 			// Arrays
 			if ( ! Array.isArray( right ) || left.length !== right.length ) { return false ; }
-			
-			for ( index = 0 ; index < left.length ; index ++ )
-			{
+
+			for ( index = 0 , indexMax = left.length ; index < indexMax ; index ++ ) {
 				if ( left[ index ] === right[ index ] ) { continue ; }
-				
+
 				runtime.leftStack.push( left ) ;
 				runtime.rightStack.push( right ) ;
-				
-				r = isEqual_( left[ index ] , right[ index ] , runtime ) ;
-				
-				if ( ! r ) { return false ; }
-				
+
+				recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] ) ;
+
+				if ( ! recursiveTest ) { return false ; }
+
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
 			}
 		}
-		else if ( Buffer.isBuffer( left ) )
-		{
+		else if ( Buffer.isBuffer( left ) ) {
 			return Buffer.isBuffer( right ) && left.equals( right ) ;
 		}
-		else
-		{
+		else {
 			// Objects
 			if ( Array.isArray( right ) ) { return false ; }
-			
-			for ( key in left )
-			{
-				if ( left[ key ] === undefined ) { continue ; }	// undefined and no key are considered the same
+
+			keys = Object.keys( left ) ;
+
+			for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
+				key = keys[ index ] ;
+
+				if ( left[ key ] === undefined ) { continue ; }			// undefined and no key are considered the same
 				if ( right[ key ] === undefined ) { return false ; }
 				if ( left[ key ] === right[ key ] ) { continue ; }
-				
+
 				runtime.leftStack.push( left ) ;
 				runtime.rightStack.push( right ) ;
-				
-				r = isEqual_( left[ key ] , right[ key ] , runtime ) ;
-				
-				if ( ! r ) { return false ; }
-				
+
+				recursiveTest = isEqual_( runtime , left[ key ] , right[ key ] ) ;
+
+				if ( ! recursiveTest ) { return false ; }
+
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
 			}
-			
-			for ( key in right )
-			{
-				if ( right[ key ] === undefined ) { continue ; }	// undefined and no key are considered the same
+
+			keys = Object.keys( right ) ;
+
+			for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
+				key = keys[ index ] ;
+
+				if ( right[ key ] === undefined ) { continue ; }		// undefined and no key are considered the same
 				if ( left[ key ] === undefined ) { return false ; }
 				// No need to check equality: already done in the previous loop
 			}
 		}
-		
+
 		return true ;
 	}
-	
+
 	return false ;
 }
 
@@ -1322,21 +1220,21 @@ module.exports = isEqual ;
 },{"../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":12}],5:[function(require,module,exports){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1351,84 +1249,85 @@ module.exports = isEqual ;
 
 
 module.exports = {
-	it: { filler: true },
-	its: { filler: true },
-	a: { filler: true },
-	an: { filler: true },
-	the: { filler: true },
-	to: { filler: true },
-	that: { filler: true },
-	has: { filler: true },
-	have: { filler: true },
-	having: { filler: true },
-	at: { filler: true },
-	with: { filler: true },
-	than: { filler: true },
-	or: { filler: true },
-	equal: { filler: true },
-	":": { filler: true },
-	should: { reset: true },
-	expect: { reset: true },
-	expected: { reset: true },
-	be: { expected: 'typeOrClass' },
-	is: { expected: 'typeOrClass' },
-	instance: { expected: 'class', override: { of: { filler: true } } },
-	type: { expected: 'type', override: { of: { filler: true } } },
-	optional: { flag: true },
-	empty: { set: { length: 0 } },
-	after: { expected: 'sanitizer' },
-	sanitize: { expected: 'sanitizer' },
-	sanitizer: { expected: 'sanitizer' },
-	sanitizers: { expected: 'sanitizer' },
-	sanitizing: { expected: 'sanitizer' },
-	least: { expected: 'minValue' },
-	greater: { expected: 'minValue' , needKeyword: 'equal' },
-	">=": { expected: 'minValue' },
-	gte: { expected: 'minValue' },
-	most: { expected: 'maxValue' },
-	"<=": { expected: 'maxValue' },
-	lte: { expected: 'maxValue' },
-	lower: { expected: 'maxValue' , needKeyword: 'equal' },
-	lesser: { expected: 'maxValue' , needKeyword: 'equal' },
-	between: { expected: [ 'minValue', 'maxValue' ] },
-	within: { expected: [ 'minValue', 'maxValue' ] },
-	and: { next: true, restoreOverride: true, restoreExpected: true },
-	',': { next: true, restoreOverride: true, restoreExpected: true },
-	';': { reset: true },
-	'.': { reset: true },
-	length: { expected: 'lengthValue' , override: {
-		of: { filler: true },
-		least: { expected: 'minLengthValue' },
-		most: { expected: 'maxLengthValue' },
-		between: { expected: [ 'minLengthValue' , 'maxLengthValue' ] },
-	} },
-	letter: { minMaxAreLength: true },
-	letters: { minMaxAreLength: true },
-	char: { minMaxAreLength: true },
-	chars: { minMaxAreLength: true },
-	character: { minMaxAreLength: true },
-	characters: { minMaxAreLength: true },
-	of: { expected: 'typeOrClass' , toChild: 'of' },
+	it: { filler: true } ,
+	its: { filler: true } ,
+	a: { filler: true } ,
+	an: { filler: true } ,
+	the: { filler: true } ,
+	to: { filler: true } ,
+	that: { filler: true } ,
+	has: { filler: true } ,
+	have: { filler: true } ,
+	having: { filler: true } ,
+	at: { filler: true } ,
+	with: { filler: true } ,
+	than: { filler: true } ,
+	or: { filler: true } ,
+	equal: { filler: true } ,
+	":": { filler: true } ,
+	should: { reset: true } ,
+	expect: { reset: true } ,
+	expected: { reset: true } ,
+	be: { expected: 'typeOrClass' } ,
+	is: { expected: 'typeOrClass' } ,
+	instance: { expected: 'class' , override: { of: { filler: true } } } ,
+	type: { expected: 'type' , override: { of: { filler: true } } } ,
+	optional: { flag: true } ,
+	empty: { set: { length: 0 } } ,
+	after: { expected: 'sanitizer' } ,
+	sanitize: { expected: 'sanitizer' } ,
+	sanitizer: { expected: 'sanitizer' } ,
+	sanitizers: { expected: 'sanitizer' } ,
+	sanitizing: { expected: 'sanitizer' } ,
+	least: { expected: 'minValue' } ,
+	greater: { expected: 'minValue' , needKeyword: 'equal' } ,
+	">=": { expected: 'minValue' } ,
+	gte: { expected: 'minValue' } ,
+	most: { expected: 'maxValue' } ,
+	"<=": { expected: 'maxValue' } ,
+	lte: { expected: 'maxValue' } ,
+	lower: { expected: 'maxValue' , needKeyword: 'equal' } ,
+	lesser: { expected: 'maxValue' , needKeyword: 'equal' } ,
+	between: { expected: [ 'minValue' , 'maxValue' ] } ,
+	within: { expected: [ 'minValue' , 'maxValue' ] } ,
+	and: { next: true , restoreOverride: true , restoreExpected: true } ,
+	',': { next: true , restoreOverride: true , restoreExpected: true } ,
+	';': { reset: true } ,
+	'.': { reset: true } ,
+	length: { expected: 'lengthValue' ,
+		override: {
+			of: { filler: true } ,
+			least: { expected: 'minLengthValue' } ,
+			most: { expected: 'maxLengthValue' } ,
+			between: { expected: [ 'minLengthValue' , 'maxLengthValue' ] }
+		} } ,
+	letter: { minMaxAreLength: true } ,
+	letters: { minMaxAreLength: true } ,
+	char: { minMaxAreLength: true } ,
+	chars: { minMaxAreLength: true } ,
+	character: { minMaxAreLength: true } ,
+	characters: { minMaxAreLength: true } ,
+	of: { expected: 'typeOrClass' , toChild: 'of' }
 } ;
 
 },{}],6:[function(require,module,exports){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1443,22 +1342,20 @@ module.exports = {
 
 
 //mask( schema , data , criteria )
-function mask( schema , data , criteria )
-{
-	if ( ! schema || typeof schema !== 'object' )
-	{
+function mask( schema , data , criteria ) {
+	if ( ! schema || typeof schema !== 'object' ) {
 		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
-	
+
 	if ( ! criteria || typeof criteria !== 'object' ) { criteria = {} ; }
-	
+
 	var context = {
 		tier: criteria.tier ,
 		tags: criteria.tags ,
 		iterate: iterate ,
 		check: mask.check
 	} ;
-	
+
 	return context.iterate( schema , data ) ;
 }
 
@@ -1466,142 +1363,122 @@ module.exports = mask ;
 
 
 
-function iterate( schema , data_ )
-{
+function iterate( schema , data_ ) {
 	var i , key , data = data_ , src , returnValue , checkValue ;
-	
+
 	if ( ! schema || typeof schema !== 'object' ) { return ; }
-	
+
 	// 0) Arrays are alternatives
-	if ( Array.isArray( schema ) )
-	{
-		for ( i = 0 ; i < schema.length ; i ++ )
-		{
+	if ( Array.isArray( schema ) ) {
+		for ( i = 0 ; i < schema.length ; i ++ ) {
 			try {
 				data = mask( schema[ i ] , data_ ) ;
 			}
 			catch( error ) {
 				continue ;
 			}
-			
+
 			return data ;
 		}
-		
+
 		return ;
 	}
-	
-	
+
+
 	// 1) Mask
 	checkValue = this.check( schema ) ;
-	
+
 	if ( checkValue === false ) { return ; }
 	else if ( checkValue === true ) { return data ; }
 	// if it's undefined, then recursivity can be checked
-	
+
 	// 2) Recursivity
-	
-	if ( schema.of && typeof schema.of === 'object' )
-	{
+
+	if ( schema.of && typeof schema.of === 'object' ) {
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) ) { return data ; }
-		
-		if ( Array.isArray( data ) )
-		{
+
+		if ( Array.isArray( data ) ) {
 			if ( data === data_ ) { data = [] ; src = data_ ; }
 			else { src = data ; }
-			
-			for ( i = 0 ; i < src.length ; i ++ )
-			{
+
+			for ( i = 0 ; i < src.length ; i ++ ) {
 				data[ i ] = this.iterate( schema.of , src[ i ] ) ;
 			}
 		}
-		else
-		{
+		else {
 			if ( data === data_ ) { data = {} ; src = data_ ; }
 			else { src = data ; }
-			
-			for ( key in src )
-			{
+
+			for ( key in src ) {
 				data[ key ] = this.iterate( schema.of , src[ key ] ) ;
 			}
 		}
 	}
-	
-	if ( schema.properties && typeof schema.properties === 'object' )
-	{
+
+	if ( schema.properties && typeof schema.properties === 'object' ) {
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) ) { return data ; }
-		
+
 		if ( data === data_ ) { data = {} ; src = data_ ; }
 		else { src = data ; }
-		
-		if ( Array.isArray( schema.properties ) )
-		{
-			for ( i = 0 ; i < schema.properties.length ; i ++ )
-			{
+
+		if ( Array.isArray( schema.properties ) ) {
+			for ( i = 0 ; i < schema.properties.length ; i ++ ) {
 				key = schema.properties[ i ] ;
 				data[ key ] = src[ key ] ;
 			}
 		}
-		else
-		{
-			for ( key in schema.properties )
-			{
-				if ( ! schema.properties[ key ] || typeof schema.properties[ key ] !== 'object' )
-				{
+		else {
+			for ( key in schema.properties ) {
+				if ( ! schema.properties[ key ] || typeof schema.properties[ key ] !== 'object' ) {
 					continue ;
 				}
-				
+
 				returnValue = this.iterate( schema.properties[ key ] , src[ key ] ) ;
-				
+
 				// Do not create new properties with undefined
 				if ( returnValue !== undefined ) { data[ key ] = returnValue ; }
 			}
 		}
 	}
-	
-	if ( Array.isArray( schema.elements ) )
-	{
+
+	if ( Array.isArray( schema.elements ) ) {
 		if ( ! Array.isArray( data ) ) { return data ; }
-		
+
 		if ( data === data_ ) { data = [] ; src = data_ ; }
 		else { src = data ; }
-		
-		for ( i = 0 ; i < schema.elements.length ; i ++ )
-		{
+
+		for ( i = 0 ; i < schema.elements.length ; i ++ ) {
 			data[ i ] = this.iterate( schema.elements[ i ] , src[ i ] ) ;
 		}
 	}
-	
+
 	return data ;
 }
 
 
 
-mask.check = function maskCheck( schema )
-{
+mask.check = function maskCheck( schema ) {
 	var i , iMax ;
-	
-	if ( this.tier !== undefined )
-	{
+
+	if ( this.tier !== undefined ) {
 		if ( schema.tier === undefined ) { return ; }
-		
+
 		if ( this.tier < schema.tier ) { return false ; }
-		
+
 		return true ;
 	}
-	else if ( this.tags )
-	{
+	else if ( this.tags ) {
 		if ( ! Array.isArray( schema.tags ) || ! schema.tags.length ) { return ; }
-		
+
 		iMax = this.tags.length ;
-		
-		for ( i = 0 ; i < iMax ; i ++ )
-		{
+
+		for ( i = 0 ; i < iMax ; i ++ ) {
 			if ( schema.tags.indexOf( this.tags[ i ] ) !== -1 ) { return true ; }
 		}
-		
+
 		return false ;
 	}
-	
+
 	return ;
 } ;
 
@@ -1611,21 +1488,21 @@ mask.check = function maskCheck( schema )
 (function (global){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1645,7 +1522,9 @@ var toTitleCase = require( 'string-kit/lib/toTitleCase.js' ) ;
 
 
 
-if ( ! global ) { global = window ; }	// jshint ignore:line
+// For browsers...
+if ( ! global ) { global = window ; }	// eslint-disable-line no-global-assign
+
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer ) { global.DOORMEN_GLOBAL_EXTENSIONS.sanitizer = {} ; }
 
@@ -1656,14 +1535,13 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-			/* Cast sanitizers */
+/* Cast sanitizers */
 
 
 
-sanitizer.toString = function toString( data )
-{
+sanitizer.toString = function toString( data ) {
 	if ( typeof data === 'string' ) { return data ; }
-	
+
 	// Calling .toString() may throw an error
 	try {
 		return '' + data ;
@@ -1675,22 +1553,19 @@ sanitizer.toString = function toString( data )
 
 
 
-sanitizer.toNumber = function toNumber( data )
-{
+sanitizer.toNumber = function toNumber( data ) {
 	if ( typeof data === 'number' ) { return data ; }
 	else if ( ! data ) { return NaN ; }
 	else if ( typeof data === 'string' ) { return parseFloat( data ) ; }
-	else { return NaN ; }
+	return NaN ;
 } ;
 
 
 
-sanitizer.toBoolean = function toBoolean( data )
-{
+sanitizer.toBoolean = function toBoolean( data ) {
 	if ( typeof data === 'boolean' ) { return data ; }
-	
-	switch ( data )
-	{
+
+	switch ( data ) {
 		case 1 :
 		case '1' :
 		case 'on' :
@@ -1716,187 +1591,160 @@ sanitizer.toBoolean = function toBoolean( data )
 
 
 
-sanitizer.toInteger = function toInteger( data )
-{
+sanitizer.toInteger = function toInteger( data ) {
 	if ( typeof data === 'number' ) { return Math.round( data ) ; }
 	else if ( ! data ) { return NaN ; }
 	else if ( typeof data === 'string' ) { return Math.round( parseFloat( data ) ) ; }	// parseInt() is more capricious
-	else { return NaN ; }
+	return NaN ;
 } ;
 
 
 
-sanitizer.toArray = function toArray( data )
-{
+sanitizer.toArray = function toArray( data ) {
 	if ( Array.isArray( data ) ) { return data ; }
-	
+
 	if ( data === undefined ) { return [] ; }
-	
-	if ( data && typeof data === 'object' && doormen.typeChecker.arguments( data ) )
-	{
+
+	if ( data && typeof data === 'object' && doormen.typeChecker.arguments( data ) ) {
 		return Array.prototype.slice.call( data ) ;
 	}
-	
+
 	return [ data ] ;
 } ;
 
 
 
-sanitizer.toDate = function toDate( data )
-{
+sanitizer.toDate = function toDate( data ) {
 	var parsed ;
-	
+
 	if ( data instanceof Date ) { return data ; }
-	
-	if ( typeof data === 'number' || typeof data === 'string' || ( data && typeof data === 'object' && data.constructor.name === 'Date' ) )
-	{
+
+	if ( typeof data === 'number' || typeof data === 'string' || ( data && typeof data === 'object' && data.constructor.name === 'Date' ) ) {
 		parsed = new Date( data ) ;
 		return isNaN( parsed ) ? data : parsed ;
 	}
-	
+
 	return data ;
 } ;
 
 
 
-			/* Object sanitizers */
+/* Object sanitizers */
 
 
 
-sanitizer.removeExtraProperties = function( data , schema , clone )
-{
+sanitizer.removeExtraProperties = function( data , schema , clone ) {
 	var i , key , newData ;
-	
+
 	if (
 		! data || ( typeof data !== 'object' && typeof data !== 'function' ) ||
 		! schema.properties || typeof schema.properties !== 'object'
-	)
-	{
+	) {
 		return data ;
 	}
-	
-	if ( clone )
-	{
+
+	if ( clone ) {
 		newData = Array.isArray( data ) ? data.slice() : {} ;
-		
-		if ( Array.isArray( schema.properties ) )
-		{
-			for ( i = 0 ; i < schema.properties.length ; i ++ )
-			{
+
+		if ( Array.isArray( schema.properties ) ) {
+			for ( i = 0 ; i < schema.properties.length ; i ++ ) {
 				key = schema.properties[ i ] ;
 				if ( key in data ) { newData[ key ] = data[ key ] ; }
 			}
 		}
-		else
-		{
-			for ( key in schema.properties )
-			{
+		else {
+			for ( key in schema.properties ) {
 				if ( key in data ) { newData[ key ] = data[ key ] ; }
 			}
 		}
-		
+
 		return newData ;
 	}
-	else
-	{
-		if ( Array.isArray( schema.properties ) )
-		{
-			for ( key in data )
-			{
-				if ( schema.properties.indexOf( key ) === -1 ) { delete data[ key ] ; }
-			}
+
+	if ( Array.isArray( schema.properties ) ) {
+		for ( key in data ) {
+			if ( schema.properties.indexOf( key ) === -1 ) { delete data[ key ] ; }
 		}
-		else
-		{
-			for ( key in data )
-			{
-				if ( ! ( key in schema.properties ) ) { delete data[ key ] ; }
-			}
-		}
-		
-		return data ;
 	}
+	else {
+		for ( key in data ) {
+			if ( ! ( key in schema.properties ) ) { delete data[ key ] ; }
+		}
+	}
+
+	return data ;
+
 } ;
 
 
 
-			/* String sanitizers */
+/* String sanitizers */
 
 
 
-sanitizer.trim = function trim( data )
-{
+sanitizer.trim = function trim( data ) {
 	if ( typeof data === 'string' ) { return data.trim() ; }
-	else { return data ; }
+	return data ;
 } ;
 
 
 
-sanitizer.toUpperCase = function toUpperCase( data )
-{
+sanitizer.toUpperCase = function toUpperCase( data ) {
 	if ( typeof data === 'string' ) { return data.toUpperCase() ; }
-	else { return data ; }
+	return data ;
 } ;
 
 
 
-sanitizer.toLowerCase = function toLowerCase( data )
-{
+sanitizer.toLowerCase = function toLowerCase( data ) {
 	if ( typeof data === 'string' ) { return data.toLowerCase() ; }
-	else { return data ; }
+	return data ;
 } ;
 
 
 
-sanitizer.capitalize = function capitalize( data )
-{
+sanitizer.capitalize = function capitalize( data ) {
 	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizer.capitalize.toTitleCaseOptions ) ; }
-	else { return data ; }
+	return data ;
 } ;
 
 sanitizer.capitalize.toTitleCaseOptions = {} ;
 
 
 
-sanitizer.titleCase = function titleCase( data )
-{
+sanitizer.titleCase = function titleCase( data ) {
 	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizer.titleCase.toTitleCaseOptions ) ; }
-	else { return data ; }
+	return data ;
 } ;
 
 sanitizer.titleCase.toTitleCaseOptions = { zealous: 1 , preserveAllCaps: true } ;
 
 
 
-sanitizer.latinize = function latinize_( data )
-{
+sanitizer.latinize = function latinize_( data ) {
 	if ( typeof data === 'string' ) { return latinize( data ) ; }
-	else { return data ; }
+	return data ;
 } ;
 
 
 
-sanitizer.dashToCamelCase = function dashToCamelCase( data )
-{
+sanitizer.dashToCamelCase = function dashToCamelCase( data ) {
 	if ( typeof data !== 'string' ) { return data ; }
-	
-	return data.replace( /-(.)/g , function( match , letter ) {
-		return letter.toUpperCase();
-	} ) ;
+
+	return data.replace( /-(.)/g , ( match , letter ) => letter.toUpperCase() ) ;
 } ;
 
 
 
-			/* Misc sanitizers */
+/* Misc sanitizers */
 
 
 
 // Convert a string to a MongoDB ObjectID
-sanitizer.mongoId = function mongoId( data )
-{
+sanitizer.mongoId = function mongoId( data ) {
 	if ( typeof data !== 'string' ) { return data ; }
 	if ( doormen.isBrowser ) { return data ; }
-	
+
 	try {
 		var mongodb = require( 'mongodb' ) ;
 		return mongodb.ObjectID( data ) ;
@@ -1910,21 +1758,21 @@ sanitizer.mongoId = function mongoId( data )
 },{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":14,"string-kit/lib/toTitleCase.js":15}],8:[function(require,module,exports){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -1947,12 +1795,14 @@ var singleSchema = {
 		optional: { optional: true , type: 'boolean' } ,
 		extraProperties: { optional: true , type: 'boolean' } ,
 		default: { optional: true } ,
-		sanitize: { optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' } } ,
+		sanitize: {
+			optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' }
+		} ,
 		filter: { optional: true , type: 'strictObject' } ,
-		
+
 		tier: { optional: true , type: 'integer' } ,
 		tags: { optional: true , type: 'array' , of: { type: 'string' } } ,
-		
+
 		// Top-level filters
 		instanceOf: { optional: true , type: 'classId' } ,
 		min: { optional: true , type: 'integer' } ,
@@ -1979,23 +1829,23 @@ var singleSchema = {
 				clone: { optional: true , type: 'boolean' }
 			}
 		} ,
-		
+
 		// Commons
 		hooks: {
-			optional: true,
-			type: 'strictObject',
+			optional: true ,
+			type: 'strictObject' ,
 			of: {
-				type: 'array',
-				sanitize: 'toArray',
+				type: 'array' ,
+				sanitize: 'toArray' ,
 				of: { type: 'function' }
 			}
-		},
-	} ,
+		}
+	}
 } ;
 
 var schemaSchema = [
 	singleSchema ,
-	{ type: 'array', of: singleSchema }
+	{ type: 'array' , of: singleSchema }
 ] ;
 
 var ifSchema = {
@@ -2020,20 +1870,20 @@ singleSchema.properties.if = [
 
 singleSchema.properties.properties = [
 	{
-		optional: true,
-		type: 'strictObject',
+		optional: true ,
+		type: 'strictObject' ,
 		of: schemaSchema
 	} ,
 	{
-		optional: true,
-		type: 'array',
+		optional: true ,
+		type: 'array' ,
 		of: { type: 'string' }
 	}
 ] ;
 
 singleSchema.properties.elements = {
-	optional: true,
-	type: 'array',
+	optional: true ,
+	type: 'array' ,
 	of: schemaSchema
 } ;
 
@@ -2049,21 +1899,21 @@ module.exports = schemaSchema ;
 },{}],9:[function(require,module,exports){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2081,37 +1931,37 @@ var doormen = require( './doormen.js' ) ;
 
 
 
-function sentence( str )
-{
+// Useful?
+
+function sentence( str ) {
 	var i , word , wordList , expected , lastExpected , schema , pointer , stack , nextActions ,
 		keywordsOverride , noOverride , lastOverride ,
 		needKeyword , needKeywordFor ;
-	
+
 	wordList = str.split( / +|(?=[,;.:])/ ) ;
 	//console.log( wordList ) ;
-	
+
 	schema = {} ;
 	pointer = schema ;
 	stack = [ schema ] ;
-	
+
 	nextActions = [] ;
 	noOverride = {} ;
 	keywordsOverride = lastOverride = noOverride ;
-	
+
 	lastExpected = null ;
 	expected = [ 'typeOrClass' ] ;
-	
+
 	needKeyword = null ;
 	needKeywordFor = null ;
-	
-	
-	
-	var applyAction = function applyAction( action , word ) {
-	
+
+
+
+	var applyAction = function applyAction( action , word_ ) {
+
 		var key ;
-		
-		if ( action.reset )
-		{
+
+		if ( action.reset ) {
 			nextActions = [] ;
 			keywordsOverride = lastOverride = noOverride ;
 			lastExpected = null ;
@@ -2119,79 +1969,69 @@ function sentence( str )
 			needKeyword = null ;
 			needKeywordFor = null ;
 		}
-		
-		if ( action.toChild )
-		{
+
+		if ( action.toChild ) {
 			pointer[ action.toChild ] = {} ;
 			stack.push( pointer[ action.toChild ] ) ;
 			pointer = pointer[ action.toChild ] ;
 		}
-		
-		if ( action.expected )
-		{
+
+		if ( action.expected ) {
 			expected = Array.isArray( action.expected ) ? action.expected.slice() : [ action.expected ] ;
 			needKeyword = null ;
 		}
-		
-		if ( action.needKeyword ) { needKeyword = action.needKeyword ; needKeywordFor = word ; }
-		else if ( needKeyword && needKeyword === word ) { needKeyword = null ; needKeywordFor = null ; }
-		
-		if ( action.set )
-		{
+
+		if ( action.needKeyword ) { needKeyword = action.needKeyword ; needKeywordFor = word_ ; }
+		else if ( needKeyword && needKeyword === word_ ) { needKeyword = null ; needKeywordFor = null ; }
+
+		if ( action.set ) {
 			for ( key in action.set ) { pointer[ key ] = action.set[ key ] ; }
 		}
-		
+
 		if ( action.flag ) { pointer[ action.flag ] = true ; }
-		
+
 		if ( action.override ) { keywordsOverride = action.override ; }
-		
+
 		if ( action.restoreOverride ) { keywordsOverride = lastOverride ; }
-		
+
 		if ( action.restoreExpected && ! expected.length ) { expected.unshift( lastExpected ) ; }
-		
+
 		if ( action.nextActions ) { nextActions = action.nextActions.slice() ; }
-		
-		if ( action.minMaxAreLength )
-		{
+
+		if ( action.minMaxAreLength ) {
 			if ( 'min' in pointer ) { pointer.minLength = pointer.min ; delete pointer.min ; }
 			if ( 'max' in pointer ) { pointer.maxLength = pointer.max ; delete pointer.max ; }
 		}
-		
+
 		if ( action.next && nextActions.length ) { applyAction( nextActions.shift() ) ; }
 	} ;
-	
-	
-	
-	for ( i = 0 ; i < wordList.length ; i ++ )
-	{
+
+
+
+	for ( i = 0 ; i < wordList.length ; i ++ ) {
 		word = wordList[ i ] ;
 		//console.log( 'word:' , word , '- expected:' , expected ) ;
-		
-		if ( keywordsOverride[ word ] || doormen.keywords[ word ] )
-		{
+
+		if ( keywordsOverride[ word ] || doormen.keywords[ word ] ) {
 			applyAction( keywordsOverride[ word ] || doormen.keywords[ word ] , word ) ;
 		}
-		else if ( ! expected.length )
-		{
+		else if ( ! expected.length ) {
 			throw new Error(
 				"Can't understand the word #" + i + " '" + word + "'" +
 				( i > 0 ? ", just after '" + wordList[ i - 1 ] + "'" : '' ) +
 				", in the sentence '" + str + "'."
 			) ;
 		}
-		else if ( needKeyword )
-		{
+		else if ( needKeyword ) {
 			throw new Error(
 				"Keyword '" + needKeyword + "' is required after keyword '" + needKeywordFor + "'" +
 				", in the sentence '" + str + "'."
 			) ;
 		}
-		else
-		{
+		else {
 			word = doormen.sanitizer.dashToCamelCase( word ) ;
-			
-			switch ( expected[ 0 ] )
-			{
+
+			switch ( expected[ 0 ] ) {
 				case 'type' :
 					pointer.type = word ;
 					break ;
@@ -2229,30 +2069,27 @@ function sentence( str )
 				case 'elements' :
 					break ;
 				case 'default' :
-					pointer.default = 
+					pointer.default =
 					expected = null ;
 					break ;
 				*/
 			}
-			
+
 			lastExpected = expected.shift() ;
 			//expected = null ;
-			
-			if ( ! nextActions.length )
-			{
-				if ( keywordsOverride !== noOverride )
-				{
+
+			if ( ! nextActions.length ) {
+				if ( keywordsOverride !== noOverride ) {
 					lastOverride = keywordsOverride ;
 					keywordsOverride = noOverride ;
 				}
-				else
-				{
+				else {
 					lastOverride = noOverride ;
 				}
 			}
 		}
 	}
-	
+
 	return schema ;
 }
 
@@ -2266,21 +2103,21 @@ module.exports = sentence ;
 (function (global,Buffer){
 /*
 	Doormen
-	
-	Copyright (c) 2015 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2294,7 +2131,9 @@ module.exports = sentence ;
 
 
 
-if ( ! global ) { global = window ; }	// jshint ignore:line
+// For browsers...
+if ( ! global ) { global = window ; }	// eslint-disable-line no-global-assign
+
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker ) { global.DOORMEN_GLOBAL_EXTENSIONS.typeChecker = {} ; }
 
@@ -2321,8 +2160,7 @@ typeChecker.error = function( data ) { return data instanceof Error ; } ;
 typeChecker.date = function( data ) { return data instanceof Date ; } ;
 typeChecker.arguments = function( data ) { return Object.prototype.toString.call( data ) === '[object Arguments]' ; } ;
 
-typeChecker.buffer = function( data )
-{
+typeChecker.buffer = function( data ) {
 	try {
 		// If we run in a browser, this does not exist
 		return data instanceof Buffer ;
@@ -2337,11 +2175,10 @@ typeChecker.strictObject = function( data ) { return data && typeof data === 'ob
 typeChecker.classId = function( data ) { return typeof data === 'function' || ( typeof data === 'string' && data.length ) ; } ;
 typeChecker.unset = function( data ) { return data === undefined || data === null ; } ;
 
-typeChecker.regexp = function( data )
-{
+typeChecker.regexp = function( data ) {
 	if ( data instanceof RegExp ) { return true ; }
 	if ( typeof data !== 'string' ) { return false ; }
-	
+
 	try {
 		new RegExp( data ) ;
 		return true ;
@@ -2353,15 +2190,14 @@ typeChecker.regexp = function( data )
 
 
 
-typeChecker.schema = function checkSchema( data )
-{
+typeChecker.schema = function checkSchema( data ) {
 	try {
 		doormen.validateSchema( data ) ;
 	}
 	catch ( error ) {
 		return false ;
 	}
-	
+
 	return true ;
 } ;
 
@@ -2373,162 +2209,144 @@ typeChecker.integer = function checkInteger( data ) { return typeof data === 'nu
 
 
 
-typeChecker.hex = function checkHex( data )
-{
+typeChecker.hex = function checkHex( data ) {
 	return typeof data === 'string' && /^[0-9a-fA-F]+$/.test( data ) ;
 } ;
 
 
 
 // IP
-typeChecker.ip = function checkIp( data )
-{
+typeChecker.ip = function checkIp( data ) {
 	return typeChecker.ipv4( data ) || typeChecker.ipv6( data ) ;
 } ;
 
 
 
 // IPv4
-typeChecker.ipv4 = function checkIpv4( data , skipRegExp )
-{
+typeChecker.ipv4 = function checkIpv4( data , skipRegExp ) {
 	var i , parts , tmp ;
-	
+
 	if ( typeof data !== 'string' ) { return false ; }
-	
+
 	if ( ! skipRegExp && ! /^[0-9.]+$/.test( data ) ) { return false ; }
-	
+
 	parts = data.split( '.' ) ;
-	
+
 	if ( parts.length !== 4 ) { return false ; }
-	
-	for ( i = 0 ; i < parts.length ; i ++ )
-	{
+
+	for ( i = 0 ; i < parts.length ; i ++ ) {
 		if ( ! parts[ i ].length || parts[ i ].length > 3 ) { return false ; }
-		
+
 		tmp = parseInt( parts[ i ] , 10 ) ;
-		
+
 		// NaN compliant check
 		if ( ! ( tmp >= 0 && tmp <= 255 ) ) { return false ; }	// jshint ignore:line
 	}
-	
+
 	return true ;
 } ;
 
 
 
 // IPv6
-typeChecker.ipv6 = function checkIpv6( data , skipRegExp )
-{
+typeChecker.ipv6 = function checkIpv6( data , skipRegExp ) {
 	var i , parts , hasDoubleColon = false , startWithDoubleColon = false , endWithDoubleColon = false ;
-	
+
 	if ( typeof data !== 'string' ) { return false ; }
-	
+
 	if ( ! skipRegExp && ! /^[0-9a-f:]+$/.test( data ) ) { return false ; }
-	
+
 	parts = data.split( ':' ) ;
-	
+
 	// 9 instead of 8 because of starting double-colon
 	if ( parts.length > 9 && parts.length < 3 ) { return false ; }
-	
-	for ( i = 0 ; i < parts.length ; i ++ )
-	{
-		if ( ! parts[ i ].length )
-		{
-			if ( i === 0 )
-			{
+
+	for ( i = 0 ; i < parts.length ; i ++ ) {
+		if ( ! parts[ i ].length ) {
+			if ( i === 0 ) {
 				// an IPv6 can start with a double-colon, but not with a single colon
 				startWithDoubleColon = true ;
 				if ( parts[ 1 ].length ) { return false ; }
 			}
-			else if ( i === parts.length - 1 )
-			{
+			else if ( i === parts.length - 1 ) {
 				// an IPv6 can end with a double-colon, but with a single colon
 				endWithDoubleColon = true ;
 				if ( parts[ i - 1 ].length ) { return false ; }
 			}
-			else
-			{
+			else {
 				// the whole IP should have at most one double-colon, for consecutive 0 group
 				if ( hasDoubleColon ) { return false ; }
 				hasDoubleColon = true ;
 			}
 		}
-		else if ( parts[ i ].length > 4 )
-		{
+		else if ( parts[ i ].length > 4 ) {
 			// a group has at most 4 letters of hexadecimal
 			return false ;
 		}
 	}
-	
+
 	if ( parts.length < 8 && ! hasDoubleColon ) { return false ; }
 	if ( parts.length - ( startWithDoubleColon ? 1 : 0 ) - ( endWithDoubleColon ? 1 : 0 ) > 8 ) { return false ; }
-	
+
 	return true ;
 } ;
 
 
 
-typeChecker.hostname = function checkHostname( data , skipRegExp )
-{
+typeChecker.hostname = function checkHostname( data , skipRegExp ) {
 	var i , parts ;
-	
+
 	if ( typeof data !== 'string' ) { return false ; }
-	
-	if ( ! skipRegExp && ! /^[^\s\/$?#@:]+$/.test( data ) ) { return false ; }
-	
+
+	if ( ! skipRegExp && ! /^[^\s/$?#@:]+$/.test( data ) ) { return false ; }
+
 	parts = data.split( '.' ) ;
-	
-	for ( i = 0 ; i < parts.length ; i ++ )
-	{
+
+	for ( i = 0 ; i < parts.length ; i ++ ) {
 		// An hostname can have a '.' after the TLD, but it should not have empty part anywhere else
 		if ( ! parts[ i ].length && i !== parts.length - 1 ) { return false ; }
-		
+
 		// A part cannot exceed 63 chars
 		if ( parts[ i ].length > 63 ) { return false ; }
 	}
-	
+
 	return true ;
 } ;
 
 
 
 // hostname or ip
-typeChecker.host = function checkHost( data )
-{
+typeChecker.host = function checkHost( data ) {
 	return typeChecker.ip( data ) || typeChecker.hostname( data ) ;
 } ;
 
 
 
 // URLs
-typeChecker.url = function checkUrl( data , restrictToWebUrl )
-{
+typeChecker.url = function checkUrl( data , restrictToWebUrl ) {
 	if ( typeof data !== 'string' ) { return false ; }
-	
-	var matches = data.match( /^([a-z+.-]+):\/\/((?:([^\s@\/:]+)(?::([^\s@\/:]+))?@)?(([0-9.]+)|([0-9a-f:]+)|([^\s\/$?#@:]+))(:[0-9]+)?)?(\/[^\s]*)?$/ ) ;
-	
+
+	var matches = data.match( /^([a-z+.-]+):\/\/((?:([^\s@/:]+)(?::([^\s@/:]+))?@)?(([0-9.]+)|([0-9a-f:]+)|([^\s/$?#@:]+))(:[0-9]+)?)?(\/[^\s]*)?$/ ) ;
+
 	if ( ! matches ) { return false ; }
-	
+
 	// If we only want http, https and ftp...
 	if ( restrictToWebUrl && matches[ 1 ] !== 'http' &&  matches[ 1 ] !== 'https' && matches[ 1 ] !== 'ftp' ) { return false ; }
-	
+
 	if ( ! matches[ 2 ] && matches[ 1 ] !== 'file' ) { return false ; }
-	
-	if ( matches[ 6 ] )
-	{
+
+	if ( matches[ 6 ] ) {
 		if ( ! typeChecker.ipv4( matches[ 6 ] , true ) ) { return false ; }
 	}
-	
-	if ( matches[ 7 ] )
-	{
+
+	if ( matches[ 7 ] ) {
 		if ( ! typeChecker.ipv6( matches[ 7 ] , true ) ) { return false ; }
 	}
-	
-	if ( matches[ 8 ] )
-	{
+
+	if ( matches[ 8 ] ) {
 		if ( ! typeChecker.hostname( matches[ 8 ] , true ) ) { return false ; }
 	}
-	
+
 	return true ;
 } ;
 
@@ -2537,48 +2355,44 @@ typeChecker.weburl = function checkWeburl( data ) { return typeChecker.url( data
 
 
 // Emails
-typeChecker.email = function checkEmail( data )
-{
+typeChecker.email = function checkEmail( data ) {
 	var matches , i , parts ;
-	
+
 	if ( typeof data !== 'string' ) { return false ; }
-	
+
 	if ( data.length > 254 ) { return false ; }
-	
+
 	// It only matches the most common email address
 	//var matches = data.match( /^([a-z0-9._-]+)@([^\s\/$?#.][^\s\/$?#@:]+)$/ ) ;
-	
+
 	// It matches most email address, and reject really bizarre one
-	matches = data.match( /^([a-zA-Z0-9._#~!$&*+=,;:\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF-]+)@([^\s\/$?#@:]+)$/ ) ;
-	
+	matches = data.match( /^([a-zA-Z0-9._#~!$&*+=,;:\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF-]+)@([^\s/$?#@:]+)$/ ) ;
+
 	// /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i
-	
+
 	if ( ! matches ) { return false ; }
-	
+
 	if ( matches[ 1 ].length > 64 ) { return false ; }
-	
+
 	parts = matches[ 1 ].split( '.' ) ;
-	
-	for ( i = 0 ; i < parts.length ; i ++ )
-	{
+
+	for ( i = 0 ; i < parts.length ; i ++ ) {
 		if ( ! parts[ i ].length ) { return false ; }
 	}
-	
+
 	if ( ! typeChecker.hostname( matches[ 2 ] , true ) ) { return false ; }
-	
+
 	return true ;
 } ;
 
 
 
 // MongoDB ObjectID
-typeChecker.mongoId = function mongoId( data )
-{
-	if ( data && typeof data === 'object' && data.constructor.name === 'ObjectID' && data.id && typeof data.toString === 'function' )
-	{
+typeChecker.mongoId = function mongoId( data ) {
+	if ( data && typeof data === 'object' && data.constructor.name === 'ObjectID' && data.id && typeof data.toString === 'function' ) {
 		data = data.toString() ;
 	}
-	
+
 	return typeof data === 'string' && data.length === 24 && /^[0-9a-f]{24}$/.test( data ) ;
 } ;
 
