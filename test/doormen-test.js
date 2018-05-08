@@ -1922,7 +1922,7 @@ describe( "Sanitize + Patch reporting" , function() {
 
 describe( "Full report mode" , function() {
 	
-	it( "should return an object with all containing weither it valid or not, the sanitized data, and an array of errors" , function() {
+	it( "should return an object with all contained data weither it validates or not, the sanitized data, and an array of errors" , function() {
 		
 		var report , schema ;
 		
@@ -2580,9 +2580,8 @@ describe( "Expect assertion library" , function() {
 	
 	it( "expect a value to be strictly equal" , function() {
 		console.log( doormen.expect( 'bob' ) ) ;
-		console.log( doormen.expect( 'bob' ).test ) ;
-		doormen.expect( "bob" )() ;
-		//doormen.expect( "bob" ).to.be( "bob" ) ;
+		doormen.expect( "bob" ).to.be( "bob" ) ;
+		doormen.expect( "bob" ).to.be( "bobby" ) ;
 	} ) ;
 } ) ;
 
