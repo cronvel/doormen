@@ -44,8 +44,7 @@ clean: clean-all
 
 # Variables
 
-MOCHA=./node_modules/.bin/mocha -c
-JSHINT=./node_modules/.bin/jshint --verbose
+MOCHA=mocha -c
 BROWSERIFY=./node_modules/.bin/browserify
 UGLIFY=./node_modules/.bin/uglifyjs
 

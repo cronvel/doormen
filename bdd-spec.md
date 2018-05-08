@@ -25,6 +25,7 @@ WARNING: MongoDB module not found, the end of the test is skipped.
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
+   - [Expect assertion library](#expect-assertion-library)
    - [Path in the schema](#path-in-the-schema)
    - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
@@ -226,6 +227,8 @@ buf2 = Buffer.allocUnsafe( 80 ) ;
 for ( i = 0 ; i < 80 ; i ++ ) { buf[ i ] = i ; }
 buf.copy( buf2 ) ;
 doormen.equals( buf , buf2 ) ;
+buf2[ 4 ] = 117 ;
+doormen.not.equals( buf , buf2 ) ;
 ```
 
 <a name="basic-types"></a>
@@ -1980,7 +1983,7 @@ doormen.equals( patch , { "a": "toto" , "sub.sub.c": "weee!" } ) ;
 
 <a name="full-report-mode"></a>
 # Full report mode
-should return an object with all containing weither it valid or not, the sanitized data, and an array of errors.
+should return an object with all contained data weither it validates or not, the sanitized data, and an array of errors.
 
 ```js
 var report , schema ;
@@ -2614,6 +2617,25 @@ doormen( 'should be an empty array' , [] ) ;
 doormen( 'should be an empty Array' , [] ) ;
 doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
 doormen( 'should be an array' , [ 1,2,3 ] ) ;
+```
+
+<a name="expect-assertion-library"></a>
+# Expect assertion library
+expect a value to be strictly equal.
+
+```js
+doormen.expect( "bob" ).to.be( "bob" ) ;
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.be( "bobby" ) ) ;
+doormen.expect( NaN ).to.be( NaN ) ;
+```
+
+expect a value to be of a type.
+
+```js
+doormen.expect( "bob" ).to.be.a( 'string' ) ;
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.a( 'number' ) ) ;
+doormen.expect( "http://soulserv.net" ).to.be.an( 'url' ) ;
+doormen.shouldThrow( () => doormen.expect( "soulserv.net" ).to.be.an( 'url' ) ) ;
 ```
 
 <a name="path-in-the-schema"></a>

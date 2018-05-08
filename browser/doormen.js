@@ -28,12 +28,438 @@
 "use strict" ;
 
 
+function AssertionError( message , from , actual , expected , showDiff ) {
+	this.message = message ;
+
+	from = from || AssertionError ;
+
+	// This will make Mocha and Tea-Time show the diff:
+	this.actual = actual ;
+	this.expected = expected ;
+	this.showDiff = showDiff ;
+
+	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+}
+
+module.exports = AssertionError ;
+
+AssertionError.prototype = Object.create( TypeError.prototype ) ;
+AssertionError.prototype.constructor = AssertionError ;
+AssertionError.prototype.name = 'AssertionError' ;
+
+
+},{}],2:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+function SchemaError( message ) {
+	this.message = message ;
+
+	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , SchemaError ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+}
+
+module.exports = SchemaError ;
+
+SchemaError.prototype = Object.create( TypeError.prototype ) ;
+SchemaError.prototype.constructor = SchemaError ;
+SchemaError.prototype.name = 'SchemaError' ;
+
+
+},{}],3:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+function ValidatorError( message , element ) {
+	this.message = message ;
+
+	if ( element ) { this.at = this.path = element.path ; }
+
+	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+}
+
+module.exports = ValidatorError ;
+
+ValidatorError.prototype = Object.create( TypeError.prototype ) ;
+ValidatorError.prototype.constructor = ValidatorError ;
+ValidatorError.prototype.name = 'ValidatorError' ;
+
+
+},{}],4:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+var AssertionError = require( './AssertionError.js' ) ;
+var isEqual = require( './isEqual.js' ) ;
+var typeChecker = require( './typeChecker.js' ) ;
+
+
+
+var assert = {} ;
+module.exports = assert ;
+
+
+
+// Truthy
+assert.ok =
+assert['to be ok'] =
+assert.truthy =
+assert['to be truthy'] =
+assert.toBeTruthy = function toBeTruthy( from , actual ) {
+	if ( ! actual ) {
+		throw new AssertionError( 'Not truthy!' , from , actual ) ;
+	}
+} ;
+
+
+
+assert.nok =
+assert['to be not ok'] =
+assert['to not be ok'] =
+assert['not to be ok'] =
+assert.falsy =
+assert['to be falsy'] =
+assert['not to be truthy'] =
+assert['to not be truthy'] =
+assert.toBeFalsy = function toBeFalsy( from , actual ) {
+	if ( actual ) {
+		throw new AssertionError( 'Not falsy!' , from , actual ) ;
+	}
+} ;
+
+
+
+// identical
+assert['to be'] =
+assert.toBe = function toBe( from , actual , expected ) {
+	if ( actual !== expected && ! ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
+		throw new AssertionError( 'Not identical!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Not identical
+assert['to not be'] =
+assert['not to be'] =
+assert['to be not'] =
+assert.notToBe = function notToBe( from , actual , expected ) {
+	if ( actual === expected || ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
+		throw new AssertionError( 'Not not identical!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Equal (but not identical)
+assert['to be equal to'] =
+assert['to equal'] =
+assert['to eql'] =		// compatibility with expect.js
+assert.toEqual = function toEqual( from , actual , expected ) {
+	if ( ! isEqual( actual , expected ) ) {
+		throw new AssertionError( 'Not equals!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Not equal
+assert['to be not equal to'] =
+assert['to not be equal to'] =
+assert['not to be equal to'] =
+assert['to not equal'] =
+assert['not to equal'] =
+assert['to not eql'] =		// compatibility with expect.js
+assert['not to eql'] =		// compatibility with expect.js
+assert.notToEqual = function notToEqual( from , actual , expected ) {
+	if ( isEqual( actual , expected ) ) {
+		throw new AssertionError( 'Not not equals!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Like
+assert['to be like'] =
+assert['to be alike'] =
+assert['to be alike to'] =
+assert.toBeLike = function toBeLike( from , actual , expected ) {
+	if ( ! isEqual( actual , expected , true ) ) {
+		throw new AssertionError( 'Not like!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Not like
+assert['to be not like'] =
+assert['to not be like'] =
+assert['not to be like'] =
+assert['to be not alike'] =
+assert['to not be alike'] =
+assert['not to be alike'] =
+assert['to be not alike to'] =
+assert['to not be alike to'] =
+assert['not to be alike to'] =
+assert.notToBeLike = function notToBeLike( from , actual , expected ) {
+	if ( isEqual( actual , expected , true ) ) {
+		throw new AssertionError( 'Not not like!' , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Type or instance
+assert['to be a'] =
+assert['to be an'] =
+assert.toBeA = function toBeA( from , actual , expected ) {
+	if ( typeof expected === 'string' ) {
+		return assert.typeOf( from , actual , expected ) ;
+	}
+
+	return assert.instanceOf( from , actual , expected ) ;
+} ;
+
+
+
+// Not type or instance
+assert['to be not a'] =
+assert['to not be a'] =
+assert['not to be a'] =
+assert['to be not an'] =
+assert['to not be an'] =
+assert['not to be an'] =
+assert.notToBeA = function notToBeA( from , actual , expected ) {
+	if ( typeof expected === 'string' ) {
+		return assert.notTypeOf( from , actual , expected ) ;
+	}
+
+	return assert.notInstanceOf( from , actual , expected ) ;
+} ;
+
+
+
+// Type
+assert['to be of type'] =
+assert.typeOf = function typeOf( from , actual , expected ) {
+	if ( ! typeChecker[ expected ] ) {
+		throw new Error( "Unknown type '" + expected + "'." ) ;
+	}
+
+	if ( ! typeChecker[ expected ]( actual ) ) {
+		throw new AssertionError( "Expecting type '" + expected + "'." , from , actual ) ;
+	}
+} ;
+
+
+
+// Not type
+assert['to be not of type'] =
+assert['to not be of type'] =
+assert['not to be of type'] =
+assert.notTypeOf = function notTypeOf( from , actual , expected ) {
+	if ( ! typeChecker[ expected ] ) {
+		throw new Error( "Unknown type '" + expected + "'." ) ;
+	}
+
+	if ( typeChecker[ expected ]( actual ) ) {
+		throw new AssertionError( "Not expecting type '" + expected + "'." , from , actual ) ;
+	}
+} ;
+
+
+
+// Instance
+assert['to be an instance of'] =
+assert.instanceOf = function instanceOf( from , actual , expected ) {
+	if ( ! ( actual instanceof expected ) ) {
+		throw new AssertionError( "Expecting an instance of '" + expected + "'." , from , actual ) ;
+	}
+} ;
+
+
+
+// Not instance
+assert['to be not an instance of'] =
+assert['to not be an instance of'] =
+assert['not to be an instance of'] =
+assert.notInstanceOf = function notInstanceOf( from , actual , expected ) {
+	if ( ! ( actual instanceof expected ) ) {
+		throw new AssertionError( "Not expecting an instance of '" + expected + "'." , from , actual ) ;
+	}
+} ;
+
+
+
+// String regexp match
+assert['to match'] =
+assert.match = function match( from , actual , expected ) {
+	if ( typeof actual !== 'string' ) {
+		throw new AssertionError( "Not a string!" , from , actual ) ;
+	}
+
+	if ( ! actual.match( expected ) ) {
+		throw new AssertionError( "Not matching!" , from , actual ) ;
+	}
+} ;
+
+
+
+// Not string regexp match
+assert['to not match'] =
+assert['not to match'] =
+assert.notMatch = function notMatch( from , actual , expected ) {
+	if ( typeof actual !== 'string' ) {
+		throw new AssertionError( "Not a string!" , from , actual ) ;
+	}
+
+	if ( actual.match( expected ) ) {
+		throw new AssertionError( "Not not matching!" , from , actual ) ;
+	}
+} ;
+
+/*
+	Remaining expect.js
+
+	contain (indexOf array/string)
+	length
+	empty
+	property
+	key/keys
+	only keys
+	to throw / not to throw
+	greater than/gt/gte/above
+	lesser than/lt/lte/below
+	within
+	withArgs (function)
+	fail??? useful???
+
+
+	Doormen specific:
+
+	to validate
+*/
+
+
+},{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15}],5:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
 
 // Load doormen.js, export it, and set isBrowser to true
 module.exports = require( './doormen.js' ) ;
 module.exports.isBrowser = true ;
 
-},{"./doormen.js":2}],2:[function(require,module,exports){
+},{"./doormen.js":6}],6:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -140,9 +566,15 @@ doormen.export = doormen.bind( doormen , { export: true } ) ;
 
 
 // Submodules
+doormen.AssertionError = require( './AssertionError.js' ) ;
+doormen.ValidatorError = require( './ValidatorError.js' ) ;
+doormen.SchemaError = require( './SchemaError.js' ) ;
+
 doormen.isEqual = require( './isEqual.js' ) ;
 doormen.mask = require( './mask.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
+doormen.assert = require( './assert.js' ) ;
+doormen.expect = require( './expect.js' ) ;
 doormen.sentence = require( './sentence.js' ) ;
 doormen.schemaSchema = require( './schemaSchema.js' ) ;
 
@@ -698,33 +1130,6 @@ function validatorError( message , element ) {
 	}
 }
 
-doormen.ValidatorError = function ValidatorError( message , element ) {
-	this.message = message ;
-
-	if ( element ) { this.at = this.path = element.path ; }
-
-	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
-} ;
-
-doormen.ValidatorError.prototype = Object.create( TypeError.prototype ) ;
-doormen.ValidatorError.prototype.constructor = doormen.ValidatorError ;
-doormen.ValidatorError.prototype.name = 'ValidatorError' ;
-
-
-
-doormen.SchemaError = function SchemaError( message ) {
-	this.message = message ;
-
-	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , SchemaError ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
-} ;
-
-doormen.SchemaError.prototype = Object.create( TypeError.prototype ) ;
-doormen.SchemaError.prototype.constructor = doormen.SchemaError ;
-doormen.SchemaError.prototype.name = 'SchemaError' ;
-
-
 
 
 
@@ -763,14 +1168,15 @@ doormen.setClientMode = function setClientMode( clientMode ) { doormen.clientMod
 
 
 
-doormen.shouldThrow = function shouldThrow( fn ) {
+doormen.shouldThrow = function shouldThrow( fn , from ) {
 	var thrown = false ;
+	from = from || shouldThrow ;
 
 	try { fn() ; }
 	catch ( error ) { thrown = true ; }
 
 	if ( ! thrown ) {
-		throw new Error( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown." ) ;
+		throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown." , from ) ;
 	}
 } ;
 
@@ -780,7 +1186,7 @@ doormen.shouldThrow = function shouldThrow( fn ) {
 doormen.not = function not( ... args ) {
 	doormen.shouldThrow( () => {
 		doormen( ... args ) ;
-	} ) ;
+	} , not ) ;
 } ;
 
 
@@ -789,7 +1195,7 @@ doormen.not = function not( ... args ) {
 doormen.patch.not = function patchNot( ... args ) {
 	doormen.shouldThrow( () => {
 		doormen.patch( ... args ) ;
-	} ) ;
+	} , patchNot ) ;
 } ;
 
 
@@ -798,14 +1204,7 @@ doormen.equals = function equals( left , right ) {
 	var error ;
 
 	if ( ! doormen.isEqual( left , right ) ) {
-		error = new doormen.ValidatorError( 'should have been equal' ) ;
-
-		// This will make Mocha and Tea-Time show the diff:
-		error.actual = left ;
-		error.expected = right ;
-		error.showDiff = true ;
-
-		throw error ;
+		throw new doormen.AssertionError( 'should have been equal' , equals , left , right , true ) ;
 	}
 } ;
 
@@ -813,7 +1212,7 @@ doormen.equals = function equals( left , right ) {
 
 // Inverse of equals
 doormen.not.equals = function notEquals( left , right ) {
-	if ( doormen.isEqual( left , right ) ) { throw new doormen.ValidatorError( 'should not have been equal' ) ; }
+	if ( doormen.isEqual( left , right ) ) { throw new doormen.AssertionError( 'should not have been equal' , notEquals , left , right , true ) ; }
 } ;
 
 
@@ -822,14 +1221,7 @@ doormen.alike = function alike( left , right ) {
 	var error ;
 
 	if ( ! doormen.isEqual( left , right , true ) ) {
-		error = new doormen.ValidatorError( 'should have been alike' ) ;
-
-		// This will make Mocha and Tea-Time show the diff:
-		error.actual = left ;
-		error.expected = right ;
-		error.showDiff = true ;
-
-		throw error ;
+		throw new doormen.AssertionError( 'should have been alike' , alike , left , right , true ) ;
 	}
 } ;
 
@@ -837,13 +1229,112 @@ doormen.alike = function alike( left , right ) {
 
 // Inverse of alike
 doormen.not.alike = function notAlike( left , right ) {
-	if ( doormen.isEqual( left , right , true ) ) { throw new doormen.ValidatorError( 'should not have been alike' ) ; }
+	if ( doormen.isEqual( left , right , true ) ) { throw new doormen.AssertionError( 'should not have been alike' , notAlike , left , right , true ) ; }
 } ;
 
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./filter.js":3,"./isEqual.js":4,"./keywords.js":5,"./mask.js":6,"./sanitizer.js":7,"./schemaSchema.js":8,"./sentence.js":9,"./typeChecker.js":10,"tree-kit/lib/clone.js":16}],3:[function(require,module,exports){
+},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":21}],7:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+var AssertionError = require( './AssertionError.js' ) ;
+var assert = require( './assert.js' ) ;
+
+
+
+function Expect( value , comparison , ... args ) {
+
+	// Direct usage, e.g.: expect( actual , "to equal" , expected )
+	if ( comparison ) {
+		if ( ! assert[ comparison ] ) {
+			throw new Error( "Unknown comparison '" + comparison + "'." ) ;
+		}
+
+		return assert[ comparison ]( Expect , value , ... args ) ;
+	}
+
+	// Sadly, Proxy are not callable on regular object, so the target has to be a function.
+	// The name is purposedly the same.
+	var assertion = function Expect() {} ;	// eslint-disable-line no-shadow
+	assertion.value = value ;
+	assertion.comparison = null ;
+
+	return new Proxy( assertion , handler ) ;
+}
+
+module.exports = Expect ;
+
+
+
+Expect.prototype.inspect = function() { return this ; } ;
+Expect.prototype.toString = function() { return '' + this ; } ;
+
+
+
+var handler = {
+	get: ( target , property , receiver ) => {
+		//console.error( "Getting:" , property ) ;
+
+		if ( typeof property === 'string' && ! Function.prototype[ property ] && ! Object.prototype[ property ] && ! Expect.prototype[ property ] ) {
+			//console.error( ">>> inside" ) ;
+			//console.error( " receiver:" , receiver ) ;
+			if ( target.comparison ) { target.comparison += ' ' + property ; }
+			else { target.comparison = property ; }
+
+			return receiver ;
+		}
+
+		if ( Expect.prototype[ property ] && ! target[ property ] ) {
+			target[ property ] = Expect.prototype[ property ] ;
+		}
+
+		if ( typeof target[ property ] === 'function' ) {
+			return target[ property ].bind( target ) ;
+		}
+
+		return target[ property ] ;
+	} ,
+	apply: ( target , thisArg , args ) => {
+		//console.error( ">>> APPLY" ) ;
+		if ( ! assert[ target.comparison ] ) {
+			throw new Error( "Unknown comparison '" + target.comparison + "'." ) ;
+		}
+
+		return assert[ target.comparison ]( handler.apply , target.value , ... args ) ;
+	}
+} ;
+
+
+},{"./AssertionError.js":1,"./assert.js":4}],8:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -1066,7 +1557,7 @@ filter.notIn = function notIn( data , params , element ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":2}],4:[function(require,module,exports){
+},{"./doormen.js":6}],9:[function(require,module,exports){
 (function (Buffer){
 /*
 	Doormen
@@ -1217,7 +1708,7 @@ module.exports = isEqual ;
 
 
 }).call(this,{"isBuffer":require("../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":12}],5:[function(require,module,exports){
+},{"../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":17}],10:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1310,7 +1801,7 @@ module.exports = {
 	of: { expected: 'typeOrClass' , toChild: 'of' }
 } ;
 
-},{}],6:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1484,7 +1975,7 @@ mask.check = function maskCheck( schema ) {
 
 
 
-},{}],7:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -1755,7 +2246,7 @@ sanitizer.mongoId = function mongoId( data ) {
 } ;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":2,"mongodb":11,"string-kit/lib/latinize.js":14,"string-kit/lib/toTitleCase.js":15}],8:[function(require,module,exports){
+},{"./doormen.js":6,"mongodb":16,"string-kit/lib/latinize.js":19,"string-kit/lib/toTitleCase.js":20}],13:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1896,7 +2387,7 @@ module.exports = schemaSchema ;
 
 
 
-},{}],9:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*
 	Doormen
 
@@ -2099,7 +2590,7 @@ module.exports = sentence ;
 
 
 
-},{"./doormen.js":2}],10:[function(require,module,exports){
+},{"./doormen.js":6}],15:[function(require,module,exports){
 (function (global,Buffer){
 /*
 	Doormen
@@ -2397,12 +2888,10 @@ typeChecker.mongoId = function mongoId( data ) {
 } ;
 
 
-
-
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"./doormen":2,"buffer":11}],11:[function(require,module,exports){
+},{"./doormen":6,"buffer":16}],16:[function(require,module,exports){
 
-},{}],12:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -2421,26 +2910,26 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],13:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
-},{}],14:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /*
 	String Kit
-	
-	Copyright (c) 2014 - 2017 Cédric Ronvel
-	
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2456,31 +2945,30 @@ module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A",
 
 var map = require( './latinize-map.json' ) ;
 
-module.exports = function( str )
-{
-	return str.replace( /[^\u0000-\u007e]/g , function( c ) { return map[ c ] || c ; } ) ;
+module.exports = function( str ) {
+	return str.replace( /[^\u0000-\u007e]/g , ( c ) => { return map[ c ] || c ; } ) ;
 } ;
 
-            
 
-},{"./latinize-map.json":13}],15:[function(require,module,exports){
+
+},{"./latinize-map.json":18}],20:[function(require,module,exports){
 /*
 	String Kit
-	
-	Copyright (c) 2014 - 2017 Cédric Ronvel
-	
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2494,35 +2982,30 @@ module.exports = function( str )
 
 
 
-module.exports = function toTitleCase( str , options )
-{
+module.exports = function toTitleCase( str , options ) {
 	if ( ! str || typeof str !== 'string' ) { return '' ; }
-	
+
 	options = options || {} ;
-	
-	return str.replace( /[^\s_-]+/g , function( part ) {
-		if ( options.zealous )
-		{
-			if ( options.preserveAllCaps && part === part.toUpperCase() )
-			{
+
+	return str.replace( /[^\s_-]+/g , ( part ) => {
+		if ( options.zealous ) {
+			if ( options.preserveAllCaps && part === part.toUpperCase() ) {
 				// This is a ALLCAPS word
 				return part ;
 			}
-			else
-			{
-				return part[ 0 ].toUpperCase() + part.slice( 1 ).toLowerCase() ;
-			}
+
+			return part[ 0 ].toUpperCase() + part.slice( 1 ).toLowerCase() ;
+
 		}
-		else
-		{
-			return part[ 0 ].toUpperCase() + part.slice( 1 ) ;
-		}
+
+		return part[ 0 ].toUpperCase() + part.slice( 1 ) ;
+
 	} ) ;
 } ;
 
 
 
-},{}],16:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
 	Tree Kit
 	
@@ -2615,5 +3098,5 @@ module.exports = function clone( originalObject , circular )
 	return cloneObject ;
 } ;
 
-},{}]},{},[1])(1)
+},{}]},{},[5])(5)
 });

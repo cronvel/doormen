@@ -2579,9 +2579,16 @@ describe( "Schema as a sentence" , function() {
 describe( "Expect assertion library" , function() {
 	
 	it( "expect a value to be strictly equal" , function() {
-		console.log( doormen.expect( 'bob' ) ) ;
 		doormen.expect( "bob" ).to.be( "bob" ) ;
-		doormen.expect( "bob" ).to.be( "bobby" ) ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be( "bobby" ) ) ;
+		doormen.expect( NaN ).to.be( NaN ) ;
+	} ) ;
+	
+	it( "expect a value to be of a type" , function() {
+		doormen.expect( "bob" ).to.be.a( 'string' ) ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.a( 'number' ) ) ;
+		doormen.expect( "http://soulserv.net" ).to.be.an( 'url' ) ;
+		doormen.shouldThrow( () => doormen.expect( "soulserv.net" ).to.be.an( 'url' ) ) ;
 	} ) ;
 } ) ;
 
