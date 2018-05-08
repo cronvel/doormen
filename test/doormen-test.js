@@ -24,9 +24,6 @@
 	SOFTWARE.
 */
 
-/* jshint unused:false */
-/* global describe, it, before, after */
-
 "use strict" ;
 
 
@@ -35,12 +32,10 @@ var tree = require( 'tree-kit' ) ;
 
 var doormen ;
 
-if ( process.browser )
-{
+if ( process.browser ) {
 	doormen = require( '../lib/browser.js' ) ;
 }
-else
-{
+else {
 	doormen = require( '../lib/doormen.js' ) ;
 }
 
@@ -2577,6 +2572,18 @@ describe( "Schema as a sentence" , function() {
 		doormen( 'should be an array' , [ 1,2,3 ] ) ;
 	} ) ;
 		
+} ) ;
+
+
+
+describe( "Expect assertion library" , function() {
+	
+	it( "expect a value to be strictly equal" , function() {
+		console.log( doormen.expect( 'bob' ) ) ;
+		console.log( doormen.expect( 'bob' ).test ) ;
+		doormen.expect( "bob" )() ;
+		//doormen.expect( "bob" ).to.be( "bob" ) ;
+	} ) ;
 } ) ;
 
 
