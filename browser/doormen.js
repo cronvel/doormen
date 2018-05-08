@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.doormen = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.doormen = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /*
 	Doormen
 
@@ -176,6 +176,38 @@ var AssertionError = require( './AssertionError.js' ) ;
 var isEqual = require( './isEqual.js' ) ;
 var typeChecker = require( './typeChecker.js' ) ;
 
+var inspect = require( 'string-kit/lib/inspect.js' ).inspect ;
+
+
+
+var inspectOptions = {
+	style: 'inline' ,
+	depth: 2 ,
+	maxLength: 40 ,
+	noDescriptor: true ,
+	noType: true ,
+	noArrayProperty: true
+} ;
+
+var inspectVar = inspect.bind( null , inspectOptions ) ;
+
+
+
+var vowel = {
+	a: true ,
+	e: true ,
+	i: true ,
+	o: true ,
+	u: true ,
+	y: true ,
+	A: true ,
+	E: true ,
+	I: true ,
+	O: true ,
+	U: true ,
+	Y: true
+} ;
+
 
 
 var assert = {} ;
@@ -190,7 +222,7 @@ assert.truthy =
 assert['to be truthy'] =
 assert.toBeTruthy = function toBeTruthy( from , actual ) {
 	if ( ! actual ) {
-		throw new AssertionError( 'Not truthy!' , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be truthy' , from , actual ) ;
 	}
 } ;
 
@@ -206,7 +238,7 @@ assert['not to be truthy'] =
 assert['to not be truthy'] =
 assert.toBeFalsy = function toBeFalsy( from , actual ) {
 	if ( actual ) {
-		throw new AssertionError( 'Not falsy!' , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be falsy' , from , actual ) ;
 	}
 } ;
 
@@ -216,7 +248,7 @@ assert.toBeFalsy = function toBeFalsy( from , actual ) {
 assert['to be'] =
 assert.toBe = function toBe( from , actual , expected ) {
 	if ( actual !== expected && ! ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
-		throw new AssertionError( 'Not identical!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
 } ;
 
@@ -228,7 +260,7 @@ assert['not to be'] =
 assert['to be not'] =
 assert.notToBe = function notToBe( from , actual , expected ) {
 	if ( actual === expected || ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
-		throw new AssertionError( 'Not not identical!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
 } ;
 
@@ -240,7 +272,7 @@ assert['to equal'] =
 assert['to eql'] =		// compatibility with expect.js
 assert.toEqual = function toEqual( from , actual , expected ) {
 	if ( ! isEqual( actual , expected ) ) {
-		throw new AssertionError( 'Not equals!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
 } ;
 
@@ -256,7 +288,7 @@ assert['to not eql'] =		// compatibility with expect.js
 assert['not to eql'] =		// compatibility with expect.js
 assert.notToEqual = function notToEqual( from , actual , expected ) {
 	if ( isEqual( actual , expected ) ) {
-		throw new AssertionError( 'Not not equals!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to equal ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
 } ;
 
@@ -268,7 +300,7 @@ assert['to be alike'] =
 assert['to be alike to'] =
 assert.toBeLike = function toBeLike( from , actual , expected ) {
 	if ( ! isEqual( actual , expected , true ) ) {
-		throw new AssertionError( 'Not like!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
 } ;
 
@@ -286,7 +318,7 @@ assert['to not be alike to'] =
 assert['not to be alike to'] =
 assert.notToBeLike = function notToBeLike( from , actual , expected ) {
 	if ( isEqual( actual , expected , true ) ) {
-		throw new AssertionError( 'Not not like!' , from , actual , expected , true ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be like ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
 } ;
 
@@ -330,7 +362,8 @@ assert.typeOf = function typeOf( from , actual , expected ) {
 	}
 
 	if ( ! typeChecker[ expected ]( actual ) ) {
-		throw new AssertionError( "Expecting type '" + expected + "'." , from , actual ) ;
+		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be ' + article + ' ' + expected , from , actual , expected ) ;
 	}
 } ;
 
@@ -346,7 +379,8 @@ assert.notTypeOf = function notTypeOf( from , actual , expected ) {
 	}
 
 	if ( typeChecker[ expected ]( actual ) ) {
-		throw new AssertionError( "Not expecting type '" + expected + "'." , from , actual ) ;
+		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + article + ' ' + expected , from , actual , expected ) ;
 	}
 } ;
 
@@ -356,7 +390,7 @@ assert.notTypeOf = function notTypeOf( from , actual , expected ) {
 assert['to be an instance of'] =
 assert.instanceOf = function instanceOf( from , actual , expected ) {
 	if ( ! ( actual instanceof expected ) ) {
-		throw new AssertionError( "Expecting an instance of '" + expected + "'." , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an instance of ' + expected , from , actual , expected ) ;
 	}
 } ;
 
@@ -368,7 +402,7 @@ assert['to not be an instance of'] =
 assert['not to be an instance of'] =
 assert.notInstanceOf = function notInstanceOf( from , actual , expected ) {
 	if ( ! ( actual instanceof expected ) ) {
-		throw new AssertionError( "Not expecting an instance of '" + expected + "'." , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be an instance of ' + expected , from , actual , expected ) ;
 	}
 } ;
 
@@ -378,11 +412,11 @@ assert.notInstanceOf = function notInstanceOf( from , actual , expected ) {
 assert['to match'] =
 assert.match = function match( from , actual , expected ) {
 	if ( typeof actual !== 'string' ) {
-		throw new AssertionError( "Not a string!" , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a string' , from , actual ) ;
 	}
 
 	if ( ! actual.match( expected ) ) {
-		throw new AssertionError( "Not matching!" , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to match ' + expected , from , actual , expected ) ;
 	}
 } ;
 
@@ -393,18 +427,73 @@ assert['to not match'] =
 assert['not to match'] =
 assert.notMatch = function notMatch( from , actual , expected ) {
 	if ( typeof actual !== 'string' ) {
-		throw new AssertionError( "Not a string!" , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a string' , from , actual ) ;
 	}
 
 	if ( actual.match( expected ) ) {
-		throw new AssertionError( "Not not matching!" , from , actual ) ;
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to match ' + expected , from , actual , expected ) ;
 	}
 } ;
+
+
+
+assert['to contain'] =
+assert.contain = function contain( from , actual , expected ) {
+	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
+	}
+
+	if ( actual.indexOf( expected ) === -1 ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to contain ' + inspectVar( expected ) , from , actual , expected ) ;
+	}
+} ;
+
+
+
+assert['not to contain'] =
+assert.notContain = function notContain( from , actual , expected ) {
+	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
+	}
+
+	if ( actual.indexOf( expected ) !== -1 ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to contain ' + inspectVar( expected ) , from , actual , expected ) ;
+	}
+} ;
+
+
+
+assert['to be within'] =
+assert.within = function within( from , actual , lower , higher ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( actual < lower || actual > higher ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be within ' + lower + ' and ' + higher  , from , actual ) ;
+	}
+} ;
+
+
+
+assert['to be not within'] =
+assert['to not be within'] =
+assert['not to be within'] =
+assert.notWithin = function notWithin( from , actual , lower , higher ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( actual >= lower && actual <= higher ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be within ' + lower + ' and ' + higher  , from , actual ) ;
+	}
+} ;
+
+
 
 /*
 	Remaining expect.js
 
-	contain (indexOf array/string)
 	length
 	empty
 	property
@@ -413,9 +502,8 @@ assert.notMatch = function notMatch( from , actual , expected ) {
 	to throw / not to throw
 	greater than/gt/gte/above
 	lesser than/lt/lte/below
-	within
 	withArgs (function)
-	fail??? useful???
+	fail useful???
 
 
 	Doormen specific:
@@ -424,7 +512,7 @@ assert.notMatch = function notMatch( from , actual , expected ) {
 */
 
 
-},{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15}],5:[function(require,module,exports){
+},{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15,"string-kit/lib/inspect.js":21}],5:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1235,7 +1323,7 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":21}],7:[function(require,module,exports){
+},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25}],7:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1707,8 +1795,8 @@ module.exports = isEqual ;
 
 
 
-}).call(this,{"isBuffer":require("../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":17}],10:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
+},{"../node_modules/is-buffer/index.js":17}],10:[function(require,module,exports){
 /*
 	Doormen
 
@@ -2246,7 +2334,7 @@ sanitizer.mongoId = function mongoId( data ) {
 } ;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":6,"mongodb":16,"string-kit/lib/latinize.js":19,"string-kit/lib/toTitleCase.js":20}],13:[function(require,module,exports){
+},{"./doormen.js":6,"mongodb":16,"string-kit/lib/latinize.js":23,"string-kit/lib/toTitleCase.js":24}],13:[function(require,module,exports){
 /*
 	Doormen
 
@@ -2892,27 +2980,981 @@ typeChecker.mongoId = function mongoId( data ) {
 },{"./doormen":6,"buffer":16}],16:[function(require,module,exports){
 
 },{}],17:[function(require,module,exports){
-/**
- * Determine if an object is Buffer
+/*!
+ * Determine if an object is a Buffer
  *
- * Author:   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * License:  MIT
- *
- * `npm install is-buffer`
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
  */
 
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
 module.exports = function (obj) {
-  return !!(obj != null &&
-    (obj._isBuffer || // For Safari 5-7 (missing Object.prototype.constructor)
-      (obj.constructor &&
-      typeof obj.constructor.isBuffer === 'function' &&
-      obj.constructor.isBuffer(obj))
-    ))
+  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
+}
+
+function isBuffer (obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
 },{}],18:[function(require,module,exports){
-module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 },{}],19:[function(require,module,exports){
+/*
+	String Kit
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+// To solve dependency hell, we do not rely on terminal-kit anymore.
+module.exports = {
+	reset: '\x1b[0m' ,
+	bold: '\x1b[1m' ,
+	dim: '\x1b[2m' ,
+	italic: '\x1b[3m' ,
+	underline: '\x1b[4m' ,
+	inverse: '\x1b[7m' ,
+
+	defaultColor: '\x1b[39m' ,
+	black: '\x1b[30m' ,
+	red: '\x1b[31m' ,
+	green: '\x1b[32m' ,
+	yellow: '\x1b[33m' ,
+	blue: '\x1b[34m' ,
+	magenta: '\x1b[35m' ,
+	cyan: '\x1b[36m' ,
+	white: '\x1b[37m' ,
+	brightBlack: '\x1b[90m' ,
+	brightRed: '\x1b[91m' ,
+	brightGreen: '\x1b[92m' ,
+	brightYellow: '\x1b[93m' ,
+	brightBlue: '\x1b[94m' ,
+	brightMagenta: '\x1b[95m' ,
+	brightCyan: '\x1b[96m' ,
+	brightWhite: '\x1b[97m' ,
+
+	defaultBgColor: '\x1b[49m' ,
+	bgBlack: '\x1b[40m' ,
+	bgRed: '\x1b[41m' ,
+	bgGreen: '\x1b[42m' ,
+	bgYellow: '\x1b[43m' ,
+	bgBlue: '\x1b[44m' ,
+	bgMagenta: '\x1b[45m' ,
+	bgCyan: '\x1b[46m' ,
+	bgWhite: '\x1b[47m' ,
+	bgBrightBlack: '\x1b[100m' ,
+	bgBrightRed: '\x1b[101m' ,
+	bgBrightGreen: '\x1b[102m' ,
+	bgBrightYellow: '\x1b[103m' ,
+	bgBrightBlue: '\x1b[104m' ,
+	bgBrightMagenta: '\x1b[105m' ,
+	bgBrightCyan: '\x1b[106m' ,
+	bgBrightWhite: '\x1b[107m'
+} ;
+
+
+
+},{}],20:[function(require,module,exports){
+/*
+	String Kit
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+/*
+	Escape collection.
+*/
+
+
+
+"use strict" ;
+
+
+
+// From Mozilla Developper Network
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+exports.regExp = exports.regExpPattern = function escapeRegExpPattern( str ) {
+	return str.replace( /([.*+?^${}()|[\]/\\])/g , '\\$1' ) ;
+} ;
+
+exports.regExpReplacement = function escapeRegExpReplacement( str ) {
+	return str.replace( /\$/g , '$$$$' ) ;	// This replace any single $ by a double $$
+} ;
+
+
+
+exports.format = function escapeFormat( str ) {
+	return str.replace( /%/g , '%%' ) ;	// This replace any single % by a double %%
+} ;
+
+
+
+exports.jsSingleQuote = function escapeJsSingleQuote( str ) {
+	return exports.control( str ).replace( /'/g , "\\'" ) ;
+} ;
+
+exports.jsDoubleQuote = function escapeJsDoubleQuote( str ) {
+	return exports.control( str ).replace( /"/g , '\\"' ) ;
+} ;
+
+
+
+exports.shellArg = function escapeShellArg( str ) {
+	return '\'' + str.replace( /'/g , "'\\''" ) + '\'' ;
+} ;
+
+
+
+var escapeControlMap = {
+	'\r': '\\r' , '\n': '\\n' , '\t': '\\t' , '\x7f': '\\x7f'
+} ;
+
+// Escape \r \n \t so they become readable again, escape all ASCII control character as well, using \x syntaxe
+exports.control = function escapeControl( str ) {
+	return str.replace( /[\x00-\x1f\x7f]/g , ( match ) => {
+		if ( escapeControlMap[ match ] !== undefined ) { return escapeControlMap[ match ] ; }
+		var hex = match.charCodeAt( 0 ).toString( 16 ) ;
+		if ( hex.length % 2 ) { hex = '0' + hex ; }
+		return '\\x' + hex ;
+	} ) ;
+} ;
+
+
+
+var escapeHtmlMap = {
+	'&': '&amp;' , '<': '&lt;' , '>': '&gt;' , '"': '&quot;' , "'": '&#039;'
+} ;
+
+// Only escape & < > so this is suited for content outside tags
+exports.html = function escapeHtml( str ) {
+	return str.replace( /[&<>]/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
+} ;
+
+// Escape & < > " so this is suited for content inside a double-quoted attribute
+exports.htmlAttr = function escapeHtmlAttr( str ) {
+	return str.replace( /[&<>"]/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
+} ;
+
+// Escape all html special characters & < > " '
+exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
+	return str.replace( /[&<>"']/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
+} ;
+
+
+
+},{}],21:[function(require,module,exports){
+(function (Buffer,process){
+/*
+	String Kit
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+/* global Map, Set */
+
+/*
+	Variable inspector.
+*/
+
+
+
+"use strict" ;
+
+
+
+// Load modules
+var escape = require( './escape.js' ) ;
+var ansi = require( './ansi.js' ) ;
+
+
+
+/*
+	Inspect a variable, return a string ready to be displayed with console.log(), or even as an HTML output.
+
+	Options:
+		* style:
+			* 'none': (default) normal output suitable for console.log() or writing in a file
+			* 'inline': like 'none', but without newlines
+			* 'color': colorful output suitable for terminal
+			* 'html': html output
+			* any object: full controle, inheriting from 'none'
+		* depth: depth limit, default: 3
+		* maxLength: length limit for strings, default: 200
+		* noFunc: do not display functions
+		* noDescriptor: do not display descriptor information
+		* noArrayProperty: do not display array properties
+		* noType: do not display type and constructor
+		* enumOnly: only display enumerable properties
+		* funcDetails: display function's details
+		* proto: display object's prototype
+		* sort: sort the keys
+		* minimal: imply noFunc: true, noDescriptor: true, noType: true, enumOnly: true, proto: false and funcDetails: false.
+		  Display a minimal JSON-like output
+		* protoBlackList: `Set` of blacklisted object prototype (will not recurse inside it)
+		* propertyBlackList: `Set` of blacklisted property names (will not even display it)
+		* useInspect? use .inspect() method when available on an object
+*/
+
+function inspect( options , variable ) {
+	if ( arguments.length < 2 ) { variable = options ; options = {} ; }
+	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
+
+	var runtime = { depth: 0 , ancestors: [] } ;
+
+	if ( ! options.style ) { options.style = inspectStyle.none ; }
+	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
+	else { options.style = Object.assign( {} , inspectStyle.none , options.style ) ; }
+
+	if ( options.depth === undefined ) { options.depth = 3 ; }
+	if ( options.maxLength === undefined ) { options.maxLength = 200 ; }
+
+	// /!\ nofunc is deprecated
+	if ( options.nofunc ) { options.noFunc = true ; }
+
+	if ( options.minimal ) {
+		options.noFunc = true ;
+		options.noDescriptor = true ;
+		options.noType = true ;
+		options.enumOnly = true ;
+		options.funcDetails = false ;
+		options.proto = false ;
+	}
+
+	return inspect_( runtime , options , variable ) ;
+}
+
+
+
+function inspect_( runtime , options , variable ) {
+	var i , funcName , length , proto , propertyList , constructor , keyIsProperty ,
+		type , pre , indent , isArray , isFunc , specialObject ,
+		str = '' , key = '' , descriptorStr = '' , descriptor , nextAncestors ;
+
+
+	// Prepare things (indentation, key, descriptor, ... )
+
+	type = typeof variable ;
+	indent = options.style.tab.repeat( runtime.depth ) ;
+
+	if ( type === 'function' && options.noFunc ) { return '' ; }
+
+	if ( runtime.key !== undefined ) {
+		if ( runtime.descriptor ) {
+			descriptorStr = [] ;
+
+			if ( ! runtime.descriptor.configurable ) { descriptorStr.push( '-conf' ) ; }
+			if ( ! runtime.descriptor.enumerable ) { descriptorStr.push( '-enum' ) ; }
+
+			// Already displayed by runtime.forceType
+			//if ( runtime.descriptor.get || runtime.descriptor.set ) { descriptorStr.push( 'getter/setter' ) ; } else
+			if ( ! runtime.descriptor.writable ) { descriptorStr.push( '-w' ) ; }
+
+			//if ( descriptorStr.length ) { descriptorStr = '(' + descriptorStr.join( ' ' ) + ')' ; }
+			if ( descriptorStr.length ) { descriptorStr = descriptorStr.join( ' ' ) ; }
+			else { descriptorStr = '' ; }
+		}
+
+		if ( runtime.keyIsProperty ) {
+			if ( keyNeedingQuotes( runtime.key ) ) {
+				key = '"' + options.style.key( runtime.key ) + '": ' ;
+			}
+			else {
+				key = options.style.key( runtime.key ) + ': ' ;
+			}
+		}
+		else {
+			key = options.style.index( runtime.key ) ;
+		}
+
+		if ( descriptorStr ) { descriptorStr = ' ' + options.style.type( descriptorStr ) ; }
+	}
+
+	pre = runtime.noPre ? '' : indent + key ;
+
+
+	// Describe the current variable
+
+	if ( variable === undefined ) {
+		str += pre + options.style.constant( 'undefined' ) + descriptorStr + options.style.newline ;
+	}
+	else if ( variable === null ) {
+		str += pre + options.style.constant( 'null' ) + descriptorStr + options.style.newline ;
+	}
+	else if ( variable === false ) {
+		str += pre + options.style.constant( 'false' ) + descriptorStr + options.style.newline ;
+	}
+	else if ( variable === true ) {
+		str += pre + options.style.constant( 'true' ) + descriptorStr + options.style.newline ;
+	}
+	else if ( type === 'number' ) {
+		str += pre + options.style.number( variable.toString() ) +
+			( options.noType ? '' : ' ' + options.style.type( 'number' ) ) +
+			descriptorStr + options.style.newline ;
+	}
+	else if ( type === 'string' ) {
+		if ( variable.length > options.maxLength ) {
+			str += pre + '"' + options.style.string( escape.control( variable.slice( 0 , options.maxLength - 1 ) ) ) + '…"' +
+				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ' - TRUNCATED)' ) ) +
+				descriptorStr + options.style.newline ;
+		}
+		else {
+			str += pre + '"' + options.style.string( escape.control( variable ) ) + '"' +
+				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ')' ) ) +
+				descriptorStr + options.style.newline ;
+		}
+	}
+	else if ( Buffer.isBuffer( variable ) ) {
+		str += pre + options.style.inspect( variable.inspect() ) +
+			( options.noType ? '' : ' ' + options.style.type( 'Buffer' ) + options.style.length( '(' + variable.length + ')' ) ) +
+			descriptorStr + options.style.newline ;
+	}
+	else if ( type === 'object' || type === 'function' ) {
+		funcName = length = '' ;
+		isFunc = false ;
+
+		if ( type === 'function' ) {
+			isFunc = true ;
+			funcName = ' ' + options.style.funcName( ( variable.name ? variable.name : '(anonymous)' ) ) ;
+			length = options.style.length( '(' + variable.length + ')' ) ;
+		}
+
+		isArray = false ;
+
+		if ( Array.isArray( variable ) ) {
+			isArray = true ;
+			length = options.style.length( '(' + variable.length + ')' ) ;
+		}
+
+		if ( ! variable.constructor ) { constructor = '(no constructor)' ; }
+		else if ( ! variable.constructor.name ) { constructor = '(anonymous)' ; }
+		else { constructor = variable.constructor.name ; }
+
+		constructor = options.style.constructorName( constructor ) ;
+		proto = Object.getPrototypeOf( variable ) ;
+
+		str += pre ;
+
+		if ( ! options.noType ) {
+			if ( runtime.forceType ) { str += options.style.type( runtime.forceType ) ; }
+			else { str += constructor + funcName + length + ' ' + options.style.type( type ) + descriptorStr ; }
+
+			if ( ! isFunc || options.funcDetails ) { str += ' ' ; }	// if no funcDetails imply no space here
+		}
+
+		propertyList = Object.getOwnPropertyNames( variable ) ;
+
+		if ( options.noArrayProperty && Array.isArray( variable ) ) {
+			propertyList = propertyList.slice( 0 , variable.length ) ;
+		}
+
+		if ( options.sort ) { propertyList.sort() ; }
+
+		// Special Objects
+		specialObject = specialObjectSubstitution( variable ) ;
+
+		if ( options.protoBlackList && options.protoBlackList.has( proto ) ) {
+			str += options.style.limit( '[skip]' ) + options.style.newline ;
+		}
+		else if ( specialObject !== undefined ) {
+			str += '=> ' + inspect_( {
+				depth: runtime.depth ,
+				ancestors: runtime.ancestors ,
+				noPre: true
+			} ,
+			options ,
+			specialObject
+			) ;
+		}
+		else if ( isFunc && ! options.funcDetails ) {
+			str += options.style.newline ;
+		}
+		else if ( ! propertyList.length && ! options.proto ) {
+			str += '{}' + options.style.newline ;
+		}
+		else if ( runtime.depth >= options.depth ) {
+			str += options.style.limit( '[depth limit]' ) + options.style.newline ;
+		}
+		else if ( runtime.ancestors.indexOf( variable ) !== -1 ) {
+			str += options.style.limit( '[circular]' ) + options.style.newline ;
+		}
+		else {
+			str += ( isArray && options.noType ? '[' : '{' ) + options.style.newline ;
+
+			// Do not use .concat() here, it doesn't works as expected with arrays...
+			nextAncestors = runtime.ancestors.slice() ;
+			nextAncestors.push( variable ) ;
+
+			for ( i = 0 ; i < propertyList.length ; i ++ ) {
+				if ( ! isArray && options.propertyBlackList && options.propertyBlackList.has( propertyList[ i ] ) ) {
+					//str += options.style.limit( '[skip]' ) + options.style.newline ;
+					continue ;
+				}
+
+				try {
+					descriptor = Object.getOwnPropertyDescriptor( variable , propertyList[ i ] ) ;
+
+					if ( ! descriptor.enumerable && options.enumOnly ) { continue ; }
+
+					keyIsProperty = ! isArray || ! descriptor.enumerable || isNaN( propertyList[ i ] ) ;
+
+					if ( ! options.noDescriptor && ( descriptor.get || descriptor.set ) ) {
+						str += inspect_( {
+							depth: runtime.depth + 1 ,
+							ancestors: nextAncestors ,
+							key: propertyList[ i ] ,
+							keyIsProperty: keyIsProperty ,
+							descriptor: descriptor ,
+							forceType: 'getter/setter'
+						} ,
+						options ,
+						{ get: descriptor.get , set: descriptor.set }
+						) ;
+					}
+					else {
+						str += inspect_( {
+							depth: runtime.depth + 1 ,
+							ancestors: nextAncestors ,
+							key: propertyList[ i ] ,
+							keyIsProperty: keyIsProperty ,
+							descriptor: options.noDescriptor ? undefined : descriptor
+						} ,
+						options ,
+						variable[ propertyList[ i ] ]
+						) ;
+					}
+				}
+				catch ( error ) {
+					str += inspect_( {
+						depth: runtime.depth + 1 ,
+						ancestors: nextAncestors ,
+						key: propertyList[ i ] ,
+						keyIsProperty: keyIsProperty ,
+						descriptor: options.noDescriptor ? undefined : descriptor
+					} ,
+					options ,
+					error
+					) ;
+				}
+
+				if ( i < propertyList.length - 1 ) { str += options.style.comma ; }
+			}
+
+			if ( options.proto ) {
+				str += inspect_( {
+					depth: runtime.depth + 1 ,
+					ancestors: nextAncestors ,
+					key: '__proto__' ,
+					keyIsProperty: true
+				} ,
+				options ,
+				proto
+				) ;
+			}
+
+			str += indent + ( isArray && options.noType ? ']' : '}' ) ;
+			str += options.style.newline ;
+		}
+	}
+
+
+	// Finalizing
+
+
+	if ( runtime.depth === 0 ) {
+		if ( options.style.trim ) { str = str.trim() ; }
+		if ( options.style === 'html' ) { str = escape.html( str ) ; }
+	}
+
+	return str ;
+}
+
+exports.inspect = inspect ;
+
+
+
+function keyNeedingQuotes( key ) {
+	if ( ! key.length ) { return true ; }
+	return false ;
+}
+
+
+
+// Some special object are better written down when substituted by something else
+function specialObjectSubstitution( variable ) {
+	switch ( variable.constructor.name ) {
+		case 'String' :
+			if ( variable instanceof String ) {
+				return variable.toString() ;
+			}
+			break ;
+		case 'Date' :
+			if ( variable instanceof Date ) {
+				return variable.toString() + ' [' + variable.getTime() + ']' ;
+			}
+			break ;
+		case 'Set' :
+			if ( typeof Set === 'function' && variable instanceof Set ) {
+				// This is an ES6 'Set' Object
+				return Array.from( variable ) ;
+			}
+			break ;
+		case 'Map' :
+			if ( typeof Map === 'function' && variable instanceof Map ) {
+				// This is an ES6 'Map' Object
+				return Array.from( variable ) ;
+			}
+			break ;
+		case 'ObjectID' :
+			if ( variable._bsontype ) {
+				// This is a MongoDB ObjectID, rather boring to display in its original form
+				// due to esoteric characters that confuse both the user and the terminal displaying it.
+				// Substitute it to its string representation
+				return variable.toString() ;
+			}
+			break ;
+	}
+
+	return ;
+}
+
+
+
+function inspectError( options , error ) {
+	var str = '' , stack , type , code ;
+
+	if ( arguments.length < 2 ) { error = options ; options = {} ; }
+	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
+
+	if ( ! ( error instanceof Error ) ) {
+		return 'Not an error -- regular variable inspection: ' + inspect( options , error ) ;
+	}
+
+	if ( ! options.style ) { options.style = inspectStyle.none ; }
+	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
+
+	if ( error.stack ) { stack = inspectStack( options , error.stack ) ; }
+
+	type = error.type || error.constructor.name ;
+	code = error.code || error.name || error.errno || error.number ;
+
+	str += options.style.errorType( type ) +
+		( code ? ' [' + options.style.errorType( code ) + ']' : '' ) + ': ' ;
+	str += options.style.errorMessage( error.message ) + '\n' ;
+
+	if ( stack ) { str += options.style.errorStack( stack ) + '\n' ; }
+
+	return str ;
+}
+
+exports.inspectError = inspectError ;
+
+
+
+function inspectStack( options , stack ) {
+	if ( arguments.length < 2 ) { stack = options ; options = {} ; }
+	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
+
+	if ( ! options.style ) { options.style = inspectStyle.none ; }
+	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
+
+	if ( ! stack ) { return ; }
+
+	if ( ( options.browser || process.browser ) && stack.indexOf( '@' ) !== -1 ) {
+		// Assume a Firefox-compatible stack-trace here...
+		stack = stack
+		.replace( /[</]*(?=@)/g , '' )	// Firefox output some WTF </</</</< stuff in its stack trace -- removing that
+		.replace(
+			/^\s*([^@]*)\s*@\s*([^\n]*)(?::([0-9]+):([0-9]+))?$/mg ,
+			( matches , method , file , line , column ) => {
+				return options.style.errorStack( '    at ' ) +
+						( method ? options.style.errorStackMethod( method ) + ' ' : '' ) +
+						options.style.errorStack( '(' ) +
+						( file ? options.style.errorStackFile( file ) : options.style.errorStack( 'unknown' ) ) +
+						( line ? options.style.errorStack( ':' ) + options.style.errorStackLine( line ) : '' ) +
+						( column ? options.style.errorStack( ':' ) + options.style.errorStackColumn( column ) : '' ) +
+						options.style.errorStack( ')' ) ;
+			}
+		) ;
+	}
+	else {
+		stack = stack.replace( /^[^\n]*\n/ , '' ) ;
+		stack = stack.replace(
+			/^\s*(at)\s+(?:((?:new +)?[^\s:()[\]\n]+(?:\([^)]+\))?)\s)?(?:\[as ([^\s:()[\]\n]+)\]\s)?(?:\(?([^:()[\]\n]+):([0-9]+):([0-9]+)\)?)?$/mg ,
+			( matches , at , method , as , file , line , column ) => {
+				return options.style.errorStack( '    at ' ) +
+					( method ? options.style.errorStackMethod( method ) + ' ' : '' ) +
+					( as ? options.style.errorStack( '[as ' ) + options.style.errorStackMethodAs( as ) + options.style.errorStack( '] ' ) : '' ) +
+					options.style.errorStack( '(' ) +
+					( file ? options.style.errorStackFile( file ) : options.style.errorStack( 'unknown' ) ) +
+					( line ? options.style.errorStack( ':' ) + options.style.errorStackLine( line ) : '' ) +
+					( column ? options.style.errorStack( ':' ) + options.style.errorStackColumn( column ) : '' ) +
+					options.style.errorStack( ')' ) ;
+			}
+		) ;
+	}
+
+	return stack ;
+}
+
+exports.inspectStack = inspectStack ;
+
+
+
+// Inspect's styles
+
+var inspectStyle = {} ;
+
+var inspectStyleNoop = str => str ;
+
+
+
+inspectStyle.none = {
+	trim: false ,
+	tab: '    ' ,
+	newline: '\n' ,
+	comma: '' ,
+	limit: inspectStyleNoop ,
+	type: str => '<' + str + '>' ,
+	constant: inspectStyleNoop ,
+	funcName: inspectStyleNoop ,
+	constructorName: str => '<' + str + '>' ,
+	length: inspectStyleNoop ,
+	key: inspectStyleNoop ,
+	index: str => '[' + str + '] ' ,
+	number: inspectStyleNoop ,
+	inspect: inspectStyleNoop ,
+	string: inspectStyleNoop ,
+	errorType: inspectStyleNoop ,
+	errorMessage: inspectStyleNoop ,
+	errorStack: inspectStyleNoop ,
+	errorStackMethod: inspectStyleNoop ,
+	errorStackMethodAs: inspectStyleNoop ,
+	errorStackFile: inspectStyleNoop ,
+	errorStackLine: inspectStyleNoop ,
+	errorStackColumn: inspectStyleNoop
+} ;
+
+
+
+inspectStyle.inline = Object.assign( {} , inspectStyle.none , {
+	trim: true ,
+	tab: '' ,
+	newline: ' ' ,
+	comma: ', ' ,
+	length: () => '' ,
+	index: () => ''
+	//type: () => '' ,
+} ) ;
+
+
+
+inspectStyle.color = Object.assign( {} , inspectStyle.none , {
+	limit: str => ansi.bold + ansi.brightRed + str + ansi.reset ,
+	type: str => ansi.italic + ansi.brightBlack + str + ansi.reset ,
+	constant: str => ansi.cyan + str + ansi.reset ,
+	funcName: str => ansi.italic + ansi.magenta + str + ansi.reset ,
+	constructorName: str => ansi.magenta + str + ansi.reset ,
+	length: str => ansi.italic + ansi.brightBlack + str + ansi.reset ,
+	key: str => ansi.green + str + ansi.reset ,
+	index: str => ansi.blue + '[' + str + ']' + ansi.reset + ' ' ,
+	number: str => ansi.cyan + str + ansi.reset ,
+	inspect: str => ansi.cyan + str + ansi.reset ,
+	string: str => ansi.blue + str + ansi.reset ,
+	errorType: str => ansi.red + ansi.bold + str + ansi.reset ,
+	errorMessage: str => ansi.red + ansi.italic + str + ansi.reset ,
+	errorStack: str => ansi.brightBlack + str + ansi.reset ,
+	errorStackMethod: str => ansi.brightYellow + str + ansi.reset ,
+	errorStackMethodAs: str => ansi.yellow + str + ansi.reset ,
+	errorStackFile: str => ansi.brightCyan + str + ansi.reset ,
+	errorStackLine: str => ansi.blue + str + ansi.reset ,
+	errorStackColumn: str => ansi.magenta + str + ansi.reset
+} ) ;
+
+
+
+inspectStyle.html = Object.assign( {} , inspectStyle.none , {
+	tab: '&nbsp;&nbsp;&nbsp;&nbsp;' ,
+	newline: '<br />' ,
+	limit: str => '<span style="color:red">' + str + '</span>' ,
+	type: str => '<i style="color:gray">' + str + '</i>' ,
+	constant: str => '<span style="color:cyan">' + str + '</span>' ,
+	funcName: str => '<i style="color:magenta">' + str + '</i>' ,
+	constructorName: str => '<span style="color:magenta">' + str + '</span>' ,
+	length: str => '<i style="color:gray">' + str + '</i>' ,
+	key: str => '<span style="color:green">' + str + '</span>' ,
+	index: str => '<span style="color:blue">[' + str + ']</span> ' ,
+	number: str => '<span style="color:cyan">' + str + '</span>' ,
+	inspect: str => '<span style="color:cyan">' + str + '</span>' ,
+	string: str => '<span style="color:blue">' + str + '</span>' ,
+	errorType: str => '<span style="color:red">' + str + '</span>' ,
+	errorMessage: str => '<span style="color:red">' + str + '</span>' ,
+	errorStack: str => '<span style="color:gray">' + str + '</span>' ,
+	errorStackMethod: str => '<span style="color:yellow">' + str + '</span>' ,
+	errorStackMethodAs: str => '<span style="color:yellow">' + str + '</span>' ,
+	errorStackFile: str => '<span style="color:cyan">' + str + '</span>' ,
+	errorStackLine: str => '<span style="color:blue">' + str + '</span>' ,
+	errorStackColumn: str => '<span style="color:gray">' + str + '</span>'
+} ) ;
+
+
+
+}).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
+},{"../../is-buffer/index.js":17,"./ansi.js":19,"./escape.js":20,"_process":18}],22:[function(require,module,exports){
+module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
+},{}],23:[function(require,module,exports){
 /*
 	String Kit
 
@@ -2951,7 +3993,7 @@ module.exports = function( str ) {
 
 
 
-},{"./latinize-map.json":18}],20:[function(require,module,exports){
+},{"./latinize-map.json":22}],24:[function(require,module,exports){
 /*
 	String Kit
 
@@ -3005,7 +4047,7 @@ module.exports = function toTitleCase( str , options ) {
 
 
 
-},{}],21:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /*
 	Tree Kit
 	

@@ -2576,7 +2576,7 @@ describe( "Schema as a sentence" , function() {
 
 
 
-describe( "Expect assertion library" , function() {
+describe( "Expect BDD assertion library" , function() {
 	
 	it( "expect a value to be strictly equal" , function() {
 		doormen.expect( "bob" ).to.be( "bob" ) ;

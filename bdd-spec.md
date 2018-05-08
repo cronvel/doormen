@@ -25,7 +25,7 @@ WARNING: MongoDB module not found, the end of the test is skipped.
    - [Purify](#purify)
    - [Export mode](#export-mode)
    - [Schema as a sentence](#schema-as-a-sentence)
-   - [Expect assertion library](#expect-assertion-library)
+   - [Expect BDD assertion library](#expect-bdd-assertion-library)
    - [Path in the schema](#path-in-the-schema)
    - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
@@ -2619,8 +2619,8 @@ doormen.not( 'should be an empty array' , [ 1,2,3 ] ) ;
 doormen( 'should be an array' , [ 1,2,3 ] ) ;
 ```
 
-<a name="expect-assertion-library"></a>
-# Expect assertion library
+<a name="expect-bdd-assertion-library"></a>
+# Expect BDD assertion library
 expect a value to be strictly equal.
 
 ```js
