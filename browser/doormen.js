@@ -232,7 +232,7 @@ module.exports = assert ;
 	- ownPropertyDescriptor
 	- lengthOf
 	- keys
-	- throw
+	- throw (error matcher)
 	- members
 	- oneOf
 	- functions specific:
@@ -248,7 +248,12 @@ module.exports = assert ;
 
 	Doormen specific:
 	- to validate
+	- throw specific type of errors
 */
+
+
+
+/* Constants */
 
 
 
@@ -420,6 +425,10 @@ assert.notFinite = function notFinite( from , actual ) {
 
 
 
+/* Equality */
+
+
+
 // identical
 assert['to be'] =
 assert.strictEqual = function strictEqual( from , actual , expected ) {
@@ -544,6 +553,10 @@ assert.partiallyLike = function partiallyLike( from , actual , expected ) {
 
 
 
+/* Numbers / Date */
+
+
+
 // Epsilon aware comparison, or with a custom delta
 assert['to be close to'] =
 assert['to be around'] =
@@ -594,7 +607,6 @@ assert.notAround = function notAround( from , actual , value , delta ) {
 
 
 
-// number/date >
 assert['to be above'] =
 assert['to be greater'] =
 assert['to be greater than'] =
@@ -691,6 +703,10 @@ assert.notWithin = function notWithin( from , actual , lower , higher ) {
 
 
 
+/* String */
+
+
+
 // String regexp match
 assert['to match'] =
 assert.match = function match( from , actual , expected ) {
@@ -717,6 +733,10 @@ assert.notMatch = function notMatch( from , actual , expected ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to match ' + expected , from , actual , expected ) ;
 	}
 } ;
+
+
+
+/* Content */
 
 
 
@@ -816,6 +836,10 @@ assert.notEmpty = function notEmpty( from , actual ) {
 
 
 
+/* Objects */
+
+
+
 assert['to have key'] =
 assert['to have keys'] =
 assert.key =
@@ -889,7 +913,7 @@ assert.notOwnKeys = function notKeys( from , actual , ... keys ) {
 
 	keys.forEach( key => {
 		if ( actual.hasOwnProperty( key ) ) {
-			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to have key(s) ' + keys , from , actual ) ;
+			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to have own key(s) ' + keys , from , actual ) ;
 		}
 	} ) ;
 } ;
@@ -915,6 +939,50 @@ assert.ownProperty = function ownProperty( from , actual , key , value ) {
 		assert.equal( from , actual[ key ] , value ) ;
 	}
 } ;
+
+
+
+/* Functions */
+
+
+
+assert['to throw'] =
+assert.throw = function throw_( from , fn ) {
+	var thrown = false ;
+
+	if ( typeof fn !== 'function' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( fn ) + ' to be a function' , from , fn ) ;
+	}
+
+	try { fn() ; }
+	catch ( error ) { thrown = true ; }
+
+	if ( ! thrown ) {
+		throw new AssertionError( "Expected function '" + ( fn.name || '(anonymous)' ) + "' to throw" , from , fn ) ;
+	}
+} ;
+
+
+
+assert['to not throw'] = assert['not to throw'] =
+assert.notThrow = function notThrow( from , fn ) {
+	var thrown = false ;
+
+	if ( typeof fn !== 'function' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( fn ) + ' to be a function' , from , fn ) ;
+	}
+
+	try { fn() ; }
+	catch ( error ) { thrown = true ; }
+
+	if ( ! thrown ) {
+		throw new AssertionError( "Expected function '" + ( fn.name || '(anonymous)' ) + "' not to throw" , from , fn ) ;
+	}
+} ;
+
+
+
+/* Types / Instances */
 
 
 
