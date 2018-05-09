@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
@@ -15,7 +15,7 @@
     "uglify-js-es6": "^2.8.9"
   },
   "scripts": {
-    "test": "mocha -R dot"
+    "test": "tea-time -R dot"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,9 @@
     "validator",
     "sanitize",
     "assert",
-    "assertion"
+    "assertion",
+    "bdd",
+    "tdd"
   ],
   "author": "Cédric Ronvel",
   "license": "MIT",

@@ -216,6 +216,46 @@ module.exports = assert ;
 
 
 
+/*
+	TODO:
+
+	Expect.js:
+	- length
+	- property
+	- key/keys
+	- only keys
+	- to throw / not to throw
+	- withArgs (function)
+	- fail useful???
+
+	Chai:
+	- any
+	- all
+	- own
+	- property
+	- ownPropertyDescriptor
+	- lengthOf
+	- keys
+	- throw
+	- members
+	- oneOf
+	- functions specific:
+		- respondTo (check method on object or function.prototype)
+		- change
+		- increase
+		- decrease
+	- object specific:
+		- extensible
+		- sealed
+		- frozen
+	- fail useful???
+
+	Doormen specific:
+	- to validate
+*/
+
+
+
 // Defined
 assert['to be defined'] =
 assert.defined =
@@ -374,6 +414,34 @@ assert.isNotNaN = function isNaN( from , actual ) {
 
 
 
+assert['to be finite'] =
+assert.finite = function finite( from , actual ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( Number.isNaN( actual ) || actual === Infinity || actual === -Infinity ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be finite' , from , actual ) ;
+	}
+} ;
+
+
+
+assert['to be not finite'] =
+assert['to not be finite'] =
+assert['not to be finite'] =
+assert.notFinite = function notFinite( from , actual ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( ! Number.isNaN( actual ) && actual !== Infinity && actual !== -Infinity ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be finite' , from , actual ) ;
+	}
+} ;
+
+
+
 // identical
 assert['to be'] =
 assert.strictEqual = function strictEqual( from , actual , expected ) {
@@ -454,6 +522,56 @@ assert.notLike = function notLike( from , actual , expected ) {
 
 
 
+// Epsilon aware comparison, or with a custom delta
+assert['to be close to'] =
+assert['to be around'] =
+assert.around = function around( from , actual , value , delta ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( ! delta ) {
+		delta = 2 * Number.EPSILON ;
+
+		if ( value ) {
+			delta = Math.pow( 2 , Math.ceil( Math.log2( Math.abs( value ) ) ) ) * delta ;
+		}
+	}
+
+	if ( actual < value - delta || actual > value + delta || Number.isNaN( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be around ' + value  , from , actual ) ;
+	}
+} ;
+
+
+
+// Epsilon aware comparison, or with a custom delta
+assert['to be not close to'] =
+assert['to not be close to'] =
+assert['not to be close to'] =
+assert['to be not around'] =
+assert['to not be around'] =
+assert['not to be around'] =
+assert.notAround = function notAround( from , actual , value , delta ) {
+	if ( typeof actual !== 'number' ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+	}
+
+	if ( ! delta ) {
+		delta = 2 * Number.EPSILON ;
+
+		if ( value ) {
+			delta = Math.pow( 2 , Math.ceil( Math.log2( Math.abs( value ) ) ) ) * delta ;
+		}
+	}
+
+	if ( ( actual >= value - delta && actual <= value + delta ) || Number.isNaN( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be around ' + value  , from , actual ) ;
+	}
+} ;
+
+
+
 // number/date >
 assert['to be above'] =
 assert['to be greater'] =
@@ -466,7 +584,7 @@ assert.greaterThan = function greaterThan( from , actual , value ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual <= value ) {
+	if ( actual <= value || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be above ' + value  , from , actual ) ;
 	}
 } ;
@@ -482,7 +600,7 @@ assert.greaterThanOrEqualTo = function greaterThanOrEqualTo( from , actual , val
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual < value ) {
+	if ( actual < value || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be at least ' + value  , from , actual ) ;
 	}
 } ;
@@ -500,7 +618,7 @@ assert.lesserThan = function lesserThan( from , actual , value ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual >= value ) {
+	if ( actual >= value || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be below ' + value  , from , actual ) ;
 	}
 } ;
@@ -516,7 +634,7 @@ assert.lesserThanOrEqualTo = function lesserThanOrEqualTo( from , actual , value
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual > value ) {
+	if ( actual > value || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be at most ' + value  , from , actual ) ;
 	}
 } ;
@@ -529,7 +647,7 @@ assert.within = function within( from , actual , lower , higher ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual < lower || actual > higher ) {
+	if ( actual < lower || actual > higher || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be within ' + lower + ' and ' + higher  , from , actual ) ;
 	}
 } ;
@@ -544,7 +662,7 @@ assert.notWithin = function notWithin( from , actual , lower , higher ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
 	}
 
-	if ( actual >= lower && actual <= higher ) {
+	if ( ( actual >= lower && actual <= higher ) || Number.isNaN( actual ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be within ' + lower + ' and ' + higher  , from , actual ) ;
 	}
 } ;
@@ -676,6 +794,37 @@ assert.notEmpty = function notEmpty( from , actual ) {
 
 
 
+assert['to have empty'] =
+assert.empty = function empty( from , actual ) {
+	var isEmpty = true ;
+
+	if ( actual ) {
+		if ( typeof actual === 'object' ) {
+			if ( Array.isArray( actual ) ) {
+				if ( actual.length ) { isEmpty = false ; }
+			}
+			else if ( ( actual instanceof Map ) || ( actual instanceof Set ) ) {
+				if ( actual.size ) { isEmpty = false ; }
+			}
+			else if ( actual.length !== undefined ) {
+				if ( actual.length ) { isEmpty = false ; }
+			}
+			else if ( Object.keys( actual ).length ) {
+				isEmpty = false ;
+			}
+		}
+		else if ( typeof actual === 'string' ) {
+			isEmpty = false ;
+		}
+	}
+
+	if ( ! isEmpty ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be empty' , from , actual ) ;
+	}
+} ;
+
+
+
 // Type or instance
 assert['to be a'] =
 assert['to be an'] =
@@ -758,30 +907,6 @@ assert.notInstanceOf = function notInstanceOf( from , actual , expected ) {
 	}
 } ;
 
-
-
-
-
-
-/*
-	Remaining expect.js
-
-	length
-	empty
-	property
-	key/keys
-	only keys
-	to throw / not to throw
-	greater than/gt/gte/above
-	lesser than/lt/lte/below
-	withArgs (function)
-	fail useful???
-
-
-	Doormen specific:
-
-	to validate
-*/
 
 
 },{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15,"string-kit/lib/inspect.js":21}],5:[function(require,module,exports){
