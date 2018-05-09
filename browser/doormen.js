@@ -184,6 +184,7 @@ var inspectOptions = {
 	style: 'inline' ,
 	depth: 2 ,
 	maxLength: 40 ,
+	outputMaxLength: 80 ,
 	noDescriptor: true ,
 	noType: true ,
 	noArrayProperty: true
@@ -216,11 +217,12 @@ module.exports = assert ;
 
 
 // Truthy
-assert.ok =
 assert['to be ok'] =
-assert.truthy =
 assert['to be truthy'] =
-assert.toBeTruthy = function toBeTruthy( from , actual ) {
+assert.ok =
+assert.isOk =
+assert.truthy =
+assert.isTruthy = function isTruthy( from , actual ) {
 	if ( ! actual ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be truthy' , from , actual ) ;
 	}
@@ -228,15 +230,18 @@ assert.toBeTruthy = function toBeTruthy( from , actual ) {
 
 
 
-assert.nok =
+// Falsy
 assert['to be not ok'] =
 assert['to not be ok'] =
 assert['not to be ok'] =
-assert.falsy =
 assert['to be falsy'] =
 assert['not to be truthy'] =
 assert['to not be truthy'] =
-assert.toBeFalsy = function toBeFalsy( from , actual ) {
+assert.nok =
+assert.ko =
+assert.isNotOk =
+assert.falsy =
+assert.isFalsy = function isFalsy( from , actual ) {
 	if ( actual ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be falsy' , from , actual ) ;
 	}
@@ -244,9 +249,64 @@ assert.toBeFalsy = function toBeFalsy( from , actual ) {
 
 
 
+// True
+assert['to be true'] =
+assert.true =
+assert.isTrue = function isTrue( from , actual ) {
+	if ( actual !== true ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be true' , from , actual , true ) ;
+	}
+} ;
+
+
+
+// Falsy
+assert['to be false'] =
+assert.false =
+assert.isFalse = function isFalse( from , actual ) {
+	if ( actual !== false ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be false' , from , actual , false ) ;
+	}
+} ;
+
+
+
+// Null
+assert['to be null'] =
+assert.null =
+assert.isNull = function isNull( from , actual ) {
+	if ( actual !== null ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be null' , from , actual , null ) ;
+	}
+} ;
+
+
+
+// Undefined
+assert['to be undefined'] =
+assert.undefined =
+assert.isUndefined = function isUndefined( from , actual ) {
+	if ( actual !== undefined ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be undefined' , from , actual , undefined ) ;
+	}
+} ;
+
+
+
+// Undefined
+assert['to be defined'] =
+assert.defined =
+assert.isDefined = function isDefined( from , actual ) {
+	if ( actual === undefined ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + 'to be defined' , from , actual ) ;
+	}
+} ;
+
+
+
 // identical
 assert['to be'] =
-assert.toBe = function toBe( from , actual , expected ) {
+assert.strictEqual = function strictEqual( from , actual , expected ) {
 	if ( actual !== expected && ! ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
@@ -258,7 +318,7 @@ assert.toBe = function toBe( from , actual , expected ) {
 assert['to not be'] =
 assert['not to be'] =
 assert['to be not'] =
-assert.notToBe = function notToBe( from , actual , expected ) {
+assert.notStrictEqual = function notStrictEqual( from , actual , expected ) {
 	if ( actual === expected || ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
@@ -270,7 +330,7 @@ assert.notToBe = function notToBe( from , actual , expected ) {
 assert['to be equal to'] =
 assert['to equal'] =
 assert['to eql'] =		// compatibility with expect.js
-assert.toEqual = function toEqual( from , actual , expected ) {
+assert.equal = function equal( from , actual , expected ) {
 	if ( ! isEqual( actual , expected ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
@@ -286,7 +346,7 @@ assert['to not equal'] =
 assert['not to equal'] =
 assert['to not eql'] =		// compatibility with expect.js
 assert['not to eql'] =		// compatibility with expect.js
-assert.notToEqual = function notToEqual( from , actual , expected ) {
+assert.notEqual = function notEqual( from , actual , expected ) {
 	if ( isEqual( actual , expected ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to equal ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
@@ -298,7 +358,7 @@ assert.notToEqual = function notToEqual( from , actual , expected ) {
 assert['to be like'] =
 assert['to be alike'] =
 assert['to be alike to'] =
-assert.toBeLike = function toBeLike( from , actual , expected ) {
+assert.like = function like( from , actual , expected ) {
 	if ( ! isEqual( actual , expected , true ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
@@ -316,7 +376,7 @@ assert['not to be alike'] =
 assert['to be not alike to'] =
 assert['to not be alike to'] =
 assert['not to be alike to'] =
-assert.notToBeLike = function notToBeLike( from , actual , expected ) {
+assert.notLike = function notLike( from , actual , expected ) {
 	if ( isEqual( actual , expected , true ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be like ' + inspectVar( expected ) , from , actual , expected ) ;
 	}
@@ -327,7 +387,7 @@ assert.notToBeLike = function notToBeLike( from , actual , expected ) {
 // Type or instance
 assert['to be a'] =
 assert['to be an'] =
-assert.toBeA = function toBeA( from , actual , expected ) {
+assert.typeOrInstanceOf = function typeOrInstanceOf( from , actual , expected ) {
 	if ( typeof expected === 'string' ) {
 		return assert.typeOf( from , actual , expected ) ;
 	}
@@ -344,7 +404,7 @@ assert['not to be a'] =
 assert['to be not an'] =
 assert['to not be an'] =
 assert['not to be an'] =
-assert.notToBeA = function notToBeA( from , actual , expected ) {
+assert.notTypeOrInstanceOf = function notTypeOrInstanceOf( from , actual , expected ) {
 	if ( typeof expected === 'string' ) {
 		return assert.notTypeOf( from , actual , expected ) ;
 	}
@@ -438,6 +498,8 @@ assert.notMatch = function notMatch( from , actual , expected ) {
 
 
 assert['to contain'] =
+assert['to include'] =
+assert.include =
 assert.contain = function contain( from , actual , expected ) {
 	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
@@ -450,7 +512,11 @@ assert.contain = function contain( from , actual , expected ) {
 
 
 
+assert['to not contain'] =
 assert['not to contain'] =
+assert['to not include'] =
+assert['not to include'] =
+assert.notInclude =
 assert.notContain = function notContain( from , actual , expected ) {
 	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
@@ -488,6 +554,40 @@ assert.notWithin = function notWithin( from , actual , lower , higher ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be within ' + lower + ' and ' + higher  , from , actual ) ;
 	}
 } ;
+
+
+
+assert['to be empty'] =
+assert.empty = function empty( from , actual ) {
+	var failed = false ;
+
+	if ( actual ) {
+		if ( typeof actual === 'object' ) {
+			if ( Array.isArray( actual ) ) {
+				if ( actual.length ) { failed = true ; }
+			}
+			else if ( ( actual instanceof Map ) || ( actual instanceof Set ) ) {
+				if ( actual.size ) { failed = true ; }
+			}
+			else if ( actual.length !== undefined ) {
+				if ( actual.length ) { failed = true ; }
+			}
+			else if ( Object.keys( actual ).length ) {
+				failed = true ;
+			}
+		}
+		else if ( typeof actual === 'string' ) {
+			failed = true ;
+		}
+	}
+
+	if ( failed ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be empty' , from , actual ) ;
+	}
+} ;
+
+
+
 
 
 
@@ -3415,7 +3515,6 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 
 
 
-// Load modules
 var escape = require( './escape.js' ) ;
 var ansi = require( './ansi.js' ) ;
 
@@ -3433,6 +3532,7 @@ var ansi = require( './ansi.js' ) ;
 			* any object: full controle, inheriting from 'none'
 		* depth: depth limit, default: 3
 		* maxLength: length limit for strings, default: 200
+		* outputMaxLength: length limit for the inspect output string, default: 5000
 		* noFunc: do not display functions
 		* noDescriptor: do not display descriptor information
 		* noArrayProperty: do not display array properties
@@ -3460,6 +3560,7 @@ function inspect( options , variable ) {
 
 	if ( options.depth === undefined ) { options.depth = 3 ; }
 	if ( options.maxLength === undefined ) { options.maxLength = 200 ; }
+	if ( options.outputMaxLength === undefined ) { options.outputMaxLength = 5000 ; }
 
 	// /!\ nofunc is deprecated
 	if ( options.nofunc ) { options.noFunc = true ; }
@@ -3473,7 +3574,13 @@ function inspect( options , variable ) {
 		options.proto = false ;
 	}
 
-	return inspect_( runtime , options , variable ) ;
+	var str = inspect_( runtime , options , variable ) ;
+
+	if ( str.length > options.outputMaxLength ) {
+		str = str.slice( 0 , options.outputMaxLength - 1 ) + '…' ;
+	}
+
+	return str ;
 }
 
 
@@ -3637,7 +3744,7 @@ function inspect_( runtime , options , variable ) {
 			nextAncestors = runtime.ancestors.slice() ;
 			nextAncestors.push( variable ) ;
 
-			for ( i = 0 ; i < propertyList.length ; i ++ ) {
+			for ( i = 0 ; i < propertyList.length && str.length < options.outputMaxLength ; i ++ ) {
 				if ( ! isArray && options.propertyBlackList && options.propertyBlackList.has( propertyList[ i ] ) ) {
 					//str += options.style.limit( '[skip]' ) + options.style.newline ;
 					continue ;
