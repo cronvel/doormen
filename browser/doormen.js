@@ -232,7 +232,6 @@ module.exports = assert ;
 	- any
 	- all
 	- own
-	- property
 	- ownPropertyDescriptor
 	- lengthOf
 	- keys
@@ -268,10 +267,8 @@ assert.isDefined = function isDefined( from , actual ) {
 
 
 // Undefined
-assert['to be not defined'] =
-assert['to not be defined'] =
-assert['not to be defined'] =
-assert['to be undefined'] =
+assert['to be not defined'] = assert['to not be defined'] =
+assert['not to be defined'] = assert['to be undefined'] =
 assert.undefined =
 assert.isUndefined = function isUndefined( from , actual ) {
 	if ( actual !== undefined ) {
@@ -296,12 +293,8 @@ assert.isTruthy = function isTruthy( from , actual ) {
 
 
 // Falsy
-assert['to be not ok'] =
-assert['to not be ok'] =
-assert['not to be ok'] =
-assert['to be falsy'] =
-assert['not to be truthy'] =
-assert['to not be truthy'] =
+assert['to be not ok'] = assert['to not be ok'] = assert['not to be ok'] =
+assert['to be falsy'] = assert['not to be truthy'] = assert['to not be truthy'] =
 assert.nok =
 assert.ko =
 assert.isNotOk =
@@ -326,9 +319,7 @@ assert.isTrue = function isTrue( from , actual ) {
 
 
 // Not true
-assert['to be not true'] =
-assert['to not be true'] =
-assert['not to be true'] =
+assert['to be not true'] = assert['to not be true'] = assert['not to be true'] =
 assert.notTrue =
 assert.isNotTrue = function isNotTrue( from , actual ) {
 	if ( actual === true ) {
@@ -350,9 +341,7 @@ assert.isFalse = function isFalse( from , actual ) {
 
 
 // Not false
-assert['to be not false'] =
-assert['to not be false'] =
-assert['not to be false'] =
+assert['to be not false'] = assert['to not be false'] = assert['not to be false'] =
 assert.notFalse =
 assert.isNotFalse = function isNotFalse( from , actual ) {
 	if ( actual === false ) {
@@ -374,9 +363,7 @@ assert.isNull = function isNull( from , actual ) {
 
 
 // Not null
-assert['to be not null'] =
-assert['to not be null'] =
-assert['not to be null'] =
+assert['to be not null'] = assert['to not be null'] = assert['not to be null'] =
 assert.notNull =
 assert.isNotNull = function isNotNull( from , actual ) {
 	if ( actual === null ) {
@@ -399,12 +386,8 @@ assert.isNaN = function isNaN( from , actual ) {
 
 
 // Not NaN
-assert['to be not NaN'] =
-assert['to not be NaN'] =
-assert['not to be NaN'] =
-assert['to be not nan'] =
-assert['to not be nan'] =
-assert['not to be nan'] =
+assert['to be not NaN'] = assert['to not be NaN'] = assert['not to be NaN'] =
+assert['to be not nan'] = assert['to not be nan'] = assert['not to be nan'] =
 assert.notNaN =
 assert.isNotNaN = function isNaN( from , actual ) {
 	if ( Number.isNaN( actual ) ) {
@@ -427,9 +410,7 @@ assert.finite = function finite( from , actual ) {
 
 
 
-assert['to be not finite'] =
-assert['to not be finite'] =
-assert['not to be finite'] =
+assert['to be not finite'] = assert['to not be finite'] = assert['not to be finite'] =
 assert.notFinite = function notFinite( from , actual ) {
 	if ( typeof actual !== 'number' ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
@@ -453,9 +434,7 @@ assert.strictEqual = function strictEqual( from , actual , expected ) {
 
 
 // Not identical
-assert['to not be'] =
-assert['not to be'] =
-assert['to be not'] =
+assert['to be not'] = assert['to not be'] = assert['not to be'] =
 assert.notStrictEqual = function notStrictEqual( from , actual , expected ) {
 	if ( actual === expected || ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + inspectVar( expected ) , from , actual , expected ) ;
@@ -477,13 +456,9 @@ assert.equal = function equal( from , actual , expected ) {
 
 
 // Not equal
-assert['to be not equal to'] =
-assert['to not be equal to'] =
-assert['not to be equal to'] =
-assert['to not equal'] =
-assert['not to equal'] =
-assert['to not eql'] =		// compatibility with expect.js
-assert['not to eql'] =		// compatibility with expect.js
+assert['to be not equal to'] = assert['to not be equal to'] = assert['not to be equal to'] =
+assert['to not equal'] = assert['not to equal'] =
+assert['to not eql'] = assert['not to eql'] =		// compatibility with expect.js
 assert.notEqual = function notEqual( from , actual , expected ) {
 	if ( isEqual( actual , expected ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to equal ' + inspectVar( expected ) , from , actual , expected ) ;
@@ -505,18 +480,68 @@ assert.like = function like( from , actual , expected ) {
 
 
 // Not like
-assert['to be not like'] =
-assert['to not be like'] =
-assert['not to be like'] =
-assert['to be not alike'] =
-assert['to not be alike'] =
-assert['not to be alike'] =
-assert['to be not alike to'] =
-assert['to not be alike to'] =
-assert['not to be alike to'] =
+assert['to be not like'] = assert['to not be like'] = assert['not to be like'] =
+assert['to be not alike'] = assert['to not be alike'] = assert['not to be alike'] =
+assert['to be not alike to'] = assert['to not be alike to'] = assert['not to be alike to'] =
 assert.notLike = function notLike( from , actual , expected ) {
 	if ( isEqual( actual , expected , true ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be like ' + inspectVar( expected ) , from , actual , expected ) ;
+	}
+} ;
+
+
+
+// Equal to a partial object
+assert['to be partially equal to'] =
+assert['to be partial equal to'] =
+assert['to be equal to partial'] =
+assert['to partially equal'] =
+assert['to partial equal'] =
+assert['to equal partial'] =
+assert.partialEqual =
+assert.partiallyEqual = function partiallyEqual( from , actual , expected ) {
+	if ( ! isEqual( expected , actual , false , true ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to partially equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Not equal to a partial object
+assert['to be not partially equal to'] = assert['to not be partially equal to'] = assert['not to be partially equal to'] =
+assert['to be not partial equal to'] = assert['to not be partial equal to'] = assert['not to be partial equal to'] =
+assert['to be not equal to partial'] = assert['to not be equal to partial'] = assert['not to be equal to partial'] =
+assert['to not partially equal'] = assert['not to partially equal'] =
+assert['to not partial equal'] = assert['not to partial equal'] =
+assert['to not equal partial'] = assert['not to equal partial'] =
+assert.notPartialEqual =
+assert.notPartiallyEqual = function notPartiallyEqual( from , actual , expected ) {
+	if ( isEqual( expected , actual , false , true ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to partially equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Like partial
+assert['to be partially like'] =
+assert['to be like partial'] =
+assert.partialLike =
+assert.partiallyLike = function partiallyLike( from , actual , expected ) {
+	if ( ! isEqual( actual , expected , true , true ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
+	}
+} ;
+
+
+
+// Not like partial
+assert['to be not partially like'] = assert['to not be partially like'] = assert['not to be partially like'] =
+assert['to be not like partial'] = assert['to not be like partial'] = assert['not to be like partial'] =
+assert.partialLike =
+assert.partiallyLike = function partiallyLike( from , actual , expected ) {
+	if ( isEqual( actual , expected , true , true ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
 	}
 } ;
 
@@ -702,7 +727,7 @@ assert['to contain'] =
 assert['to include'] =
 assert.include =
 assert.contain = function contain( from , actual , expected ) {
-	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
+	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
 	}
 
@@ -719,7 +744,7 @@ assert['to not include'] =
 assert['not to include'] =
 assert.notInclude =
 assert.notContain = function notContain( from , actual , expected ) {
-	if ( typeof actual !== 'string' && typeof actual !== 'object' || typeof actual.indexOf !== 'function' ) {
+	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
 		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
 	}
 
@@ -735,7 +760,7 @@ assert.empty = function empty( from , actual ) {
 	var isEmpty = true ;
 
 	if ( actual ) {
-		if ( typeof actual === 'object' ) {
+		if ( actual && typeof actual === 'object' ) {
 			if ( Array.isArray( actual ) ) {
 				if ( actual.length ) { isEmpty = false ; }
 			}
@@ -768,7 +793,7 @@ assert.notEmpty = function notEmpty( from , actual ) {
 	var isEmpty = true ;
 
 	if ( actual ) {
-		if ( typeof actual === 'object' ) {
+		if ( actual && typeof actual === 'object' ) {
 			if ( Array.isArray( actual ) ) {
 				if ( actual.length ) { isEmpty = false ; }
 			}
@@ -794,32 +819,78 @@ assert.notEmpty = function notEmpty( from , actual ) {
 
 
 
-assert['to have empty'] =
-assert.empty = function empty( from , actual ) {
-	var isEmpty = true ;
-
-	if ( actual ) {
-		if ( typeof actual === 'object' ) {
-			if ( Array.isArray( actual ) ) {
-				if ( actual.length ) { isEmpty = false ; }
-			}
-			else if ( ( actual instanceof Map ) || ( actual instanceof Set ) ) {
-				if ( actual.size ) { isEmpty = false ; }
-			}
-			else if ( actual.length !== undefined ) {
-				if ( actual.length ) { isEmpty = false ; }
-			}
-			else if ( Object.keys( actual ).length ) {
-				isEmpty = false ;
-			}
-		}
-		else if ( typeof actual === 'string' ) {
-			isEmpty = false ;
-		}
+assert['to have key'] =
+assert['to have keys'] =
+assert.key =
+assert.keys = function keys_( from , actual , ... keys ) {
+	if ( ! typeChecker.looseObject( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
 	}
 
-	if ( ! isEmpty ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be empty' , from , actual ) ;
+	keys.forEach( key => {
+		if ( ! ( key in actual ) ) {
+			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have key(s) ' + keys , from , actual ) ;
+		}
+	} ) ;
+} ;
+
+
+
+assert['to have not key'] =
+assert['to not have key'] =
+assert['not to have key'] =
+assert['to have not keys'] =
+assert['to not have keys'] =
+assert['not to have keys'] =
+assert['to have no key'] =
+assert.noKey =
+assert.notKey =
+assert.notKeys = function notKeys( from , actual , ... keys ) {
+	if ( ! typeChecker.looseObject( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+	}
+
+	keys.forEach( key => {
+		if ( key in actual ) {
+			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to have key(s) ' + keys , from , actual ) ;
+		}
+	} ) ;
+} ;
+
+
+
+assert['to have property'] =
+assert.property = function property( from , actual , key , value ) {
+	if ( arguments.length <= 3 ) {
+		return assert.key( from , actual , key ) ;
+	}
+
+	if ( ! typeChecker.looseObject( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+	}
+
+	else {
+		return assert.equal( from , actual[ key ] , value ) ;
+	}
+} ;
+
+
+
+assert['to have not property'] =
+assert['to not have property'] =
+assert['not to have property'] =
+assert['to have no property'] =
+assert.notProperty = function notProperty( from , actual , key , value ) {
+	if ( arguments.length <= 3 ) {
+		return assert.notKey( from , actual , key ) ;
+	}
+
+	if ( ! typeChecker.looseObject( actual ) ) {
+		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+	}
+
+	else {
+		return assert.notEqual( from , actual[ key ] , value ) ;
 	}
 } ;
 
@@ -2077,12 +2148,19 @@ filter.notIn = function notIn( data , params , element ) {
 /*
 	Should be FAST! Some critical application part are depending on it.
 	When a reporter will be coded, it should be plugged in a way that does not slow down it.
+
+	Options:
+		like: if true, the prototype of object are not compared
+		oneWay: if true, check partially, e.g.:
+			{ a: 1 , b: 2 } and { a: 1 , b: 2 , c: 3 } DOES pass the test
+			but { a: 1 , b: 2 , c: 3 } and { a: 1 , b: 2 } DOES NOT pass the test
 */
-function isEqual( left , right , like ) {
+function isEqual( left , right , like , oneWay ) {
 	var runtime = {
 		leftStack: [] ,
 		rightStack: [] ,
-		like: like	// if true, the prototype of object are not compared
+		like: !! like ,
+		oneWay: !! oneWay
 	} ;
 
 	return isEqual_( runtime , left , right ) ;
@@ -2169,14 +2247,16 @@ function isEqual_( runtime , left , right ) {
 				runtime.rightStack.pop() ;
 			}
 
-			keys = Object.keys( right ) ;
+			if ( ! runtime.oneWay ) {
+				keys = Object.keys( right ) ;
 
-			for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
-				key = keys[ index ] ;
+				for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
+					key = keys[ index ] ;
 
-				if ( right[ key ] === undefined ) { continue ; }		// undefined and no key are considered the same
-				if ( left[ key ] === undefined ) { return false ; }
-				// No need to check equality: already done in the previous loop
+					if ( right[ key ] === undefined ) { continue ; }		// undefined and no key are considered the same
+					if ( left[ key ] === undefined ) { return false ; }
+					// No need to check equality: already done in the previous loop
+				}
 			}
 		}
 
@@ -3122,21 +3202,21 @@ var doormen = require( './doormen' ) ;
 
 // Basic types
 // Primitive types
-typeChecker.undefined = function( data ) { return data === undefined ; } ;
-typeChecker.null = function( data ) { return data === null ; } ;
-typeChecker.boolean = function( data ) { return typeof data === 'boolean' ; } ;
-typeChecker.number = function( data ) { return typeof data === 'number' ; } ;
-typeChecker.string = function( data ) { return typeof data === 'string' ; } ;
-typeChecker.object = function( data ) { return data && typeof data === 'object' ; } ;
-typeChecker.function = function( data ) { return typeof data === 'function' ; } ;
+typeChecker.undefined = data => data === undefined ;
+typeChecker.null = data => data === null ;
+typeChecker.boolean = data => typeof data === 'boolean' ;
+typeChecker.number = data => typeof data === 'number' ;
+typeChecker.string = data => typeof data === 'string' ;
+typeChecker.object = data => data && typeof data === 'object' ;
+typeChecker.function = data => typeof data === 'function' ;
 
 // Built-in type
-typeChecker.array = function( data ) { return Array.isArray( data ) ; } ;
-typeChecker.error = function( data ) { return data instanceof Error ; } ;
-typeChecker.date = function( data ) { return data instanceof Date ; } ;
-typeChecker.arguments = function( data ) { return Object.prototype.toString.call( data ) === '[object Arguments]' ; } ;
+typeChecker.array = data => Array.isArray( data ) ;
+typeChecker.error = data => data instanceof Error ;
+typeChecker.date = data => data instanceof Date ;
+typeChecker.arguments = data => Object.prototype.toString.call( data ) === '[object Arguments]' ;
 
-typeChecker.buffer = function( data ) {
+typeChecker.buffer = data => {
 	try {
 		// If we run in a browser, this does not exist
 		return data instanceof Buffer ;
@@ -3147,11 +3227,12 @@ typeChecker.buffer = function( data ) {
 } ;
 
 // Mixed
-typeChecker.strictObject = function( data ) { return data && typeof data === 'object' && ! Array.isArray( data ) ; } ;
-typeChecker.classId = function( data ) { return typeof data === 'function' || ( typeof data === 'string' && data.length ) ; } ;
-typeChecker.unset = function( data ) { return data === undefined || data === null ; } ;
+typeChecker.strictObject = data => data && typeof data === 'object' && ! Array.isArray( data ) ;
+typeChecker.looseObject = data => ( data && typeof data === 'object' ) || typeof data === 'function' ;	// object+function
+typeChecker.classId = data => typeof data === 'function' || ( typeof data === 'string' && data.length ) ;
+typeChecker.unset = data => data === undefined || data === null ;
 
-typeChecker.regexp = function( data ) {
+typeChecker.regexp = data => {
 	if ( data instanceof RegExp ) { return true ; }
 	if ( typeof data !== 'string' ) { return false ; }
 
@@ -3166,7 +3247,7 @@ typeChecker.regexp = function( data ) {
 
 
 
-typeChecker.schema = function checkSchema( data ) {
+typeChecker.schema = data => {
 	try {
 		doormen.validateSchema( data ) ;
 	}
@@ -3180,26 +3261,22 @@ typeChecker.schema = function checkSchema( data ) {
 
 
 // Meta type of numbers
-typeChecker.real = function checkReal( data ) { return typeof data === 'number' && ! isNaN( data ) && isFinite( data ) ; } ;
-typeChecker.integer = function checkInteger( data ) { return typeof data === 'number' && isFinite( data ) && data === Math.round( data ) ; } ;
+typeChecker.real = data => typeof data === 'number' && ! isNaN( data ) && isFinite( data ) ;
+typeChecker.integer = data => typeof data === 'number' && isFinite( data ) && data === Math.round( data ) ;
 
 
 
-typeChecker.hex = function checkHex( data ) {
-	return typeof data === 'string' && /^[0-9a-fA-F]+$/.test( data ) ;
-} ;
+typeChecker.hex = data => typeof data === 'string' && /^[0-9a-fA-F]+$/.test( data ) ;
 
 
 
 // IP
-typeChecker.ip = function checkIp( data ) {
-	return typeChecker.ipv4( data ) || typeChecker.ipv6( data ) ;
-} ;
+typeChecker.ip = data => typeChecker.ipv4( data ) || typeChecker.ipv6( data ) ;
 
 
 
 // IPv4
-typeChecker.ipv4 = function checkIpv4( data , skipRegExp ) {
+typeChecker.ipv4 = ( data , skipRegExp ) => {
 	var i , parts , tmp ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -3225,7 +3302,7 @@ typeChecker.ipv4 = function checkIpv4( data , skipRegExp ) {
 
 
 // IPv6
-typeChecker.ipv6 = function checkIpv6( data , skipRegExp ) {
+typeChecker.ipv6 = ( data , skipRegExp ) => {
 	var i , parts , hasDoubleColon = false , startWithDoubleColon = false , endWithDoubleColon = false ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -3269,7 +3346,7 @@ typeChecker.ipv6 = function checkIpv6( data , skipRegExp ) {
 
 
 
-typeChecker.hostname = function checkHostname( data , skipRegExp ) {
+typeChecker.hostname = ( data , skipRegExp ) => {
 	var i , parts ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -3292,14 +3369,12 @@ typeChecker.hostname = function checkHostname( data , skipRegExp ) {
 
 
 // hostname or ip
-typeChecker.host = function checkHost( data ) {
-	return typeChecker.ip( data ) || typeChecker.hostname( data ) ;
-} ;
+typeChecker.host = data => typeChecker.ip( data ) || typeChecker.hostname( data ) ;
 
 
 
 // URLs
-typeChecker.url = function checkUrl( data , restrictToWebUrl ) {
+typeChecker.url = ( data , restrictToWebUrl ) => {
 	if ( typeof data !== 'string' ) { return false ; }
 
 	var matches = data.match( /^([a-z+.-]+):\/\/((?:([^\s@/:]+)(?::([^\s@/:]+))?@)?(([0-9.]+)|([0-9a-f:]+)|([^\s/$?#@:]+))(:[0-9]+)?)?(\/[^\s]*)?$/ ) ;
@@ -3326,12 +3401,12 @@ typeChecker.url = function checkUrl( data , restrictToWebUrl ) {
 	return true ;
 } ;
 
-typeChecker.weburl = function checkWeburl( data ) { return typeChecker.url( data , true ) ; } ;
+typeChecker.weburl = data => typeChecker.url( data , true ) ;
 
 
 
 // Emails
-typeChecker.email = function checkEmail( data ) {
+typeChecker.email = data => {
 	var matches , i , parts ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -3364,7 +3439,7 @@ typeChecker.email = function checkEmail( data ) {
 
 
 // MongoDB ObjectID
-typeChecker.mongoId = function mongoId( data ) {
+typeChecker.mongoId = data => {
 	if ( data && typeof data === 'object' && data.constructor.name === 'ObjectID' && data.id && typeof data.toString === 'function' ) {
 		data = data.toString() ;
 	}
