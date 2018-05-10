@@ -268,14 +268,22 @@ function assertionError( from , actual , expectationType , ... expectations ) {
 	var message = 'Expected ' + inspectVar( actual ) + ' ' + expectationType ;
 
 	if ( expectations.length ) {
-		message += ' ' + expectations.map( e => inspectVar( e ) ).join( ' and ' ) ;
+		if ( assert[ expectationType ] && assert[ expectationType ].inspect ) {
+			message += ' ' + expectations.map( e => inspectVar( e ) ).join( ' and ' ) ;
+		}
+		else {
+			message += ' ' + expectations.join( ' and ' ) ;
+		}
 	}
 
 	var options = { actual , expectationType } ;
 
 	if ( expectations.length === 1 ) {
 		options.expected = expectations[ 0 ] ;
-		if ( assert[ expectationType ].showDiff ) { options.showDiff = true ; }
+
+		if ( assert[ expectationType ] && assert[ expectationType ].showDiff ) {
+			options.showDiff = true ;
+		}
 	}
 
 	return new AssertionError( message , from , options ) ;
@@ -467,6 +475,7 @@ assert.strictEqual = function strictEqual( from , actual , expected ) {
 	}
 } ;
 assert.strictEqual.showDiff = true ;
+assert.strictEqual.inspect = true ;
 
 
 
@@ -477,6 +486,7 @@ assert.notStrictEqual = function notStrictEqual( from , actual , notExpected ) {
 		throw assertionError( from , actual , 'not to be' , notExpected ) ;
 	}
 } ;
+assert.notStrictEqual.inspect = true ;
 
 
 
@@ -490,6 +500,7 @@ assert.equal = function equal( from , actual , expected ) {
 	}
 } ;
 assert.equal.showDiff = true ;
+assert.equal.inspect = true ;
 
 
 
@@ -502,6 +513,7 @@ assert.notEqual = function notEqual( from , actual , notExpected ) {
 		throw assertionError( from , actual , 'not to equal' , notExpected ) ;
 	}
 } ;
+assert.notEqual.inspect = true ;
 
 
 
@@ -515,6 +527,7 @@ assert.like = function like( from , actual , expected ) {
 	}
 } ;
 assert.like.showDiff = true ;
+assert.like.inspect = true ;
 
 
 
@@ -527,6 +540,7 @@ assert.notLike = function notLike( from , actual , notExpected ) {
 		throw assertionError( from , actual , 'not to be like' , notExpected ) ;
 	}
 } ;
+assert.notLike.inspect = true ;
 
 
 
@@ -544,6 +558,7 @@ assert.partiallyEqual = function partiallyEqual( from , actual , expected ) {
 	}
 } ;
 //assert.partiallyEqual.showDiff = true ;
+assert.partiallyEqual.inspect = true ;
 
 
 
@@ -560,6 +575,7 @@ assert.notPartiallyEqual = function notPartiallyEqual( from , actual , notExpect
 		throw assertionError( from , actual , 'not to partially equal' , notExpected ) ;
 	}
 } ;
+assert.notPartiallyEqual.inspect = true ;
 
 
 
@@ -573,6 +589,7 @@ assert.partiallyLike = function partiallyLike( from , actual , expected ) {
 	}
 } ;
 //assert.partiallyLike.showDiff = true ;
+assert.partiallyLike.inspect = true ;
 
 
 
@@ -585,6 +602,7 @@ assert.notPartiallyLike = function notPartiallyLike( from , actual , notExpected
 		throw assertionError( from , actual , 'to be like' , notExpected ) ;
 	}
 } ;
+assert.notPartiallyLike.inspect = true ;
 
 
 
@@ -787,6 +805,7 @@ assert.contain = function contain( from , actual , expected ) {
 		throw assertionError( from , actual , 'to contain' , expected ) ;
 	}
 } ;
+assert.contain.inspect = true ;
 
 
 
@@ -804,6 +823,7 @@ assert.notContain = function notContain( from , actual , notExpected ) {
 		throw assertionError( from , actual , 'not to contain' , notExpected ) ;
 	}
 } ;
+assert.notContain.inspect = true ;
 
 
 
@@ -885,10 +905,11 @@ assert.keys = function keys_( from , actual , ... keys ) {
 
 	keys.forEach( key => {
 		if ( ! ( key in actual ) ) {
-			throw assertionError( from , actual , 'to have key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'to have key(s)' , keys ) ;
 		}
 	} ) ;
 } ;
+assert.keys.inspect = true ;
 
 
 
@@ -908,10 +929,11 @@ assert.notKeys = function notKeys( from , actual , ... keys ) {
 
 	keys.forEach( key => {
 		if ( key in actual ) {
-			throw assertionError( from , actual , 'not to have key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'not to have key(s)' , keys ) ;
 		}
 	} ) ;
 } ;
+assert.notKeys.inspect = true ;
 
 
 
@@ -930,6 +952,7 @@ assert.ownKeys = function ownKeys( from , actual , ... keys ) {
 	} ) ;
 } ;
 
+// --------------------------- HERE --------------------------------
 
 
 assert['to have not own key'] =
