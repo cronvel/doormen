@@ -41,7 +41,7 @@ function AssertionError( message , from , options = {} ) {
 	this.showDiff = !! options.showDiff ;
 
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true , configurable: true } ) ; }
 }
 
 module.exports = AssertionError ;
@@ -86,7 +86,7 @@ function SchemaError( message ) {
 	this.message = message ;
 
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , SchemaError ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true , configurable: true } ) ; }
 }
 
 module.exports = SchemaError ;
@@ -133,7 +133,7 @@ function ValidatorError( message , element ) {
 	if ( element ) { this.at = this.path = element.path ; }
 
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , ValidatorError ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
+	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true , configurable: true } ) ; }
 }
 
 module.exports = ValidatorError ;
