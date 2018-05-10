@@ -28,15 +28,17 @@
 "use strict" ;
 
 
-function AssertionError( message , from , actual , expected , showDiff ) {
+//function AssertionError( message , from , actual , expected , showDiff ) {
+function AssertionError( message , from , options = {} ) {
 	this.message = message ;
 
 	from = from || AssertionError ;
 
 	// This will make Mocha and Tea-Time show the diff:
-	this.actual = actual ;
-	this.expected = expected ;
-	this.showDiff = showDiff ;
+	this.actual = options.actual ;
+	this.expected = options.expected ;
+	this.expectationType = options.expectationType ;
+	this.showDiff = !! options.showDiff ;
 
 	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
 	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true } ) ; }
@@ -190,7 +192,16 @@ var inspectOptions = {
 	noArrayProperty: true
 } ;
 
-var inspectVar = inspect.bind( null , inspectOptions ) ;
+
+
+function inspectVar( variable ) {
+	if ( variable instanceof RegExp ) {
+		return variable.toString() ;
+	}
+
+	return inspect( inspectOptions , variable ) ;
+
+}
 
 
 
@@ -253,6 +264,25 @@ module.exports = assert ;
 
 
 
+function assertionError( from , actual , expectationType , ... expectations ) {
+	var message = 'Expected ' + inspectVar( actual ) + ' ' + expectationType ;
+
+	if ( expectations.length ) {
+		message += ' ' + expectations.map( e => inspectVar( e ) ).join( ' and ' ) ;
+	}
+
+	var options = { actual , expectationType } ;
+
+	if ( expectations.length === 1 ) {
+		options.expected = expectations[ 0 ] ;
+		if ( assert[ expectationType ].showDiff ) { options.showDiff = true ; }
+	}
+
+	return new AssertionError( message , from , options ) ;
+}
+
+
+
 /* Constants */
 
 
@@ -262,7 +292,7 @@ assert['to be defined'] =
 assert.defined =
 assert.isDefined = function isDefined( from , actual ) {
 	if ( actual === undefined ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be defined' , from , actual ) ;
+		throw assertionError( from , actual , 'to be defined' ) ;
 	}
 } ;
 
@@ -274,7 +304,7 @@ assert['not to be defined'] = assert['to be undefined'] =
 assert.undefined =
 assert.isUndefined = function isUndefined( from , actual ) {
 	if ( actual !== undefined ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be undefined' , from , actual , undefined ) ;
+		throw assertionError( from , actual , 'to be undefined' ) ;
 	}
 } ;
 
@@ -288,7 +318,7 @@ assert.isOk =
 assert.truthy =
 assert.isTruthy = function isTruthy( from , actual ) {
 	if ( ! actual ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be truthy' , from , actual ) ;
+		throw assertionError( from , actual , 'to be truthy' ) ;
 	}
 } ;
 
@@ -303,7 +333,7 @@ assert.isNotOk =
 assert.falsy =
 assert.isFalsy = function isFalsy( from , actual ) {
 	if ( actual ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be falsy' , from , actual ) ;
+		throw assertionError( from , actual , 'to be falsy' ) ;
 	}
 } ;
 
@@ -314,7 +344,7 @@ assert['to be true'] =
 assert.true =
 assert.isTrue = function isTrue( from , actual ) {
 	if ( actual !== true ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be true' , from , actual , true ) ;
+		throw assertionError( from , actual , 'to be true' ) ;
 	}
 } ;
 
@@ -325,7 +355,7 @@ assert['to be not true'] = assert['to not be true'] = assert['not to be true'] =
 assert.notTrue =
 assert.isNotTrue = function isNotTrue( from , actual ) {
 	if ( actual === true ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be true' , from , actual ) ;
+		throw assertionError( from , actual , 'not to be true' ) ;
 	}
 } ;
 
@@ -336,7 +366,7 @@ assert['to be false'] =
 assert.false =
 assert.isFalse = function isFalse( from , actual ) {
 	if ( actual !== false ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be false' , from , actual , false ) ;
+		throw assertionError( from , actual , 'to be false' ) ;
 	}
 } ;
 
@@ -347,7 +377,7 @@ assert['to be not false'] = assert['to not be false'] = assert['not to be false'
 assert.notFalse =
 assert.isNotFalse = function isNotFalse( from , actual ) {
 	if ( actual === false ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be false' , from , actual , false ) ;
+		throw assertionError( from , actual , 'not to be false' ) ;
 	}
 } ;
 
@@ -358,7 +388,7 @@ assert['to be null'] =
 assert.null =
 assert.isNull = function isNull( from , actual ) {
 	if ( actual !== null ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be null' , from , actual , null ) ;
+		throw assertionError( from , actual , 'to be null' ) ;
 	}
 } ;
 
@@ -369,7 +399,7 @@ assert['to be not null'] = assert['to not be null'] = assert['not to be null'] =
 assert.notNull =
 assert.isNotNull = function isNotNull( from , actual ) {
 	if ( actual === null ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be null' , from , actual , null ) ;
+		throw assertionError( from , actual , 'not to be null' ) ;
 	}
 } ;
 
@@ -381,7 +411,7 @@ assert['to be nan'] =
 assert.NaN =
 assert.isNaN = function isNaN( from , actual ) {
 	if ( ! Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be NaN' , from , actual , null ) ;
+		throw assertionError( from , actual , 'to be NaN' ) ;
 	}
 } ;
 
@@ -393,7 +423,7 @@ assert['to be not nan'] = assert['to not be nan'] = assert['not to be nan'] =
 assert.notNaN =
 assert.isNotNaN = function isNaN( from , actual ) {
 	if ( Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be NaN' , from , actual , null ) ;
+		throw assertionError( from , actual , 'not to be NaN' ) ;
 	}
 } ;
 
@@ -402,11 +432,11 @@ assert.isNotNaN = function isNaN( from , actual ) {
 assert['to be finite'] =
 assert.finite = function finite( from , actual ) {
 	if ( typeof actual !== 'number' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
 	if ( Number.isNaN( actual ) || actual === Infinity || actual === -Infinity ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be finite' , from , actual ) ;
+		throw assertionError( from , actual , 'to be finite' ) ;
 	}
 } ;
 
@@ -415,11 +445,11 @@ assert.finite = function finite( from , actual ) {
 assert['to be not finite'] = assert['to not be finite'] = assert['not to be finite'] =
 assert.notFinite = function notFinite( from , actual ) {
 	if ( typeof actual !== 'number' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
 	if ( ! Number.isNaN( actual ) && actual !== Infinity && actual !== -Infinity ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be finite' , from , actual ) ;
+		throw assertionError( from , actual , 'to be finite' ) ;
 	}
 } ;
 
@@ -433,17 +463,18 @@ assert.notFinite = function notFinite( from , actual ) {
 assert['to be'] =
 assert.strictEqual = function strictEqual( from , actual , expected ) {
 	if ( actual !== expected && ! ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be ' + inspectVar( expected ) , from , actual , expected , true ) ;
+		throw assertionError( from , actual , 'to be' , expected ) ;
 	}
 } ;
+assert.strictEqual.showDiff = true ;
 
 
 
 // Not identical
 assert['to be not'] = assert['to not be'] = assert['not to be'] =
-assert.notStrictEqual = function notStrictEqual( from , actual , expected ) {
-	if ( actual === expected || ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + inspectVar( expected ) , from , actual , expected ) ;
+assert.notStrictEqual = function notStrictEqual( from , actual , notExpected ) {
+	if ( actual === notExpected || ( Number.isNaN( actual ) && Number.isNaN( notExpected ) ) ) {
+		throw assertionError( from , actual , 'not to be' , notExpected ) ;
 	}
 } ;
 
@@ -455,9 +486,10 @@ assert['to equal'] =
 assert['to eql'] =		// compatibility with expect.js
 assert.equal = function equal( from , actual , expected ) {
 	if ( ! isEqual( actual , expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
+		throw assertionError( from , actual , 'to equal' , expected ) ;
 	}
 } ;
+assert.equal.showDiff = true ;
 
 
 
@@ -465,9 +497,9 @@ assert.equal = function equal( from , actual , expected ) {
 assert['to be not equal to'] = assert['to not be equal to'] = assert['not to be equal to'] =
 assert['to not equal'] = assert['not to equal'] =
 assert['to not eql'] = assert['not to eql'] =		// compatibility with expect.js
-assert.notEqual = function notEqual( from , actual , expected ) {
-	if ( isEqual( actual , expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to equal ' + inspectVar( expected ) , from , actual , expected ) ;
+assert.notEqual = function notEqual( from , actual , notExpected ) {
+	if ( isEqual( actual , notExpected ) ) {
+		throw assertionError( from , actual , 'not to equal' , notExpected ) ;
 	}
 } ;
 
@@ -479,9 +511,10 @@ assert['to be alike'] =
 assert['to be alike to'] =
 assert.like = function like( from , actual , expected ) {
 	if ( ! isEqual( actual , expected , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
+		throw assertionError( from , actual , 'to be like' , expected ) ;
 	}
 } ;
+assert.like.showDiff = true ;
 
 
 
@@ -489,9 +522,9 @@ assert.like = function like( from , actual , expected ) {
 assert['to be not like'] = assert['to not be like'] = assert['not to be like'] =
 assert['to be not alike'] = assert['to not be alike'] = assert['not to be alike'] =
 assert['to be not alike to'] = assert['to not be alike to'] = assert['not to be alike to'] =
-assert.notLike = function notLike( from , actual , expected ) {
-	if ( isEqual( actual , expected , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be like ' + inspectVar( expected ) , from , actual , expected ) ;
+assert.notLike = function notLike( from , actual , notExpected ) {
+	if ( isEqual( actual , notExpected , true ) ) {
+		throw assertionError( from , actual , 'not to be like' , notExpected ) ;
 	}
 } ;
 
@@ -507,9 +540,10 @@ assert['to equal partial'] =
 assert.partialEqual =
 assert.partiallyEqual = function partiallyEqual( from , actual , expected ) {
 	if ( ! isEqual( expected , actual , false , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to partially equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
+		throw assertionError( from , actual , 'to partially equal' , expected ) ;
 	}
 } ;
+//assert.partiallyEqual.showDiff = true ;
 
 
 
@@ -521,9 +555,9 @@ assert['to not partially equal'] = assert['not to partially equal'] =
 assert['to not partial equal'] = assert['not to partial equal'] =
 assert['to not equal partial'] = assert['not to equal partial'] =
 assert.notPartialEqual =
-assert.notPartiallyEqual = function notPartiallyEqual( from , actual , expected ) {
-	if ( isEqual( expected , actual , false , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to partially equal ' + inspectVar( expected ) , from , actual , expected , true ) ;
+assert.notPartiallyEqual = function notPartiallyEqual( from , actual , notExpected ) {
+	if ( isEqual( notExpected , actual , false , true ) ) {
+		throw assertionError( from , actual , 'not to partially equal' , notExpected ) ;
 	}
 } ;
 
@@ -535,19 +569,20 @@ assert['to be like partial'] =
 assert.partialLike =
 assert.partiallyLike = function partiallyLike( from , actual , expected ) {
 	if ( ! isEqual( actual , expected , true , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
+		throw assertionError( from , actual , 'to be like' , expected ) ;
 	}
 } ;
+//assert.partiallyLike.showDiff = true ;
 
 
 
 // Not like partial
 assert['to be not partially like'] = assert['to not be partially like'] = assert['not to be partially like'] =
 assert['to be not like partial'] = assert['to not be like partial'] = assert['not to be like partial'] =
-assert.partialLike =
-assert.partiallyLike = function partiallyLike( from , actual , expected ) {
-	if ( isEqual( actual , expected , true , true ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be like ' + inspectVar( expected ) , from , actual , expected , true ) ;
+assert.notPartialLike =
+assert.notPartiallyLike = function notPartiallyLike( from , actual , notExpected ) {
+	if ( isEqual( actual , notExpected , true , true ) ) {
+		throw assertionError( from , actual , 'to be like' , notExpected ) ;
 	}
 } ;
 
@@ -562,7 +597,7 @@ assert['to be close to'] =
 assert['to be around'] =
 assert.around = function around( from , actual , value , delta ) {
 	if ( typeof actual !== 'number' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
 	if ( ! delta ) {
@@ -574,7 +609,7 @@ assert.around = function around( from , actual , value , delta ) {
 	}
 
 	if ( actual < value - delta || actual > value + delta || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be around ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'to be around ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -589,7 +624,7 @@ assert['to not be around'] =
 assert['not to be around'] =
 assert.notAround = function notAround( from , actual , value , delta ) {
 	if ( typeof actual !== 'number' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
 	if ( ! delta ) {
@@ -601,7 +636,7 @@ assert.notAround = function notAround( from , actual , value , delta ) {
 	}
 
 	if ( ( actual >= value - delta && actual <= value + delta ) || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be around ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'not to be around ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -615,11 +650,11 @@ assert.gt =
 assert.greater =
 assert.greaterThan = function greaterThan( from , actual , value ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( actual <= value || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be above ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'to be above ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -631,11 +666,11 @@ assert.least =
 assert.gte =
 assert.greaterThanOrEqualTo = function greaterThanOrEqualTo( from , actual , value ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( actual < value || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be at least ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'to be at least ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -649,11 +684,11 @@ assert.lt =
 assert.lesser =
 assert.lesserThan = function lesserThan( from , actual , value ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( actual >= value || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be below ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'to be below ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -665,11 +700,11 @@ assert.most =
 assert.lte =
 assert.lesserThanOrEqualTo = function lesserThanOrEqualTo( from , actual , value ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( actual > value || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be at most ' + value  , from , actual ) ;
+		throw assertionError( from , actual , 'to be at most ' + value  , from , actual ) ;
 	}
 } ;
 
@@ -678,11 +713,11 @@ assert.lesserThanOrEqualTo = function lesserThanOrEqualTo( from , actual , value
 assert['to be within'] =
 assert.within = function within( from , actual , lower , higher ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( actual < lower || actual > higher || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be within ' + lower + ' and ' + higher  , from , actual ) ;
+		throw assertionError( from , actual , 'to be within ' + lower + ' and ' + higher  , from , actual ) ;
 	}
 } ;
 
@@ -693,11 +728,11 @@ assert['to not be within'] =
 assert['not to be within'] =
 assert.notWithin = function notWithin( from , actual , lower , higher ) {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a number or a Date' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
 
 	if ( ( actual >= lower && actual <= higher ) || Number.isNaN( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be within ' + lower + ' and ' + higher  , from , actual ) ;
+		throw assertionError( from , actual , 'not to be within ' + lower + ' and ' + higher  , from , actual ) ;
 	}
 } ;
 
@@ -711,11 +746,11 @@ assert.notWithin = function notWithin( from , actual , lower , higher ) {
 assert['to match'] =
 assert.match = function match( from , actual , expected ) {
 	if ( typeof actual !== 'string' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a string' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a string' ) ;
 	}
 
 	if ( ! actual.match( expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to match ' + expected , from , actual , expected ) ;
+		throw assertionError( from , actual , 'to match' , expected ) ;
 	}
 } ;
 
@@ -724,13 +759,13 @@ assert.match = function match( from , actual , expected ) {
 // Not string regexp match
 assert['to not match'] =
 assert['not to match'] =
-assert.notMatch = function notMatch( from , actual , expected ) {
+assert.notMatch = function notMatch( from , actual , notExpected ) {
 	if ( typeof actual !== 'string' ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be a string' , from , actual ) ;
+		throw assertionError( from , actual , 'to be a string' ) ;
 	}
 
-	if ( actual.match( expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to match ' + expected , from , actual , expected ) ;
+	if ( actual.match( notExpected ) ) {
+		throw assertionError( from , actual , 'not to match' , notExpected ) ;
 	}
 } ;
 
@@ -745,11 +780,11 @@ assert['to include'] =
 assert.include =
 assert.contain = function contain( from , actual , expected ) {
 	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
+		throw assertionError( from , actual , 'to have an indexOf method' ) ;
 	}
 
 	if ( actual.indexOf( expected ) === -1 ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to contain ' + inspectVar( expected ) , from , actual , expected ) ;
+		throw assertionError( from , actual , 'to contain' , expected ) ;
 	}
 } ;
 
@@ -760,13 +795,13 @@ assert['not to contain'] =
 assert['to not include'] =
 assert['not to include'] =
 assert.notInclude =
-assert.notContain = function notContain( from , actual , expected ) {
+assert.notContain = function notContain( from , actual , notExpected ) {
 	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have an indexOf method' , from , actual ) ;
+		throw assertionError( from , actual , 'to have an indexOf method' ) ;
 	}
 
-	if ( actual.indexOf( expected ) !== -1 ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to contain ' + inspectVar( expected ) , from , actual , expected ) ;
+	if ( actual.indexOf( notExpected ) !== -1 ) {
+		throw assertionError( from , actual , 'not to contain' , notExpected ) ;
 	}
 } ;
 
@@ -797,7 +832,7 @@ assert.empty = function empty( from , actual ) {
 	}
 
 	if ( ! isEmpty ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be empty' , from , actual ) ;
+		throw assertionError( from , actual , 'to be empty' ) ;
 	}
 } ;
 
@@ -830,7 +865,7 @@ assert.notEmpty = function notEmpty( from , actual ) {
 	}
 
 	if ( isEmpty ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be empty' , from , actual ) ;
+		throw assertionError( from , actual , 'to be empty' ) ;
 	}
 } ;
 
@@ -845,12 +880,12 @@ assert['to have keys'] =
 assert.key =
 assert.keys = function keys_( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+		throw assertionError( from , actual , 'to be an object or function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( ! ( key in actual ) ) {
-			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'to have key(s) ' + keys , from , actual ) ;
 		}
 	} ) ;
 } ;
@@ -868,12 +903,12 @@ assert.noKey =
 assert.notKey =
 assert.notKeys = function notKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+		throw assertionError( from , actual , 'to be an object or function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( key in actual ) {
-			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to have key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'not to have key(s) ' + keys , from , actual ) ;
 		}
 	} ) ;
 } ;
@@ -885,12 +920,12 @@ assert['to have own keys'] =
 assert.ownKey =
 assert.ownKeys = function ownKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+		throw assertionError( from , actual , 'to be an object or function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( ! actual.hasOwnProperty( key ) ) {
-			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to have own key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'to have own key(s) ' + keys , from , actual ) ;
 		}
 	} ) ;
 } ;
@@ -908,12 +943,12 @@ assert.noOwnKey =
 assert.notOwnKey =
 assert.notOwnKeys = function notKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an object or function' , from , actual ) ;
+		throw assertionError( from , actual , 'to be an object or function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( actual.hasOwnProperty( key ) ) {
-			throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to have own key(s) ' + keys , from , actual ) ;
+			throw assertionError( from , actual , 'not to have own key(s) ' + keys , from , actual ) ;
 		}
 	} ) ;
 } ;
@@ -1006,12 +1041,12 @@ assert['not to be a'] =
 assert['to be not an'] =
 assert['to not be an'] =
 assert['not to be an'] =
-assert.notTypeOrInstanceOf = function notTypeOrInstanceOf( from , actual , expected ) {
-	if ( typeof expected === 'string' ) {
-		return assert.notTypeOf( from , actual , expected ) ;
+assert.notTypeOrInstanceOf = function notTypeOrInstanceOf( from , actual , notExpected ) {
+	if ( typeof notExpected === 'string' ) {
+		return assert.notTypeOf( from , actual , notExpected ) ;
 	}
 
-	return assert.notInstanceOf( from , actual , expected ) ;
+	return assert.notInstanceOf( from , actual , notExpected ) ;
 } ;
 
 
@@ -1024,8 +1059,8 @@ assert.typeOf = function typeOf( from , actual , expected ) {
 	}
 
 	if ( ! typeChecker[ expected ]( actual ) ) {
-		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be ' + article + ' ' + expected , from , actual , expected ) ;
+		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+		throw assertionError( from , actual , 'to be ' + article , expected ) ;
 	}
 } ;
 
@@ -1035,14 +1070,14 @@ assert.typeOf = function typeOf( from , actual , expected ) {
 assert['to be not of type'] =
 assert['to not be of type'] =
 assert['not to be of type'] =
-assert.notTypeOf = function notTypeOf( from , actual , expected ) {
-	if ( ! typeChecker[ expected ] ) {
-		throw new Error( "Unknown type '" + expected + "'." ) ;
+assert.notTypeOf = function notTypeOf( from , actual , notExpected ) {
+	if ( ! typeChecker[ notExpected ] ) {
+		throw new Error( "Unknown type '" + notExpected + "'." ) ;
 	}
 
-	if ( typeChecker[ expected ]( actual ) ) {
-		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be ' + article + ' ' + expected , from , actual , expected ) ;
+	if ( typeChecker[ notExpected ]( actual ) ) {
+		let article = vowel[ notExpected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+		throw assertionError( from , actual , 'not to be ' + article , notExpected ) ;
 	}
 } ;
 
@@ -1052,7 +1087,7 @@ assert.notTypeOf = function notTypeOf( from , actual , expected ) {
 assert['to be an instance of'] =
 assert.instanceOf = function instanceOf( from , actual , expected ) {
 	if ( ! ( actual instanceof expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' to be an instance of ' + expected , from , actual , expected ) ;
+		throw assertionError( from , actual , 'to be an instance of' , expected ) ;
 	}
 } ;
 
@@ -1062,9 +1097,9 @@ assert.instanceOf = function instanceOf( from , actual , expected ) {
 assert['to be not an instance of'] =
 assert['to not be an instance of'] =
 assert['not to be an instance of'] =
-assert.notInstanceOf = function notInstanceOf( from , actual , expected ) {
-	if ( ! ( actual instanceof expected ) ) {
-		throw new AssertionError( 'Expected ' + inspectVar( actual ) + ' not to be an instance of ' + expected , from , actual , expected ) ;
+assert.notInstanceOf = function notInstanceOf( from , actual , notExpected ) {
+	if ( ! ( actual instanceof notExpected ) ) {
+		throw assertionError( from , actual , 'not to be an instance of' , notExpected ) ;
 	}
 } ;
 
@@ -1846,11 +1881,17 @@ doormen.patch.not = function patchNot( ... args ) {
 
 
 
+// DEPRECATED assertions!
+
 doormen.equals = function equals( left , right ) {
 	var error ;
 
 	if ( ! doormen.isEqual( left , right ) ) {
-		throw new doormen.AssertionError( 'should have been equal' , equals , left , right , true ) ;
+		throw new doormen.AssertionError( 'should have been equal' , equals , {
+			actual: left ,
+			expected: right ,
+			showDiff: true
+		} ) ;
 	}
 } ;
 
@@ -1858,7 +1899,13 @@ doormen.equals = function equals( left , right ) {
 
 // Inverse of equals
 doormen.not.equals = function notEquals( left , right ) {
-	if ( doormen.isEqual( left , right ) ) { throw new doormen.AssertionError( 'should not have been equal' , notEquals , left , right , true ) ; }
+	if ( doormen.isEqual( left , right ) ) {
+		throw new doormen.AssertionError( 'should not have been equal' , notEquals , {
+			actual: left ,
+			expected: right ,
+			showDiff: true
+		} ) ;
+	}
 } ;
 
 
@@ -1867,7 +1914,11 @@ doormen.alike = function alike( left , right ) {
 	var error ;
 
 	if ( ! doormen.isEqual( left , right , true ) ) {
-		throw new doormen.AssertionError( 'should have been alike' , alike , left , right , true ) ;
+		throw new doormen.AssertionError( 'should have been alike' , alike , {
+			actual: left ,
+			expected: right ,
+			showDiff: true
+		} ) ;
 	}
 } ;
 
@@ -1875,7 +1926,13 @@ doormen.alike = function alike( left , right ) {
 
 // Inverse of alike
 doormen.not.alike = function notAlike( left , right ) {
-	if ( doormen.isEqual( left , right , true ) ) { throw new doormen.AssertionError( 'should not have been alike' , notAlike , left , right , true ) ; }
+	if ( doormen.isEqual( left , right , true ) ) {
+		throw new doormen.AssertionError( 'should not have been alike' , notAlike , {
+			actual: left ,
+			expected: right ,
+			showDiff: true
+		} ) ;
+	}
 } ;
 
 
@@ -1912,27 +1969,27 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 
-var AssertionError = require( './AssertionError.js' ) ;
+//var AssertionError = require( './AssertionError.js' ) ;
 var assert = require( './assert.js' ) ;
 
 
 
-function Expect( value , comparison , ... args ) {
+function Expect( value , expectationType , ... args ) {
 
 	// Direct usage, e.g.: expect( actual , "to equal" , expected )
-	if ( comparison ) {
-		if ( ! assert[ comparison ] ) {
-			throw new Error( "Unknown comparison '" + comparison + "'." ) ;
+	if ( expectationType ) {
+		if ( ! assert[ expectationType ] ) {
+			throw new Error( "Unknown expectationType '" + expectationType + "'." ) ;
 		}
 
-		return assert[ comparison ]( Expect , value , ... args ) ;
+		return assert[ expectationType ]( Expect , value , ... args ) ;
 	}
 
 	// Sadly, Proxy are not callable on regular object, so the target has to be a function.
 	// The name is purposedly the same.
 	var assertion = function Expect() {} ;	// eslint-disable-line no-shadow
 	assertion.value = value ;
-	assertion.comparison = null ;
+	assertion.expectationType = null ;
 
 	return new Proxy( assertion , handler ) ;
 }
@@ -1953,8 +2010,8 @@ var handler = {
 		if ( typeof property === 'string' && ! Function.prototype[ property ] && ! Object.prototype[ property ] && ! Expect.prototype[ property ] ) {
 			//console.error( ">>> inside" ) ;
 			//console.error( " receiver:" , receiver ) ;
-			if ( target.comparison ) { target.comparison += ' ' + property ; }
-			else { target.comparison = property ; }
+			if ( target.expectationType ) { target.expectationType += ' ' + property ; }
+			else { target.expectationType = property ; }
 
 			return receiver ;
 		}
@@ -1971,16 +2028,16 @@ var handler = {
 	} ,
 	apply: ( target , thisArg , args ) => {
 		//console.error( ">>> APPLY" ) ;
-		if ( ! assert[ target.comparison ] ) {
-			throw new Error( "Unknown comparison '" + target.comparison + "'." ) ;
+		if ( ! assert[ target.expectationType ] ) {
+			throw new Error( "Unknown expectationType '" + target.expectationType + "'." ) ;
 		}
 
-		return assert[ target.comparison ]( handler.apply , target.value , ... args ) ;
+		return assert[ target.expectationType ]( handler.apply , target.value , ... args ) ;
 	}
 } ;
 
 
-},{"./AssertionError.js":1,"./assert.js":4}],8:[function(require,module,exports){
+},{"./assert.js":4}],8:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -4306,6 +4363,11 @@ function specialObjectSubstitution( variable ) {
 	switch ( variable.constructor.name ) {
 		case 'String' :
 			if ( variable instanceof String ) {
+				return variable.toString() ;
+			}
+			break ;
+		case 'RegExp' :
+			if ( variable instanceof RegExp ) {
 				return variable.toString() ;
 			}
 			break ;
