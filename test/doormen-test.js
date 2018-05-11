@@ -2667,6 +2667,34 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( [] ).to.not.be( [] ) ;
 	} ) ;
 	
+	it( "expect a value to be a shallow clone of" , function() {
+		var o1 = {a:1,b:2} ,
+			o2 = {c:3} ,
+			a1 = [1,2,3] ,
+			a2 = ["one","two","three"] ;
+		
+		doormen.expect( {} ).to.be.a.shallow.clone.of( {} ) ;
+		doormen.expect( o1 ).to.be.a.shallow.clone.of( o1 ) ;
+		doormen.expect( {n:o1} ).to.be.a.shallow.clone.of( {n:o1} ) ;
+		doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2,c:3} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
+		doormen.expect( {a:1,b:2,c:o1} ).to.be.a.shallow.clone.of( {a:1,b:2,c:o1} ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:{d:4}} ).to.be.a.shallow.clone.of( {a:1,b:2,c:{d:4}} ) ) ;
+		doormen.expect( {a:1,b:2,c:a1} ).to.be.a.shallow.clone.of( {a:1,b:2,c:a1} ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:[1,2,3]} ).to.be.a.shallow.clone.of( {a:1,b:2,c:[1,2,3]} ) ) ;
+		doormen.expect( [] ).to.be.a.shallow.clone.of( [] ) ;
+		doormen.expect( a1 ).to.be.a.shallow.clone.of( a1 ) ;
+		doormen.expect( [a1] ).to.be.a.shallow.clone.of( [a1] ) ;
+		doormen.expect( [a1,a2,o1,o2] ).to.be.a.shallow.clone.of( [a1,a2,o1,o2] ) ;
+		doormen.expect( [1,2,3] ).to.be.a.shallow.clone.of( [1,2,3] ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [0,2,3] ).to.be.a.shallow.clone.of( [1,2,3] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [[1,2,3]] ).to.be.a.shallow.clone.of( [[1,2,3]] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [{a:1}] ).to.be.a.shallow.clone.of( [{a:1}] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [0,[1,2,3]] ).to.be.a.shallow.clone.of( [0,[1,2,3]] ) ) ;
+	} ) ;
+	
 	it( "expect a value to be equal (different from identical)" , function() {
 		doormen.expect( "bob" ).to.equal( "bob" ) ;
 		doormen.expect( "bob" ).to.be.not.equal.to( "bobby" ) ;

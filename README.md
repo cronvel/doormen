@@ -2795,6 +2795,36 @@ doormen.expect( {} ).to.not.be( {} ) ;
 doormen.expect( [] ).to.not.be( [] ) ;
 ```
 
+expect a value to be a shallow clone of.
+
+```js
+var o1 = {a:1,b:2} ,
+	o2 = {c:3} ,
+	a1 = [1,2,3] ,
+	a2 = ["one","two","three"] ;
+
+doormen.expect( {} ).to.be.a.shallow.clone.of( {} ) ;
+doormen.expect( o1 ).to.be.a.shallow.clone.of( o1 ) ;
+doormen.expect( {n:o1} ).to.be.a.shallow.clone.of( {n:o1} ) ;
+doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2,c:3} ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
+doormen.expect( {a:1,b:2,c:o1} ).to.be.a.shallow.clone.of( {a:1,b:2,c:o1} ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:{d:4}} ).to.be.a.shallow.clone.of( {a:1,b:2,c:{d:4}} ) ) ;
+doormen.expect( {a:1,b:2,c:a1} ).to.be.a.shallow.clone.of( {a:1,b:2,c:a1} ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:[1,2,3]} ).to.be.a.shallow.clone.of( {a:1,b:2,c:[1,2,3]} ) ) ;
+doormen.expect( [] ).to.be.a.shallow.clone.of( [] ) ;
+doormen.expect( a1 ).to.be.a.shallow.clone.of( a1 ) ;
+doormen.expect( [a1] ).to.be.a.shallow.clone.of( [a1] ) ;
+doormen.expect( [a1,a2,o1,o2] ).to.be.a.shallow.clone.of( [a1,a2,o1,o2] ) ;
+doormen.expect( [1,2,3] ).to.be.a.shallow.clone.of( [1,2,3] ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( [0,2,3] ).to.be.a.shallow.clone.of( [1,2,3] ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( [[1,2,3]] ).to.be.a.shallow.clone.of( [[1,2,3]] ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( [{a:1}] ).to.be.a.shallow.clone.of( [{a:1}] ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( [0,[1,2,3]] ).to.be.a.shallow.clone.of( [0,[1,2,3]] ) ) ;
+```
+
 expect a value to be equal (different from identical).
 
 ```js
