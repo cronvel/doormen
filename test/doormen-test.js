@@ -2580,25 +2580,25 @@ describe( "Expect BDD assertion library" , function() {
 	
 	it( "expect a value to be defined/undefined" , function() {
 		doormen.expect( "bob" ).to.be.defined() ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.defined() ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.undefined() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).not.to.be.defined() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.undefined() ) ;
 		doormen.expect( null ).to.be.defined() ;
-		doormen.shouldThrow( () => doormen.expect( null ).not.to.be.defined() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( null ).not.to.be.defined() ) ;
 		doormen.expect( undefined ).to.be.undefined() ;
 		doormen.expect( '' ).to.be.defined() ;
 		doormen.expect( false ).to.be.defined() ;
-		doormen.shouldThrow( () => doormen.expect( false ).to.be.undefined() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( false ).to.be.undefined() ) ;
 	} ) ;
 	
 	it( "expect a value to be truthy/falsy" , function() {
 		doormen.expect( "bob" ).to.be.ok() ;
 		doormen.expect( "" ).not.to.be.ok() ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.ok() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).not.to.be.ok() ) ;
 		doormen.expect( false ).not.to.be.ok() ;
 		doormen.expect( 0 ).to.be.falsy() ;
 		doormen.expect( null ).to.be.not.ok() ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.falsy() ) ;
-		doormen.shouldThrow( () => doormen.expect( [] ).not.to.be.truthy() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.falsy() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).not.to.be.truthy() ) ;
 		doormen.expect( {} ).to.be.truthy() ;
 		doormen.expect( [] ).to.be.truthy() ;
 	} ) ;
@@ -2608,9 +2608,9 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( "bob" ).not.to.be.false() ;
 		doormen.expect( "" ).not.to.be.true() ;
 		doormen.expect( "" ).not.to.be.false() ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.true() ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.true() ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.false() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.true() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.true() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.false() ) ;
 		doormen.expect( true ).to.be.true() ;
 		doormen.expect( true ).not.to.be.false() ;
 		doormen.expect( false ).not.to.be.true() ;
@@ -2619,50 +2619,50 @@ describe( "Expect BDD assertion library" , function() {
 	
 	it( "expect a value to be null/not null" , function() {
 		doormen.expect( "bob" ).to.be.not.null() ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.null() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.null() ) ;
 		doormen.expect( undefined ).not.to.be.null() ;
-		doormen.shouldThrow( () => doormen.expect( undefined ).to.be.null() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( undefined ).to.be.null() ) ;
 		doormen.expect( null ).to.be.null() ;
-		doormen.shouldThrow( () => doormen.expect( null ).not.to.be.null() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( null ).not.to.be.null() ) ;
 		doormen.expect( '' ).not.to.be.null() ;
 		doormen.expect( {} ).not.to.be.null() ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.null() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.null() ) ;
 	} ) ;
 	
 	it( "expect a value to be NaN/not NaN" , function() {
 		doormen.expect( "" ).not.to.be.NaN() ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.NaN() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.NaN() ) ;
 		doormen.expect( undefined ).not.to.be.NaN() ;
-		doormen.shouldThrow( () => doormen.expect( undefined ).to.be.NaN() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( undefined ).to.be.NaN() ) ;
 		doormen.expect( NaN ).to.be.NaN() ;
-		doormen.shouldThrow( () => doormen.expect( NaN ).not.to.be.NaN() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( NaN ).not.to.be.NaN() ) ;
 		doormen.expect( Infinity ).to.be.not.NaN() ;
-		doormen.shouldThrow( () => doormen.expect( Infinity ).to.be.NaN() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Infinity ).to.be.NaN() ) ;
 	} ) ;
 	
 	it( "expect a value to be finite" , function() {
 		doormen.expect( 0 ).to.be.finite() ;
 		doormen.expect( 9123.345 ).to.be.finite() ;
 		doormen.expect( -9123.345 ).to.be.finite() ;
-		doormen.shouldThrow( () => doormen.expect( 123 ).not.to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 123 ).not.to.be.finite() ) ;
 		doormen.expect( NaN ).not.to.be.finite() ;
-		doormen.shouldThrow( () => doormen.expect( NaN ).to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( NaN ).to.be.finite() ) ;
 		doormen.expect( Infinity ).not.to.be.finite() ;
-		doormen.shouldThrow( () => doormen.expect( Infinity ).to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Infinity ).to.be.finite() ) ;
 		doormen.expect( - Infinity ).not.to.be.finite() ;
-		doormen.shouldThrow( () => doormen.expect( - Infinity ).to.be.finite() ) ;
-		doormen.shouldThrow( () => doormen.expect( "trash" ).to.be.finite() ) ;
-		doormen.shouldThrow( () => doormen.expect( "trash" ).not.to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( - Infinity ).to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "trash" ).to.be.finite() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "trash" ).not.to.be.finite() ) ;
 	} ) ;
 	
 	it( "expect a value to be identical" , function() {
 		doormen.expect( "bob" ).to.be( "bob" ) ;
 		doormen.expect( "bob" ).to.be.not( "bobby" ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be( "bobby" ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be( "bobby" ) ) ;
 		doormen.expect( "" ).to.be( "" ) ;
 		doormen.expect( NaN ).to.be( NaN ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be( {} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( [] ).to.be( [] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be( {} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.be( [] ) ) ;
 		doormen.expect( {} ).to.not.be( {} ) ;
 		doormen.expect( [] ).to.not.be( [] ) ;
 	} ) ;
@@ -2670,43 +2670,43 @@ describe( "Expect BDD assertion library" , function() {
 	it( "expect a value to be equal (different from identical)" , function() {
 		doormen.expect( "bob" ).to.equal( "bob" ) ;
 		doormen.expect( "bob" ).to.be.not.equal.to( "bobby" ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.equal.to( "bobby" ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.equal.to( "bobby" ) ) ;
 		doormen.expect( "" ).to.equal( "" ) ;
 		doormen.expect( NaN ).to.equal( NaN ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).not.to.equal( {} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( [] ).not.to.equal( [] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).not.to.equal( {} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).not.to.equal( [] ) ) ;
 		doormen.expect( {} ).to.equal( {} ) ;
 		doormen.expect( [] ).to.be.equal.to( [] ) ;
 		doormen.expect( {b:2,a:1} ).to.equal( {a:1,b:2} ) ;
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.equal( {a:1,b:2,nested:{c:3}} ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.equal( {b:2,a:1,nested:{c:3}} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.equal( {b:2,a:1,nested:{c:3}} ) ) ;
 		doormen.expect( [{},"b",3] ).to.be.equal.to( [{},"b",3] ) ;
 		doormen.expect( [{},"b",3] ).to.not.be.equal.to( [{},"b",3,undefined] ) ;
 		
 		// not the same prototype
 		doormen.expect( {b:2,a:1} ).not.to.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 	} ) ;
 	
 	it( "expect a value to be like" , function() {
 		doormen.expect( "bob" ).to.be.like( "bob" ) ;
 		doormen.expect( "bob" ).to.be.not.like( "bobby" ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.like( "bobby" ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.like( "bobby" ) ) ;
 		doormen.expect( "" ).to.be.like( "" ) ;
 		doormen.expect( NaN ).to.be.like( NaN ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).not.to.be.like( {} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( [] ).not.to.be.like( [] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).not.to.be.like( {} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).not.to.be.like( [] ) ) ;
 		doormen.expect( {} ).to.be.like( {} ) ;
 		doormen.expect( [] ).to.be.like( [] ) ;
 		doormen.expect( {b:2,a:1} ).to.be.like( {a:1,b:2} ) ;
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.like( {a:1,b:2,nested:{c:3}} ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.be.like( {b:2,a:1,nested:{c:3}} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.be.like( {b:2,a:1,nested:{c:3}} ) ) ;
 		doormen.expect( [{},"b",3] ).to.be.like( [{},"b",3] ) ;
 		doormen.expect( [{},"b",3] ).to.not.be.like( [{},"b",3,undefined] ) ;
 		
 		// not the same prototype
 		doormen.expect( {b:2,a:1} ).to.be.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.not.be.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.not.be.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 	} ) ;
 	
 	it( "expect a value to be partially equal" , function() {
@@ -2717,11 +2717,11 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.partially.equal( {nested:{c:3}} ) ;
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2} ) ;
 		doormen.expect( {a:1,nested:{c:3}} ).to.not.partially.equal( {a:1,b:2} ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2} ) ) ;
 		
 		// not the same prototype
 		doormen.expect( {b:2,a:1} ).not.to.partially.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.partially.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.partially.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 	} ) ;
 	
 	it( "expect a value to be partially equal" , function() {
@@ -2732,222 +2732,222 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.partially.like( {nested:{c:3}} ) ;
 		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2} ) ;
 		doormen.expect( {a:1,nested:{c:3}} ).to.not.partially.equal( {a:1,b:2} ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2} ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2} ) ) ;
 		
 		// not the same prototype
 		doormen.expect( {b:2,a:1} ).to.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.not.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.not.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 	} ) ;
 	
 	it( "expect a value to be close to (epsilon-aware)" , function() {
 		// 0.1 + 0.2 is not equal to 0.3 due to epsilon error in floating point numbers
 		doormen.expect( 0.1 + 0.2 ).not.to.be( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 ).to.be( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 ).to.be( 0.3 ) ) ;
 		doormen.expect( 0.1 + 0.2 ).to.be.close.to( 0.3 ) ;
 		doormen.expect( 0.1 + 0.2 ).to.be.around( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 ).not.to.be.close.to( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 ).not.to.be.close.to( 0.3 ) ) ;
 		doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.not.close.to( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
 		
 		// Non-numbers throw
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.close.to( 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( "0.3" ).to.be.close.to( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.close.to( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "0.3" ).to.be.close.to( 0.3 ) ) ;
 	} ) ;
 	
 	it( "expect a value to be above/below/at least/at most" , function() {
 		doormen.expect( 0.1 ).to.be.below( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 ).to.be.above( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 ).to.be.above( 0.3 ) ) ;
 		doormen.expect( 0.1 ).to.be.at.most( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 ).to.be.at.least( 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.be.below( 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.be.above( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 ).to.be.at.least( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.3 ).to.be.below( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.3 ).to.be.above( 0.3 ) ) ;
 		doormen.expect( 0.3 ).to.be.at.most( 0.3 ) ;
 		doormen.expect( 0.3 ).to.be.at.least( 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.below( 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.at.most( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.5 ).to.be.below( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.5 ).to.be.at.most( 0.3 ) ) ;
 		doormen.expect( 0.5 ).to.be.above( 0.3 ) ;
 		doormen.expect( 0.5 ).to.be.at.least( 0.3 ) ;
 		
 		// Non-numbers throw
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.above( 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( "0.2" ).to.be.below( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.above( 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "0.2" ).to.be.below( 0.3 ) ) ;
 	} ) ;
 	
 	it( "expect a value to be within/not within" , function() {
 		doormen.expect( 0.1 ).to.be.within( 0 , 0.3 ) ;
 		doormen.expect( 0 ).to.be.within( 0 , 0.3 ) ;
 		doormen.expect( 0.3 ).to.be.within( 0 , 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.1 ).not.to.be.within( 0 , 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0 ).to.be.not.within( 0 , 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.not.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 ).not.to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0 ).to.be.not.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.3 ).to.not.be.within( 0 , 0.3 ) ) ;
 		doormen.expect( - 0.1 ).not.to.be.within( 0 , 0.3 ) ;
 		doormen.expect( 0.4 ).not.to.be.within( 0 , 0.3 ) ;
-		doormen.shouldThrow( () => doormen.expect( - 0.1 ).to.be.within( 0 , 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( 0.4 ).to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( - 0.1 ).to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( 0.4 ).to.be.within( 0 , 0.3 ) ) ;
 		
 		// Non-numbers throw
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.within( 0 , 0.3 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( "0.2" ).to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "0.2" ).to.be.within( 0 , 0.3 ) ) ;
 	} ) ;
 	
 	it( "expect a value to match/not match" , function() {
 		doormen.expect( "bob" ).to.match( /bob/ ) ;
 		doormen.expect( "bob" ).to.match( /^[bo]+$/ ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.not.match( /^[bo]+$/ ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.not.match( /^[bo]+$/ ) ) ;
 		doormen.expect( "bob" ).not.to.match( /^[ba]+$/ ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.match( /^[ba]+$/ ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.match( /^[ba]+$/ ) ) ;
 	} ) ;
 	
 	it( "expect a value to contain/not contain" , function() {
 		doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.not.have( 'Jack' ) ;
-		doormen.shouldThrow( () => doormen.expect( "Hello Bob!" ).to.contain( 'Bill' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Bill' ) ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' ) ;
-		doormen.shouldThrow( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bobby' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bobby' ) ) ;
 		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Bob' ) ;
-		doormen.shouldThrow( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Charlie' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Charlie' ) ) ;
 		doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'Bob' ) ;
-		doormen.shouldThrow( () => doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'bob' ) ) ;
 	} ) ;
 	
 	it( "expect a value to be empty/not empty" , function() {
 		doormen.expect( "" ).to.be.empty() ;
 		doormen.expect( "Bob" ).not.to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( "Hello Bob!" ).to.be.empty() ) ;
-		doormen.shouldThrow( () => doormen.expect( "" ).to.not.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "" ).to.not.be.empty() ) ;
 		doormen.expect( [] ).to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( [] ).to.be.not.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.be.not.empty() ) ;
 		doormen.expect( [1] ).not.to.be.empty() ;
 		doormen.expect( [1,2,3] ).not.to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( [1] ).to.be.empty() ) ;
-		doormen.shouldThrow( () => doormen.expect( [1,2,3] ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [1] ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [1,2,3] ).to.be.empty() ) ;
 		doormen.expect( [undefined] ).not.to.be.empty() ;
 		doormen.expect( {} ).to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.not.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.not.empty() ) ;
 		doormen.expect( {a:1} ).not.to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.be.empty() ) ;
 		doormen.expect( new Set() ).to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( new Set() ).to.be.not.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set() ).to.be.not.empty() ) ;
 		doormen.expect( new Set( [1] ) ).not.to.be.empty() ;
 		doormen.expect( new Set( [1,2,3] ) ).not.to.be.empty() ;
-		doormen.shouldThrow( () => doormen.expect( new Set( [1] ) ).to.be.empty() ) ;
-		doormen.shouldThrow( () => doormen.expect( new Set( [1,2,3] ) ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [1] ) ).to.be.empty() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [1,2,3] ) ).to.be.empty() ) ;
 	} ) ;
 	
 	it( "expect a value to have keys/not to have keys" , function() {
 		doormen.expect( {a:1} ).to.have.key( 'a' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.key( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.no.key( 'a' ) ) ;
 		doormen.expect( {a:1} ).to.not.have.key( 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.key( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.key( 'b' ) ) ;
 		doormen.expect( {a:1,b:2} ).to.have.keys( 'a' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.keys( 'b' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.keys( 'a', 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'a', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'a', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'b', 'c' ) ) ;
 		
 		var proto = { d: 4 } ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'a' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'd' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'a' , 'd' ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.key( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.key( 'd' ) ) ;
 	} ) ;
 	
 	it( "expect a value to have own keys/not to have own keys" , function() {
 		doormen.expect( {a:1} ).to.have.own.key( 'a' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.own.key( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.no.own.key( 'a' ) ) ;
 		doormen.expect( {a:1} ).to.not.have.own.key( 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.own.key( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.own.key( 'b' ) ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.keys( 'b' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a', 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a', 'c' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a', 'c' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'b', 'c' ) ) ;
 		
 		var proto = { d: 4 } ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'd' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.no.own.key( 'd' ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.key( 'd' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'd' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' , 'd' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.key( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' , 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
 	} ) ;
 	
 	it( "expect a value to have property/not to have property" , function() {
 		doormen.expect( {a:1} ).to.have.property( 'a' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.property( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.no.property( 'a' ) ) ;
 		doormen.expect( {a:1} ).to.not.have.property( 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.property( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.property( 'b' ) ) ;
 		doormen.expect( {a:1,b:2} ).to.have.property( 'a' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.property( 'b' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.property( 'a', 1 ) ;
 		doormen.expect( {a:1,b:2} ).not.to.have.property( 'a', 2 ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.property( 'a', 2 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.not.have.property( 'a', 1 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.property( 'a', 2 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.not.have.property( 'a', 1 ) ) ;
 		
 		var proto = { d: 4 } ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'a' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' ) ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' , 4 ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' , 3 ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' , 4 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' , 3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' , 4 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' , 3 ) ) ;
 	} ) ;
 	
 	it( "expect a value to have own property/not to have own property" , function() {
 		doormen.expect( {a:1} ).to.have.own.property( 'a' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.own.property( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.no.own.property( 'a' ) ) ;
 		doormen.expect( {a:1} ).to.not.have.own.property( 'b' ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.own.property( 'b' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.own.property( 'b' ) ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.property( 'a' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.property( 'b' ) ;
 		doormen.expect( {a:1,b:2} ).to.have.own.property( 'a', 1 ) ;
 		doormen.expect( {a:1,b:2} ).not.to.have.own.property( 'a', 2 ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.property( 'a', 2 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.not.have.own.property( 'a', 1 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.own.property( 'a', 2 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.not.have.own.property( 'a', 1 ) ) ;
 		
 		var proto = { d: 4 } ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'a' ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.property( 'd' ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' ) ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.property( 'd' , 4 ) ;
 		doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.own.property( 'd' , 3 ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 4 ) ) ;
-		doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 3 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 4 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 3 ) ) ;
 	} ) ;
 	
 	it( "expect a value (function) to throw/to not throw" , function() {
 		doormen.expect( () => { throw new Error( "bob" ) ; } ).to.throw() ;
-		doormen.shouldThrow( () => doormen.expect( () => { throw new Error( "bob" ) ; } ).not.to.throw() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => { throw new Error( "bob" ) ; } ).not.to.throw() ) ;
 		doormen.expect( () => 1 ).not.to.throw() ;
-		doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => 1 ).to.throw() ) ;
 	} ) ;
 	
 	it( "expect a value (function) to throw/to not throw a specific error" , function() {
 		doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( SyntaxError ) ;
 		doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( Error ) ;	// SyntaxError inherit Error
-		doormen.shouldThrow( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).not.to.throw.a( SyntaxError ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).not.to.throw.a( SyntaxError ) ) ;
 		doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.not.throw.a( RangeError ) ;
-		doormen.shouldThrow( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( RangeError ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( RangeError ) ) ;
 		doormen.expect( () => 1 ).not.to.throw.a( SyntaxError ) ;
 		doormen.expect( () => 1 ).not.to.throw.an( Error ) ;
-		doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw( SyntaxError ) ) ;
-		doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw( Error ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => 1 ).to.throw( SyntaxError ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( () => 1 ).to.throw( Error ) ) ;
 	} ) ;
 	
 	it( "executing a function with args" , function() {
@@ -2960,8 +2960,8 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( (v,v2) => { if ( v === 3 || v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.throw() ;
 		doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.not.throw() ;
 		doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.throw() ;
-		doormen.shouldThrow( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.throw() ) ;
-		doormen.shouldThrow( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.not.throw() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.throw() ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.not.throw() ) ;
 	} ) ;
 	
 	it( "expect a value to be of a type" , function() {
@@ -2969,12 +2969,12 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( "bob" ).to.be.of.type( 'string' ) ;
 		doormen.expect( "bob" ).not.to.be.a( 'number' ) ;
 		doormen.expect( "bob" ).not.to.be.of.type( 'number' ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.a( 'string' ) ) ;
-		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.a( 'number' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).not.to.be.a( 'string' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.a( 'number' ) ) ;
 		doormen.expect( "http://soulserv.net" ).to.be.an( 'url' ) ;
-		doormen.shouldThrow( () => doormen.expect( "http://soulserv.net" ).not.to.be.an( 'url' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "http://soulserv.net" ).not.to.be.an( 'url' ) ) ;
 		doormen.expect( "soulserv.net" ).to.be.not.an( 'url' ) ;
-		doormen.shouldThrow( () => doormen.expect( "soulserv.net" ).to.be.an( 'url' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "soulserv.net" ).to.be.an( 'url' ) ) ;
 	} ) ;
 	
 	it( "expect a value to be an instance of" , function() {
@@ -2982,10 +2982,10 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.expect( {} ).not.to.be.a( Date ) ;
 		doormen.expect( new Date() ).to.be.a( Date ) ;
 		doormen.expect( new Date() ).to.be.an( Object ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.not.an( Object ) ) ;
-		doormen.shouldThrow( () => doormen.expect( {} ).to.be.a( Date ) ) ;
-		doormen.shouldThrow( () => doormen.expect( new Date() ).to.not.be.a( Date ) ) ;
-		doormen.shouldThrow( () => doormen.expect( new Date() ).not.to.be.an( Object ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.not.an( Object ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {} ).to.be.a( Date ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).to.not.be.a( Date ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).not.to.be.an( Object ) ) ;
 	} ) ;
 } ) ;
 

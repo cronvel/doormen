@@ -1265,7 +1265,6 @@ assert.notInstanceOf = function notInstanceOf( from , actual , notExpected ) {
 assert.notInstanceOf.inspect = true ;
 
 
-
 },{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15,"string-kit/lib/inspect.js":21}],5:[function(require,module,exports){
 /*
 	Doormen
@@ -2024,6 +2023,27 @@ doormen.shouldThrow = function shouldThrow( fn , from ) {
 
 
 
+// For internal usage or dev only
+doormen.shouldThrowAssertion = function shouldThrowAssertion( fn , from ) {
+	var error , thrown = false ;
+	from = from || shouldThrowAssertion ;
+
+	try { fn() ; }
+	catch ( error_ ) { thrown = true ; error = error_ ; }
+
+	if ( ! thrown ) {
+		throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown." , from ) ;
+	}
+	if ( ! ( error instanceof doormen.AssertionError ) ) {
+		// Throw a new error? Seems better to re-throw with a modified message, or the stack trace would be lost?
+		//throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, but have thrown: " + error , from ) ;
+		error.message = "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, instead it had thrown: " + error.message ;
+		throw error ;
+	}
+} ;
+
+
+
 // Inverse validation
 doormen.not = function not( ... args ) {
 	doormen.shouldThrow( () => {
@@ -2042,7 +2062,7 @@ doormen.patch.not = function patchNot( ... args ) {
 
 
 
-// DEPRECATED assertions!
+// DEPRECATED assertions! Only here for backward compatibility
 
 doormen.equals = function equals( left , right ) {
 	var error ;
@@ -4580,6 +4600,12 @@ function keyNeedingQuotes( key ) {
 
 // Some special object are better written down when substituted by something else
 function specialObjectSubstitution( variable ) {
+	if ( typeof variable.constructor !== 'function' ) {
+		// Some objects have no constructor, e.g.: Object.create(null)
+		//console.error( variable ) ;
+		return ;
+	}
+
 	switch ( variable.constructor.name ) {
 		case 'String' :
 			if ( variable instanceof String ) {
