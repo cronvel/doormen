@@ -2578,10 +2578,204 @@ describe( "Schema as a sentence" , function() {
 
 describe( "Expect BDD assertion library" , function() {
 	
-	it( "expect a value to be strictly equal" , function() {
+	it( "expect a value to be defined/undefined" , function() {
+		doormen.expect( "bob" ).to.be.defined() ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.defined() ) ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.undefined() ) ;
+		doormen.expect( null ).to.be.defined() ;
+		doormen.shouldThrow( () => doormen.expect( null ).not.to.be.defined() ) ;
+		doormen.expect( undefined ).to.be.undefined() ;
+		doormen.expect( '' ).to.be.defined() ;
+		doormen.expect( false ).to.be.defined() ;
+		doormen.shouldThrow( () => doormen.expect( false ).to.be.undefined() ) ;
+	} ) ;
+	
+	it( "expect a value to be truthy/falsy" , function() {
+		doormen.expect( "bob" ).to.be.ok() ;
+		doormen.expect( "" ).not.to.be.ok() ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.ok() ) ;
+		doormen.expect( false ).not.to.be.ok() ;
+		doormen.expect( 0 ).to.be.falsy() ;
+		doormen.expect( null ).to.be.not.ok() ;
+		doormen.shouldThrow( () => doormen.expect( {} ).to.be.falsy() ) ;
+		doormen.shouldThrow( () => doormen.expect( [] ).not.to.be.truthy() ) ;
+		doormen.expect( {} ).to.be.truthy() ;
+		doormen.expect( [] ).to.be.truthy() ;
+	} ) ;
+	
+	it( "expect a value to be true/not true/false/not false" , function() {
+		doormen.expect( "bob" ).not.to.be.true() ;
+		doormen.expect( "bob" ).not.to.be.false() ;
+		doormen.expect( "" ).not.to.be.true() ;
+		doormen.expect( "" ).not.to.be.false() ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.true() ) ;
+		doormen.shouldThrow( () => doormen.expect( {} ).to.be.true() ) ;
+		doormen.shouldThrow( () => doormen.expect( {} ).to.be.false() ) ;
+		doormen.expect( true ).to.be.true() ;
+		doormen.expect( true ).not.to.be.false() ;
+		doormen.expect( false ).not.to.be.true() ;
+		doormen.expect( false ).to.be.false() ;
+	} ) ;
+	
+	it( "expect a value to be null/not null" , function() {
+		doormen.expect( "bob" ).to.be.not.null() ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.null() ) ;
+		doormen.expect( undefined ).not.to.be.null() ;
+		doormen.shouldThrow( () => doormen.expect( undefined ).to.be.null() ) ;
+		doormen.expect( null ).to.be.null() ;
+		doormen.shouldThrow( () => doormen.expect( null ).not.to.be.null() ) ;
+		doormen.expect( '' ).not.to.be.null() ;
+		doormen.expect( {} ).not.to.be.null() ;
+		doormen.shouldThrow( () => doormen.expect( {} ).to.be.null() ) ;
+	} ) ;
+	
+	it( "expect a value to be NaN/not NaN" , function() {
+		doormen.expect( "" ).not.to.be.NaN() ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.NaN() ) ;
+		doormen.expect( undefined ).not.to.be.NaN() ;
+		doormen.shouldThrow( () => doormen.expect( undefined ).to.be.NaN() ) ;
+		doormen.expect( NaN ).to.be.NaN() ;
+		doormen.shouldThrow( () => doormen.expect( NaN ).not.to.be.NaN() ) ;
+		doormen.expect( Infinity ).to.be.not.NaN() ;
+		doormen.shouldThrow( () => doormen.expect( Infinity ).to.be.NaN() ) ;
+	} ) ;
+	
+	it( "expect a value to be finite" , function() {
+		doormen.expect( 0 ).to.be.finite() ;
+		doormen.expect( 9123.345 ).to.be.finite() ;
+		doormen.expect( -9123.345 ).to.be.finite() ;
+		doormen.shouldThrow( () => doormen.expect( 123 ).not.to.be.finite() ) ;
+		doormen.expect( NaN ).not.to.be.finite() ;
+		doormen.shouldThrow( () => doormen.expect( NaN ).to.be.finite() ) ;
+		doormen.expect( Infinity ).not.to.be.finite() ;
+		doormen.shouldThrow( () => doormen.expect( Infinity ).to.be.finite() ) ;
+		doormen.expect( - Infinity ).not.to.be.finite() ;
+		doormen.shouldThrow( () => doormen.expect( - Infinity ).to.be.finite() ) ;
+		doormen.shouldThrow( () => doormen.expect( "trash" ).to.be.finite() ) ;
+		doormen.shouldThrow( () => doormen.expect( "trash" ).not.to.be.finite() ) ;
+	} ) ;
+	
+	it( "expect a value to be identical" , function() {
 		doormen.expect( "bob" ).to.be( "bob" ) ;
+		doormen.expect( "bob" ).to.be.not( "bobby" ) ;
 		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be( "bobby" ) ) ;
+		doormen.expect( "" ).to.be( "" ) ;
 		doormen.expect( NaN ).to.be( NaN ) ;
+		doormen.shouldThrow( () => doormen.expect( {} ).to.be( {} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( [] ).to.be( [] ) ) ;
+		doormen.expect( {} ).to.not.be( {} ) ;
+		doormen.expect( [] ).to.not.be( [] ) ;
+	} ) ;
+	
+	it( "expect a value to be equal (different from identical)" , function() {
+		doormen.expect( "bob" ).to.equal( "bob" ) ;
+		doormen.expect( "bob" ).to.be.not.equal.to( "bobby" ) ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.equal.to( "bobby" ) ) ;
+		doormen.expect( "" ).to.equal( "" ) ;
+		doormen.expect( NaN ).to.equal( NaN ) ;
+		doormen.shouldThrow( () => doormen.expect( {} ).not.to.equal( {} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( [] ).not.to.equal( [] ) ) ;
+		doormen.expect( {} ).to.equal( {} ) ;
+		doormen.expect( [] ).to.be.equal.to( [] ) ;
+		doormen.expect( {b:2,a:1} ).to.equal( {a:1,b:2} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.equal( {a:1,b:2,nested:{c:3}} ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.equal( {b:2,a:1,nested:{c:3}} ) ) ;
+		doormen.expect( [{},"b",3] ).to.be.equal.to( [{},"b",3] ) ;
+		doormen.expect( [{},"b",3] ).to.not.be.equal.to( [{},"b",3,undefined] ) ;
+		
+		// not the same prototype
+		doormen.expect( {b:2,a:1} ).not.to.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+	} ) ;
+	
+	it( "expect a value to be like" , function() {
+		doormen.expect( "bob" ).to.be.like( "bob" ) ;
+		doormen.expect( "bob" ).to.be.not.like( "bobby" ) ;
+		doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.like( "bobby" ) ) ;
+		doormen.expect( "" ).to.be.like( "" ) ;
+		doormen.expect( NaN ).to.be.like( NaN ) ;
+		doormen.shouldThrow( () => doormen.expect( {} ).not.to.be.like( {} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( [] ).not.to.be.like( [] ) ) ;
+		doormen.expect( {} ).to.be.like( {} ) ;
+		doormen.expect( [] ).to.be.like( [] ) ;
+		doormen.expect( {b:2,a:1} ).to.be.like( {a:1,b:2} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.like( {a:1,b:2,nested:{c:3}} ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1,nested:{c:3}} ).not.to.be.like( {b:2,a:1,nested:{c:3}} ) ) ;
+		doormen.expect( [{},"b",3] ).to.be.like( [{},"b",3] ) ;
+		doormen.expect( [{},"b",3] ).to.not.be.like( [{},"b",3,undefined] ) ;
+		
+		// not the same prototype
+		doormen.expect( {b:2,a:1} ).to.be.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.not.be.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+	} ) ;
+	
+	it( "expect a value to be partially equal" , function() {
+		doormen.expect( {} ).to.partially.equal( {} ) ;
+		doormen.expect( [] ).to.partially.equal( [] ) ;
+		doormen.expect( {b:2,a:1} ).to.partially.equal( {a:1,b:2} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2,nested:{c:3}} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.partially.equal( {nested:{c:3}} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2} ) ;
+		doormen.expect( {a:1,nested:{c:3}} ).to.not.partially.equal( {a:1,b:2} ) ;
+		doormen.shouldThrow( () => doormen.expect( {a:1,nested:{c:3}} ).to.partially.equal( {a:1,b:2} ) ) ;
+		
+		// not the same prototype
+		doormen.expect( {b:2,a:1} ).not.to.partially.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.partially.equal( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+	} ) ;
+	
+	it( "expect a value to be partially equal" , function() {
+		doormen.expect( {} ).to.be.partially.like( {} ) ;
+		doormen.expect( [] ).to.be.partially.like( [] ) ;
+		doormen.expect( {b:2,a:1} ).to.be.partially.like( {a:1,b:2} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2,nested:{c:3}} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.partially.like( {nested:{c:3}} ) ;
+		doormen.expect( {b:2,a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2} ) ;
+		doormen.expect( {a:1,nested:{c:3}} ).to.not.partially.equal( {a:1,b:2} ) ;
+		doormen.shouldThrow( () => doormen.expect( {a:1,nested:{c:3}} ).to.be.partially.like( {a:1,b:2} ) ) ;
+		
+		// not the same prototype
+		doormen.expect( {b:2,a:1} ).to.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ;
+		doormen.shouldThrow( () => doormen.expect( {b:2,a:1} ).to.not.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
+	} ) ;
+	
+	it( "expect a value to be close to (epsilon-aware)" , function() {
+		// 0.1 + 0.2 is not equal to 0.3 due to epsilon error in floating point numbers
+		doormen.expect( 0.1 + 0.2 ).not.to.be( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 ).to.be( 0.3 ) ) ;
+		doormen.expect( 0.1 + 0.2 ).to.be.close.to( 0.3 ) ;
+		doormen.expect( 0.1 + 0.2 ).to.be.around( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 ).not.to.be.close.to( 0.3 ) ) ;
+		doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.not.close.to( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
+	} ) ;
+	
+	it( "expect a value to be above/below/at least/at most" , function() {
+		doormen.expect( 0.1 ).to.be.below( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 ).to.be.above( 0.3 ) ) ;
+		doormen.expect( 0.1 ).to.be.at.most( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 ).to.be.at.least( 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.be.below( 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.be.above( 0.3 ) ) ;
+		doormen.expect( 0.3 ).to.be.at.most( 0.3 ) ;
+		doormen.expect( 0.3 ).to.be.at.least( 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.below( 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.at.most( 0.3 ) ) ;
+		doormen.expect( 0.5 ).to.be.above( 0.3 ) ;
+		doormen.expect( 0.5 ).to.be.at.least( 0.3 ) ;
+	} ) ;
+	
+	it( "expect a value to be within/not within" , function() {
+		doormen.expect( 0.1 ).to.be.within( 0 , 0.3 ) ;
+		doormen.expect( 0 ).to.be.within( 0 , 0.3 ) ;
+		doormen.expect( 0.3 ).to.be.within( 0 , 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.1 ).not.to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0 ).to.be.not.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.3 ).to.not.be.within( 0 , 0.3 ) ) ;
+		doormen.expect( - 0.1 ).not.to.be.within( 0 , 0.3 ) ;
+		doormen.expect( 0.4 ).not.to.be.within( 0 , 0.3 ) ;
+		doormen.shouldThrow( () => doormen.expect( - 0.1 ).to.be.within( 0 , 0.3 ) ) ;
+		doormen.shouldThrow( () => doormen.expect( 0.4 ).to.be.within( 0 , 0.3 ) ) ;
 	} ) ;
 	
 	it( "expect a value to be of a type" , function() {
