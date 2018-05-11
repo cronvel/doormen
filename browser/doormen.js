@@ -660,6 +660,8 @@ assert.notPartiallyLike.inspect = true ;
 
 
 // Shallow clone
+assert['to be shallow clone'] =
+assert['to be shallow clone of'] =
 assert['to be a shallow clone of'] =
 assert.shallowCloneOf = function shallowCloneOf( from , actual , expected ) {
 	if ( typeof actual !== 'function' && ( ! actual || typeof actual !== 'object' ) ) {
@@ -705,6 +707,8 @@ assert.shallowCloneOf.inspect = true ;
 
 
 // Not shallow clone
+assert['to be not shallow clone'] = assert['to not be shallow clone'] = assert['not to be shallow clone'] =
+assert['to be not shallow clone of'] = assert['to not be shallow clone of'] = assert['not to be shallow clone of'] =
 assert['to be not a shallow clone of'] = assert['to not be a shallow clone of'] = assert['not to be a shallow clone of'] =
 assert.notShallowCloneOf = function notShallowCloneOf( from , actual , notExpected ) {
 	if ( typeof actual !== 'function' && ( ! actual || typeof actual !== 'object' ) ) {
