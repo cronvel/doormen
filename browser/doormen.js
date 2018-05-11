@@ -315,7 +315,6 @@ module.exports = assert ;
 
 	Expect.js:
 	- length
-	- only keys
 	- withArgs (function)
 	- fail useful???
 
@@ -324,8 +323,6 @@ module.exports = assert ;
 	- all
 	- ownPropertyDescriptor
 	- lengthOf
-	- keys
-	- throw (error matcher)
 	- members
 	- oneOf
 	- functions specific:
@@ -849,6 +846,36 @@ assert.notMatch = function notMatch( from , actual , notExpected ) {
 
 
 
+assert['to have length'] =
+assert['to have length of'] =
+assert['to have a length of'] =
+assert.lengthOf = function lengthOf( from , actual , expected ) {
+	if ( typeof actual !== 'string' && ( ! actual || typeof actual !== 'object' ) ) {
+		throw assertionError( from , actual , 'to have some length' ) ;
+	}
+
+	if ( actual.length !== expected ) {
+		throw assertionError( from , actual , 'to have a length of' , expected ) ;
+	}
+} ;
+
+
+
+assert['to have not length'] = assert['to not have length'] = assert['not to have length'] =
+assert['to have length not of'] = assert['to have not length of'] = assert['to not have length of'] = assert['not to have length of'] =
+assert['to have a length not of'] = assert['to have not a length of'] = assert['to not have a length of'] = assert['not to have a length of'] =
+assert.notLengthOf = function notLengthOf( from , actual , notExpected ) {
+	if ( typeof actual !== 'string' && ( ! actual || typeof actual !== 'object' ) ) {
+		throw assertionError( from , actual , 'to have some length' ) ;
+	}
+
+	if ( actual.length === notExpected ) {
+		throw assertionError( from , actual , 'not to have a length of' , notExpected ) ;
+	}
+} ;
+
+
+
 assert['to contain'] =
 assert['to have'] =
 assert['to include'] =
@@ -1027,6 +1054,31 @@ assert.ownKeys = function ownKeys( from , actual , ... keys ) {
 } ;
 assert.ownKeys.inspect = true ;
 assert.ownKeys.glue = ', ' ;
+
+
+
+assert['to only have own key'] = assert['to have only own key'] = assert['to have own only key'] =
+assert['to only have own keys'] = assert['to have only own keys'] = assert['to have own only keys'] =
+assert.onlyOwnKey =
+assert.onlyOwnKeys = function ownKeys( from , actual , ... keys ) {
+	if ( ! typeChecker.looseObject( actual ) ) {
+		throw assertionError( from , actual , 'to be an object or a function' ) ;
+	}
+
+	// First, check if the number of keys match
+	if ( Object.keys( actual ).length !== keys.length ) {
+		throw assertionError( from , actual , 'to only have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
+	}
+
+	// Then, each expected keys should be present
+	keys.forEach( key => {
+		if ( ! actual.hasOwnProperty( key ) ) {
+			throw assertionError( from , actual , 'to only have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
+		}
+	} ) ;
+} ;
+assert.onlyOwnKeys.inspect = true ;
+assert.onlyOwnKeys.glue = ', ' ;
 
 
 

@@ -2798,6 +2798,25 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.match( /^[ba]+$/ ) ) ;
 	} ) ;
 	
+	it( "expect a value to have a length of/not have a length of" , function() {
+		doormen.expect( "Hello Bob!" ).to.have.length.of( 10 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.have.length.of( 10 ) ) ;
+		doormen.expect( "Hello Bob!" ).to.not.have.length.of( 8 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.have.length.of( 8 ) ) ;
+		doormen.expect( "" ).to.have.length.of( 0 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "" ).not.to.have.length.of( 0 ) ) ;
+		doormen.expect( "" ).to.not.have.length.of( 8 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "" ).to.have.length.of( 8 ) ) ;
+		doormen.expect( [1,2,3] ).to.have.length.of( 3 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [1,2,3] ).not.to.have.length.of( 3 ) ) ;
+		doormen.expect( [1,2,3] ).to.not.have.length.of( 8 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [1,2,3] ).to.have.length.of( 8 ) ) ;
+		doormen.expect( [] ).to.have.length.of( 0 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).not.to.have.length.of( 0 ) ) ;
+		doormen.expect( [] ).to.not.have.length.of( 8 ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.have.length.of( 8 ) ) ;
+	} ) ;
+	
 	it( "expect a value to contain/not contain" , function() {
 		doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
@@ -2885,6 +2904,19 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'd' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' , 'd' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
+	} ) ;
+	
+	it( "expect a value to only have own keys" , function() {
+		doormen.expect( {a:1} ).to.only.have.own.key( 'a' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.have.only.own.key( 'a' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( {a:1} ).to.have.only.own.keys( 'a' , 'b' ) ) ;
+		doormen.expect( {a:1,b:2} ).to.only.have.own.keys( 'a' , 'b' ) ;
+		
+		var proto = { d: 4 } ;
+		doormen.expect( Object.assign( Object.create( proto ) , {a:1} ) ).to.have.own.only.key( 'a' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1} ) ).to.only.have.own.key( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {} ) ).to.only.have.own.key( 'd' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1} ) ).to.have.only.own.keys( 'a' , 'd' ) ) ;
 	} ) ;
 	
 	it( "expect a value to have property/not to have property" , function() {
