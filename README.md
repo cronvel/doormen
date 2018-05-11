@@ -2886,6 +2886,10 @@ doormen.expect( 0.1 + 0.2 ).to.be.around( 0.3 ) ;
 doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 ).not.to.be.close.to( 0.3 ) ) ;
 doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.not.close.to( 0.3 ) ;
 doormen.shouldThrow( () => doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
+
+// Non-numbers throw
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.close.to( 0.3 ) ) ;
+doormen.shouldThrow( () => doormen.expect( "0.3" ).to.be.close.to( 0.3 ) ) ;
 ```
 
 expect a value to be above/below/at least/at most.
@@ -2903,6 +2907,10 @@ doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.below( 0.3 ) ) ;
 doormen.shouldThrow( () => doormen.expect( 0.5 ).to.be.at.most( 0.3 ) ) ;
 doormen.expect( 0.5 ).to.be.above( 0.3 ) ;
 doormen.expect( 0.5 ).to.be.at.least( 0.3 ) ;
+
+// Non-numbers throw
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.above( 0.3 ) ) ;
+doormen.shouldThrow( () => doormen.expect( "0.2" ).to.be.below( 0.3 ) ) ;
 ```
 
 expect a value to be within/not within.
@@ -2918,15 +2926,232 @@ doormen.expect( - 0.1 ).not.to.be.within( 0 , 0.3 ) ;
 doormen.expect( 0.4 ).not.to.be.within( 0 , 0.3 ) ;
 doormen.shouldThrow( () => doormen.expect( - 0.1 ).to.be.within( 0 , 0.3 ) ) ;
 doormen.shouldThrow( () => doormen.expect( 0.4 ).to.be.within( 0 , 0.3 ) ) ;
+
+// Non-numbers throw
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.within( 0 , 0.3 ) ) ;
+doormen.shouldThrow( () => doormen.expect( "0.2" ).to.be.within( 0 , 0.3 ) ) ;
+```
+
+expect a value to match/not match.
+
+```js
+doormen.expect( "bob" ).to.match( /bob/ ) ;
+doormen.expect( "bob" ).to.match( /^[bo]+$/ ) ;
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.not.match( /^[bo]+$/ ) ) ;
+doormen.expect( "bob" ).not.to.match( /^[ba]+$/ ) ;
+doormen.shouldThrow( () => doormen.expect( "bob" ).to.match( /^[ba]+$/ ) ) ;
+```
+
+expect a value to contain/not contain.
+
+```js
+doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
+doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
+doormen.expect( "Hello Bob!" ).to.not.have( 'Jack' ) ;
+doormen.shouldThrow( () => doormen.expect( "Hello Bob!" ).to.contain( 'Bill' ) ) ;
+doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' ) ;
+doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' ) ;
+doormen.shouldThrow( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bobby' ) ) ;
+doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Bob' ) ;
+doormen.shouldThrow( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Charlie' ) ) ;
+doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'Bob' ) ;
+doormen.shouldThrow( () => doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'bob' ) ) ;
+```
+
+expect a value to be empty/not empty.
+
+```js
+doormen.expect( "" ).to.be.empty() ;
+doormen.expect( "Bob" ).not.to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( "Hello Bob!" ).to.be.empty() ) ;
+doormen.shouldThrow( () => doormen.expect( "" ).to.not.be.empty() ) ;
+doormen.expect( [] ).to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( [] ).to.be.not.empty() ) ;
+doormen.expect( [1] ).not.to.be.empty() ;
+doormen.expect( [1,2,3] ).not.to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( [1] ).to.be.empty() ) ;
+doormen.shouldThrow( () => doormen.expect( [1,2,3] ).to.be.empty() ) ;
+doormen.expect( [undefined] ).not.to.be.empty() ;
+doormen.expect( {} ).to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( {} ).to.be.not.empty() ) ;
+doormen.expect( {a:1} ).not.to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.be.empty() ) ;
+doormen.expect( new Set() ).to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( new Set() ).to.be.not.empty() ) ;
+doormen.expect( new Set( [1] ) ).not.to.be.empty() ;
+doormen.expect( new Set( [1,2,3] ) ).not.to.be.empty() ;
+doormen.shouldThrow( () => doormen.expect( new Set( [1] ) ).to.be.empty() ) ;
+doormen.shouldThrow( () => doormen.expect( new Set( [1,2,3] ) ).to.be.empty() ) ;
+```
+
+expect a value to have keys/not to have keys.
+
+```js
+doormen.expect( {a:1} ).to.have.key( 'a' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.key( 'a' ) ) ;
+doormen.expect( {a:1} ).to.not.have.key( 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.key( 'b' ) ) ;
+doormen.expect( {a:1,b:2} ).to.have.keys( 'a' ) ;
+doormen.expect( {a:1,b:2} ).to.have.keys( 'b' ) ;
+doormen.expect( {a:1,b:2} ).to.have.keys( 'a', 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'b', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'a', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.keys( 'b', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'a', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.keys( 'b', 'c' ) ) ;
+
+var proto = { d: 4 } ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'a' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'd' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.keys( 'a' , 'd' ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.key( 'd' ) ) ;
+```
+
+expect a value to have own keys/not to have own keys.
+
+```js
+doormen.expect( {a:1} ).to.have.own.key( 'a' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.own.key( 'a' ) ) ;
+doormen.expect( {a:1} ).to.not.have.own.key( 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.own.key( 'b' ) ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a' ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.keys( 'b' ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a', 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'b', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'a', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).not.to.have.own.keys( 'b', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'a', 'c' ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.keys( 'b', 'c' ) ) ;
+
+var proto = { d: 4 } ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'd' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.no.own.key( 'd' ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.key( 'd' ) ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'd' ) ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.keys( 'a' , 'd' ) ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
+```
+
+expect a value to have property/not to have property.
+
+```js
+doormen.expect( {a:1} ).to.have.property( 'a' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.property( 'a' ) ) ;
+doormen.expect( {a:1} ).to.not.have.property( 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.property( 'b' ) ) ;
+doormen.expect( {a:1,b:2} ).to.have.property( 'a' ) ;
+doormen.expect( {a:1,b:2} ).to.have.property( 'b' ) ;
+doormen.expect( {a:1,b:2} ).to.have.property( 'a', 1 ) ;
+doormen.expect( {a:1,b:2} ).not.to.have.property( 'a', 2 ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.property( 'a', 2 ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.not.have.property( 'a', 1 ) ) ;
+
+var proto = { d: 4 } ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'a' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' ) ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' , 4 ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' , 3 ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.property( 'd' , 4 ) ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.property( 'd' , 3 ) ) ;
+```
+
+expect a value to have own property/not to have own property.
+
+```js
+doormen.expect( {a:1} ).to.have.own.property( 'a' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.no.own.property( 'a' ) ) ;
+doormen.expect( {a:1} ).to.not.have.own.property( 'b' ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1} ).to.have.own.property( 'b' ) ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.property( 'a' ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.property( 'b' ) ;
+doormen.expect( {a:1,b:2} ).to.have.own.property( 'a', 1 ) ;
+doormen.expect( {a:1,b:2} ).not.to.have.own.property( 'a', 2 ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.have.own.property( 'a', 2 ) ) ;
+doormen.shouldThrow( () => doormen.expect( {a:1,b:2} ).to.not.have.own.property( 'a', 1 ) ) ;
+
+var proto = { d: 4 } ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'a' ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.property( 'd' ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' ) ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).not.to.have.own.property( 'd' , 4 ) ;
+doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.not.have.own.property( 'd' , 3 ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 4 ) ) ;
+doormen.shouldThrow( () => doormen.expect( Object.assign( Object.create( proto ) , {a:1,b:2} ) ).to.have.own.property( 'd' , 3 ) ) ;
+```
+
+expect a value (function) to throw/to not throw.
+
+```js
+doormen.expect( () => { throw new Error( "bob" ) ; } ).to.throw() ;
+doormen.shouldThrow( () => doormen.expect( () => { throw new Error( "bob" ) ; } ).not.to.throw() ) ;
+doormen.expect( () => 1 ).not.to.throw() ;
+doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw() ) ;
+```
+
+expect a value (function) to throw/to not throw a specific error.
+
+```js
+doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( SyntaxError ) ;
+doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( Error ) ;	// SyntaxError inherit Error
+doormen.shouldThrow( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).not.to.throw.a( SyntaxError ) ) ;
+doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.not.throw.a( RangeError ) ;
+doormen.shouldThrow( () => doormen.expect( () => { throw new SyntaxError( "bob" ) ; } ).to.throw.a( RangeError ) ) ;
+doormen.expect( () => 1 ).not.to.throw.a( SyntaxError ) ;
+doormen.expect( () => 1 ).not.to.throw.an( Error ) ;
+doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw( SyntaxError ) ) ;
+doormen.shouldThrow( () => doormen.expect( () => 1 ).to.throw( Error ) ) ;
+```
+
+executing a function with args.
+
+```js
+doormen.expect( (v) => { if ( v === 3 ) { throw new Error( "bob" ) ; } } ).not.to.throw() ;
+doormen.expect( (v) => { if ( v === 3 ) { throw new Error( "bob" ) ; } } ).with.args( 2 ).not.to.throw() ;
+doormen.expect( (v) => { if ( v === 3 ) { throw new Error( "bob" ) ; } } ).with.args( 3 ).to.throw() ;
+doormen.expect( (v) => { if ( v === 3 ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).not.to.throw() ;
+doormen.expect( (v) => { if ( v === 3 ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.throw() ;
+doormen.expect( (v,v2) => { if ( v === 3 || v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.throw() ;
+doormen.expect( (v,v2) => { if ( v === 3 || v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.throw() ;
+doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.not.throw() ;
+doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.throw() ;
+doormen.shouldThrow( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 2 , 'some' , 'value' ).to.throw() ) ;
+doormen.shouldThrow( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.not.throw() ) ;
 ```
 
 expect a value to be of a type.
 
 ```js
 doormen.expect( "bob" ).to.be.a( 'string' ) ;
+doormen.expect( "bob" ).to.be.of.type( 'string' ) ;
+doormen.expect( "bob" ).not.to.be.a( 'number' ) ;
+doormen.expect( "bob" ).not.to.be.of.type( 'number' ) ;
+doormen.shouldThrow( () => doormen.expect( "bob" ).not.to.be.a( 'string' ) ) ;
 doormen.shouldThrow( () => doormen.expect( "bob" ).to.be.a( 'number' ) ) ;
 doormen.expect( "http://soulserv.net" ).to.be.an( 'url' ) ;
+doormen.shouldThrow( () => doormen.expect( "http://soulserv.net" ).not.to.be.an( 'url' ) ) ;
+doormen.expect( "soulserv.net" ).to.be.not.an( 'url' ) ;
 doormen.shouldThrow( () => doormen.expect( "soulserv.net" ).to.be.an( 'url' ) ) ;
+```
+
+expect a value to be an instance of.
+
+```js
+doormen.expect( {} ).to.be.an( Object ) ;
+doormen.expect( {} ).not.to.be.a( Date ) ;
+doormen.expect( new Date() ).to.be.a( Date ) ;
+doormen.expect( new Date() ).to.be.an( Object ) ;
+doormen.shouldThrow( () => doormen.expect( {} ).to.be.not.an( Object ) ) ;
+doormen.shouldThrow( () => doormen.expect( {} ).to.be.a( Date ) ) ;
+doormen.shouldThrow( () => doormen.expect( new Date() ).to.not.be.a( Date ) ) ;
+doormen.shouldThrow( () => doormen.expect( new Date() ).not.to.be.an( Object ) ) ;
 ```
 
 <a name="path-in-the-schema"></a>

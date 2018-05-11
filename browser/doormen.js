@@ -234,7 +234,7 @@ function inspectVar( variable ) {
 		if ( variable.args.length ) {
 			let argStr = "( " + variable.args.map( a => inspectVar( a ) ).join( ', ' ) + " )" ;
 
-			if ( argStr.length < inspectOptions.maxLength ) {
+			if ( argStr.length > inspectOptions.maxLength ) {
 				argStr = argStr.slice( 0 , inspectOptions.maxLength - 1 ) + '…' ;
 			}
 
@@ -850,14 +850,26 @@ assert.notMatch = function notMatch( from , actual , notExpected ) {
 
 
 assert['to contain'] =
+assert['to have'] =
 assert['to include'] =
+assert.has =
 assert.include =
 assert.contain = function contain( from , actual , expected ) {
-	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
-		throw assertionError( from , actual , 'to have an .indexOf() method' ) ;
+	var has = false ;
+
+	if ( actual && typeof actual === 'object' ) {
+		if ( Array.isArray( actual ) ) {
+			if ( actual.indexOf( expected ) !== -1 ) { has = true ; }
+		}
+		else if ( typeof actual.has === 'function' ) {
+			if ( actual.has( expected ) ) { has = true ; }
+		}
+	}
+	else if ( typeof actual === 'string' ) {
+		if ( actual.indexOf( expected ) !== -1 ) { has = true ; }
 	}
 
-	if ( actual.indexOf( expected ) === -1 ) {
+	if ( ! has ) {
 		throw assertionError( from , actual , 'to contain' , expected ) ;
 	}
 } ;
@@ -865,17 +877,27 @@ assert.contain.inspect = true ;
 
 
 
-assert['to not contain'] =
-assert['not to contain'] =
-assert['to not include'] =
-assert['not to include'] =
+assert['to contain not'] = assert['to not contain'] = assert['not to contain'] =
+assert['to have not'] = assert['to not have'] = assert['not to have'] =
+assert['to include not'] = assert['to not include'] = assert['not to include'] =
+assert.hasNot =
 assert.notInclude =
 assert.notContain = function notContain( from , actual , notExpected ) {
-	if ( typeof actual !== 'string' && ( ! typeChecker.looseObject( actual ) || typeof actual.indexOf !== 'function' ) ) {
-		throw assertionError( from , actual , 'to have an .indexOf() method' ) ;
+	var has = false ;
+
+	if ( actual && typeof actual === 'object' ) {
+		if ( Array.isArray( actual ) ) {
+			if ( actual.indexOf( notExpected ) !== -1 ) { has = true ; }
+		}
+		else if ( typeof actual.has === 'function' ) {
+			if ( actual.has( notExpected ) ) { has = true ; }
+		}
+	}
+	else if ( typeof actual === 'string' ) {
+		if ( actual.indexOf( notExpected ) !== -1 ) { has = true ; }
 	}
 
-	if ( actual.indexOf( notExpected ) !== -1 ) {
+	if ( has ) {
 		throw assertionError( from , actual , 'not to contain' , notExpected ) ;
 	}
 } ;
@@ -888,7 +910,7 @@ assert.empty = function empty( from , actual ) {
 	var isEmpty = true ;
 
 	if ( actual ) {
-		if ( actual && typeof actual === 'object' ) {
+		if ( typeof actual === 'object' ) {
 			if ( Array.isArray( actual ) ) {
 				if ( actual.length ) { isEmpty = false ; }
 			}
@@ -914,14 +936,12 @@ assert.empty = function empty( from , actual ) {
 
 
 
-assert['to be not empty'] =
-assert['to not be empty'] =
-assert['not to be empty'] =
+assert['to be not empty'] = assert['to not be empty'] = assert['not to be empty'] =
 assert.notEmpty = function notEmpty( from , actual ) {
 	var isEmpty = true ;
 
 	if ( actual ) {
-		if ( actual && typeof actual === 'object' ) {
+		if ( typeof actual === 'object' ) {
 			if ( Array.isArray( actual ) ) {
 				if ( actual.length ) { isEmpty = false ; }
 			}
@@ -956,12 +976,12 @@ assert['to have keys'] =
 assert.key =
 assert.keys = function keys_( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw assertionError( from , actual , 'to be an object or function' ) ;
+		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( ! ( key in actual ) ) {
-			throw assertionError( from , actual , 'to have key(s)' , ... keys ) ;
+			throw assertionError( from , actual , 'to have key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
 } ;
@@ -970,23 +990,19 @@ assert.keys.glue = ', ' ;
 
 
 
-assert['to have not key'] =
-assert['to not have key'] =
-assert['not to have key'] =
-assert['to have not keys'] =
-assert['to not have keys'] =
-assert['not to have keys'] =
+assert['to have not key'] = assert['to not have key'] = assert['not to have key'] =
+assert['to have not keys'] = assert['to not have keys'] = assert['not to have keys'] =
 assert['to have no key'] =
 assert.noKey =
 assert.notKey =
 assert.notKeys = function notKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw assertionError( from , actual , 'to be an object or function' ) ;
+		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( key in actual ) {
-			throw assertionError( from , actual , 'not to have key(s)' , ... keys ) ;
+			throw assertionError( from , actual , 'not to have key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
 } ;
@@ -1000,12 +1016,12 @@ assert['to have own keys'] =
 assert.ownKey =
 assert.ownKeys = function ownKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw assertionError( from , actual , 'to be an object or function' ) ;
+		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( ! actual.hasOwnProperty( key ) ) {
-			throw assertionError( from , actual , 'to have own key(s)' , ... keys ) ;
+			throw assertionError( from , actual , 'to have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
 } ;
@@ -1014,23 +1030,19 @@ assert.ownKeys.glue = ', ' ;
 
 
 
-assert['to have not own key'] =
-assert['to not have own key'] =
-assert['not to have own key'] =
-assert['to have not own keys'] =
-assert['to not have own keys'] =
-assert['not to have own keys'] =
+assert['to have not own key'] = assert['to not have own key'] = assert['not to have own key'] =
+assert['to have not own keys'] = assert['to not have own keys'] = assert['not to have own keys'] =
 assert['to have no own key'] =
 assert.noOwnKey =
 assert.notOwnKey =
 assert.notOwnKeys = function notKeys( from , actual , ... keys ) {
 	if ( ! typeChecker.looseObject( actual ) ) {
-		throw assertionError( from , actual , 'to be an object or function' ) ;
+		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
 
 	keys.forEach( key => {
 		if ( actual.hasOwnProperty( key ) ) {
-			throw assertionError( from , actual , 'not to have own key(s)' , ... keys ) ;
+			throw assertionError( from , actual , 'not to have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
 } ;
@@ -1050,12 +1062,42 @@ assert.property = function property( from , actual , key , value ) {
 
 
 
+assert['to have not property'] = assert['to not have property'] = assert['not to have property'] =
+assert['to have no property'] =
+assert.notProperty = function notProperty( from , actual , key , value ) {
+	if ( arguments.length >= 4 ) {
+		if ( key in actual ) {
+			assert.notEqual( from , actual[ key ] , value ) ;
+		}
+	}
+	else {
+		assert.notKey( from , actual , key ) ;
+	}
+} ;
+
+
+
 assert['to have own property'] =
 assert.ownProperty = function ownProperty( from , actual , key , value ) {
 	assert.ownKey( from , actual , key ) ;
 
 	if ( arguments.length >= 4 ) {
 		assert.equal( from , actual[ key ] , value ) ;
+	}
+} ;
+
+
+
+assert['to have not own property'] = assert['to not have own property'] = assert['not to have own property'] =
+assert['to have no own property'] =
+assert.notOwnProperty = function notOwnProperty( from , actual , key , value ) {
+	if ( arguments.length >= 4 ) {
+		if ( actual.hasOwnProperty( key ) ) {
+			assert.notEqual( from , actual[ key ] , value ) ;
+		}
+	}
+	else {
+		assert.notOwnKey( from , actual , key ) ;
 	}
 } ;
 
@@ -1216,11 +1258,11 @@ assert['to be not an instance of'] =
 assert['to not be an instance of'] =
 assert['not to be an instance of'] =
 assert.notInstanceOf = function notInstanceOf( from , actual , notExpected ) {
-	if ( ! ( actual instanceof notExpected ) ) {
+	if ( actual instanceof notExpected ) {
 		throw assertionError( from , actual , 'not to be an instance of' , notExpected ) ;
 	}
 } ;
-assert.instanceOf.inspect = true ;
+assert.notInstanceOf.inspect = true ;
 
 
 
