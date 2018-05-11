@@ -2807,6 +2807,8 @@ doormen.expect( {} ).to.be.a.shallow.clone.of( {} ) ;
 doormen.expect( o1 ).to.be.a.shallow.clone.of( o1 ) ;
 doormen.expect( {n:o1} ).to.be.a.shallow.clone.of( {n:o1} ) ;
 doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).not.to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
+doormen.expect( {a:1,b:3} ).not.to.be.a.shallow.clone.of( {a:1,b:2} ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2} ).to.be.a.shallow.clone.of( {a:1,b:2,c:3} ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( {a:1,b:2,c:3} ).to.be.a.shallow.clone.of( {a:1,b:2} ) ) ;

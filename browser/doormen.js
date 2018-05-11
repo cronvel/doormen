@@ -704,6 +704,28 @@ assert.shallowCloneOf.inspect = true ;
 
 
 
+// Not shallow clone
+assert['to be not a shallow clone of'] = assert['to not be a shallow clone of'] = assert['not to be a shallow clone of'] =
+assert.notShallowCloneOf = function notShallowCloneOf( from , actual , notExpected ) {
+	if ( typeof actual !== 'function' && ( ! actual || typeof actual !== 'object' ) ) {
+		throw assertionError( from , actual , 'to be be an object or a function' ) ;
+	}
+
+	// Too boring to code, we use the reverse of shallowClone() now...
+	try {
+		assert.shallowCloneOf( from , actual , notExpected ) ;
+	}
+	catch ( error ) {
+		// Great, it must throw, we can return now
+		return ;
+	}
+
+	throw assertionError( from , actual , 'not to be a shallow clone of' , notExpected ) ;
+} ;
+assert.notShallowCloneOf.inspect = true ;
+
+
+
 /* Numbers / Date */
 
 
