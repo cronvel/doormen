@@ -3222,6 +3222,14 @@ doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).to.not.be.a( Da
 doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).not.to.be.an( Object ) ) ;
 ```
 
+force failure.
+
+```js
+doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect().fail( "Failed!" ) ) , 'AssertionError: Failed!' ) ;
+doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something" ) ) , 'AssertionError: Expected "bob" to do something' ) ;
+doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something with" , {a:1,b:2} ) ) , 'AssertionError: Expected "bob" to do something with { a: 1 , b: 2 }' ) ;
+```
+
 <a name="path-in-the-schema"></a>
 # Path in the schema
 should find the schema for an object path.

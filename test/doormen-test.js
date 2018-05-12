@@ -3049,6 +3049,12 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).to.not.be.a( Date ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Date() ).not.to.be.an( Object ) ) ;
 	} ) ;
+	
+	it( "force failure" , function() {
+		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect().fail( "Failed!" ) ) , 'AssertionError: Failed!' ) ;
+		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something" ) ) , 'AssertionError: Expected "bob" to do something' ) ;
+		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something with" , {a:1,b:2} ) ) , 'AssertionError: Expected "bob" to do something with { a: 1 , b: 2 }' ) ;
+	} ) ;
 } ) ;
 
 

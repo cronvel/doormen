@@ -274,15 +274,31 @@ var vowel = {
 
 
 function assertionError( from , actual , expectationType , ... expectations ) {
+	var middleMessage ;
+
 	var inOpt = {
 		inspect: false ,
 		glue: ' and ' ,
-		showDiff: false
+		showDiff: false ,
+		none: false
 	} ;
+
+	if ( expectationType && typeof expectationType === 'object' ) {
+		middleMessage = expectationType.middleMessage || ' to <insert here your expectation> ' ;
+		expectationType = expectationType.expectationType ;
+	}
+	else {
+		middleMessage = expectationType ;
+	}
 
 	if ( assert[ expectationType ] ) { Object.assign( inOpt , assert[ expectationType ] ) ; }
 
-	var message = 'Expected ' + inspectVar( actual ) + ' ' + expectationType ;
+	var message = '' ;
+
+	if ( actual !== assert.NONE ) { message += 'Expected ' + inspectVar( actual ) + ' ' ; }
+	else if ( ! inOpt.none ) { message += 'Expected nothing ' ; }
+
+	message += middleMessage ;
 
 	if ( expectations.length ) {
 		if ( inOpt.inspect ) {
@@ -310,19 +326,21 @@ module.exports = assert ;
 
 
 
+// Constant
+assert.NONE = {} ;
+
+
+
 /*
 	TODO:
 
-	Expect.js:
-	- length
-	- withArgs (function)
-	- fail useful???
+	Expect.js: everything is implemented
 
 	Chai:
 	- any
 	- all
 	- ownPropertyDescriptor
-	- lengthOf
+	- lengthOf combination with above/below/at least/at most
 	- members
 	- oneOf
 	- functions specific:
@@ -1388,6 +1406,15 @@ assert.notInstanceOf = function notInstanceOf( from , actual , notExpected ) {
 assert.notInstanceOf.inspect = true ;
 
 
+
+// Force failure
+assert.fail = function fail( from , actual , middleMessage , ... expectations ) {
+	throw assertionError( from , actual , { expectationType: 'fail' , middleMessage: middleMessage } , ... expectations ) ;
+} ;
+assert.fail.inspect = true ;
+assert.fail.none = true ;
+
+
 },{"./AssertionError.js":1,"./isEqual.js":9,"./typeChecker.js":15,"string-kit/lib/inspect.js":21}],5:[function(require,module,exports){
 /*
 	Doormen
@@ -2163,6 +2190,8 @@ doormen.shouldThrowAssertion = function shouldThrowAssertion( fn , from ) {
 		error.message = "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, instead it had thrown: " + error.message ;
 		throw error ;
 	}
+
+	return error ;
 } ;
 
 
@@ -2300,7 +2329,10 @@ function factory( hooks = {} ) {
 		// Sadly, Proxy are not callable on regular object, so the target has to be a function.
 		// The name is purposedly the same.
 		var assertion = function Expect() {} ;	// eslint-disable-line no-shadow
-		assertion.value = value ;
+
+		if ( arguments.length ) { assertion.value = value ; }
+		else { assertion.value = assert.NONE ; }
+
 		assertion.expectationType = null ;
 		assertion.extra = null ;	// Extra-values, for function arguments
 		assertion.expectFn = ExpectFn ;
