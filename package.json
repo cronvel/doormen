@@ -1,14 +1,14 @@
 {
   "name": "doormen",
-  "version": "0.7.20",
+  "version": "0.7.21",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "string-kit": "^0.6.17",
-    "tree-kit": "^0.5.26"
+    "string-kit": "^0.7.10",
+    "tree-kit": "^0.5.27"
   },
   "devDependencies": {
     "browserify": "^16.2.2",
