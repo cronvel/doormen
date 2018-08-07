@@ -4353,12 +4353,16 @@ exports.shellArg = function escapeShellArg( str ) {
 
 
 var escapeControlMap = {
-	'\r': '\\r' , '\n': '\\n' , '\t': '\\t' , '\x7f': '\\x7f'
+	'\r': '\\r' ,
+	'\n': '\\n' ,
+	'\t': '\\t' ,
+	'\x7f': '\\x7f'
 } ;
 
 // Escape \r \n \t so they become readable again, escape all ASCII control character as well, using \x syntaxe
-exports.control = function escapeControl( str ) {
+exports.control = function escapeControl( str , keepNewLineAndTab = false ) {
 	return str.replace( /[\x00-\x1f\x7f]/g , ( match ) => {
+		if ( keepNewLineAndTab && ( match === '\n' || match === '\t' ) ) { return match ; }
 		if ( escapeControlMap[ match ] !== undefined ) { return escapeControlMap[ match ] ; }
 		var hex = match.charCodeAt( 0 ).toString( 16 ) ;
 		if ( hex.length % 2 ) { hex = '0' + hex ; }
@@ -4369,7 +4373,11 @@ exports.control = function escapeControl( str ) {
 
 
 var escapeHtmlMap = {
-	'&': '&amp;' , '<': '&lt;' , '>': '&gt;' , '"': '&quot;' , "'": '&#039;'
+	'&': '&amp;' ,
+	'<': '&lt;' ,
+	'>': '&gt;' ,
+	'"': '&quot;' ,
+	"'": '&#039;'
 } ;
 
 // Only escape & < > so this is suited for content outside tags
@@ -4386,7 +4394,6 @@ exports.htmlAttr = function escapeHtmlAttr( str ) {
 exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 	return str.replace( /[&<>"']/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
 } ;
-
 
 
 },{}],21:[function(require,module,exports){
@@ -4445,7 +4452,7 @@ var ansi = require( './ansi.js' ) ;
 			* 'html': html output
 			* any object: full controle, inheriting from 'none'
 		* depth: depth limit, default: 3
-		* maxLength: length limit for strings, default: 200
+		* maxLength: length limit for strings, default: 250
 		* outputMaxLength: length limit for the inspect output string, default: 5000
 		* noFunc: do not display functions
 		* noDescriptor: do not display descriptor information
@@ -4459,7 +4466,7 @@ var ansi = require( './ansi.js' ) ;
 		  Display a minimal JSON-like output
 		* protoBlackList: `Set` of blacklisted object prototype (will not recurse inside it)
 		* propertyBlackList: `Set` of blacklisted property names (will not even display it)
-		* useInspect? use .inspect() method when available on an object
+		* useInspect: use .inspect() method when available on an object (default to false)
 */
 
 function inspect( options , variable ) {
@@ -4473,7 +4480,7 @@ function inspect( options , variable ) {
 	else { options.style = Object.assign( {} , inspectStyle.none , options.style ) ; }
 
 	if ( options.depth === undefined ) { options.depth = 3 ; }
-	if ( options.maxLength === undefined ) { options.maxLength = 200 ; }
+	if ( options.maxLength === undefined ) { options.maxLength = 250 ; }
 	if ( options.outputMaxLength === undefined ) { options.outputMaxLength = 5000 ; }
 
 	// /!\ nofunc is deprecated
@@ -4624,7 +4631,7 @@ function inspect_( runtime , options , variable ) {
 		if ( options.sort ) { propertyList.sort() ; }
 
 		// Special Objects
-		specialObject = specialObjectSubstitution( variable ) ;
+		specialObject = specialObjectSubstitution( variable , options ) ;
 
 		if ( options.protoBlackList && options.protoBlackList.has( proto ) ) {
 			str += options.style.limit( '[skip]' ) + options.style.newline ;
@@ -4643,7 +4650,7 @@ function inspect_( runtime , options , variable ) {
 			str += options.style.newline ;
 		}
 		else if ( ! propertyList.length && ! options.proto ) {
-			str += '{}' + options.style.newline ;
+			str += ( isArray ? '[]' : '{}' ) + options.style.newline ;
 		}
 		else if ( runtime.depth >= options.depth ) {
 			str += options.style.limit( '[depth limit]' ) + options.style.newline ;
@@ -4754,49 +4761,53 @@ function keyNeedingQuotes( key ) {
 
 
 // Some special object are better written down when substituted by something else
-function specialObjectSubstitution( variable ) {
-	if ( typeof variable.constructor !== 'function' ) {
+function specialObjectSubstitution( object , options ) {
+	if ( typeof object.constructor !== 'function' ) {
 		// Some objects have no constructor, e.g.: Object.create(null)
-		//console.error( variable ) ;
+		//console.error( object ) ;
 		return ;
 	}
 
-	switch ( variable.constructor.name ) {
+	switch ( object.constructor.name ) {
 		case 'String' :
-			if ( variable instanceof String ) {
-				return variable.toString() ;
+			if ( object instanceof String ) {
+				return object.toString() ;
 			}
 			break ;
 		case 'RegExp' :
-			if ( variable instanceof RegExp ) {
-				return variable.toString() ;
+			if ( object instanceof RegExp ) {
+				return object.toString() ;
 			}
 			break ;
 		case 'Date' :
-			if ( variable instanceof Date ) {
-				return variable.toString() + ' [' + variable.getTime() + ']' ;
+			if ( object instanceof Date ) {
+				return object.toString() + ' [' + object.getTime() + ']' ;
 			}
 			break ;
 		case 'Set' :
-			if ( typeof Set === 'function' && variable instanceof Set ) {
+			if ( typeof Set === 'function' && object instanceof Set ) {
 				// This is an ES6 'Set' Object
-				return Array.from( variable ) ;
+				return Array.from( object ) ;
 			}
 			break ;
 		case 'Map' :
-			if ( typeof Map === 'function' && variable instanceof Map ) {
+			if ( typeof Map === 'function' && object instanceof Map ) {
 				// This is an ES6 'Map' Object
-				return Array.from( variable ) ;
+				return Array.from( object ) ;
 			}
 			break ;
 		case 'ObjectID' :
-			if ( variable._bsontype ) {
+			if ( object._bsontype ) {
 				// This is a MongoDB ObjectID, rather boring to display in its original form
 				// due to esoteric characters that confuse both the user and the terminal displaying it.
 				// Substitute it to its string representation
-				return variable.toString() ;
+				return object.toString() ;
 			}
 			break ;
+	}
+
+	if ( options.useInspect && typeof object.inspect === 'function' ) {
+		return object.inspect() ;
 	}
 
 	return ;
