@@ -3055,6 +3055,27 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something" ) ) , 'AssertionError: Expected "bob" to do something' ) ;
 		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something with" , {a:1,b:2} ) ) , 'AssertionError: Expected "bob" to do something with { a: 1 , b: 2 }' ) ;
 	} ) ;
+	
+	it( "Promise" , async function() {
+		function resolveTimeout( value ) {
+			return new Promise( resolve => {
+				setTimeout( () => resolve( value ) , 50 ) ;
+			} ) ;
+		}
+		
+		function rejectTimeout( value ) {
+			return new Promise( resolve => {
+				setTimeout( () => resolve( value ) , 50 ) ;
+			} ) ;
+		}
+		
+		await doormen.expect( Promise.resolve( 2 ) ).to.eventually.be( 2 ) ;
+		await doormen.expect( resolveTimeout( 2 ) ).to.be.eventually( 2 ) ;
+		await doormen.expect( resolveTimeout( { a: 1 , b: 2 } ) ).to.be.eventually.equal.to( { a: 1 , b: 2 } ) ;
+		await doormen.expect( resolveTimeout( { a: 1 , b: 2 } ) ).to.equal.eventually( { a: 1 , b: 2 } ) ;
+		
+		await doormen.expect( Promise.reject( new Error( 'Reject!' ) ) ).to.eventually.be( 2 ) ;
+	} ) ;
 } ) ;
 
 
