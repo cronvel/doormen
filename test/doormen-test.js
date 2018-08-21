@@ -2578,6 +2578,18 @@ describe( "Schema as a sentence" , function() {
 
 describe( "Expect BDD assertion library" , function() {
 	
+	function resolveTimeout( value ) {
+		return new Promise( resolve => {
+			setTimeout( () => resolve( value ) , 20 ) ;
+		} ) ;
+	}
+	
+	function rejectTimeout( error ) {
+		return new Promise( ( resolve , reject ) => {
+			setTimeout( () => reject( error ) , 20 ) ;
+		} ) ;
+	}
+	
 	it( "expect a value to be defined/undefined" , function() {
 		doormen.expect( "bob" ).to.be.defined() ;
 		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).not.to.be.defined() ) ;
@@ -3026,6 +3038,25 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.shouldThrowAssertion( () => doormen.expect( (v,v2) => { if ( v === 3 && v2 === 'some' ) { throw new Error( "bob" ) ; } } ).with.args( 3 , 'some' , 'value' ).to.not.throw() ) ;
 	} ) ;
 	
+	it( "executing a method of an object, passing a either the function or property" , function() {
+		var object = {
+			a: 3 ,
+			test: function( v ) { 
+				if ( v !== this.a ) {
+					throw new Error( "bob" ) ;
+				}
+			}
+		} ;
+		
+		doormen.expect( object.test ).method.of( object ).to.throw() ;
+		doormen.expect( object.test ).method.of( object ).with.args( 2 ).to.throw() ;
+		doormen.expect( object.test ).method.of( object ).with.args( 3 ).not.to.throw() ;
+
+		doormen.expect( 'test' ).method.of( object ).to.throw() ;
+		doormen.expect( 'test' ).method.of( object ).with.args( 2 ).to.throw() ;
+		doormen.expect( 'test' ).method.of( object ).with.args( 3 ).not.to.throw() ;
+	} ) ;
+	
 	it( "expect a value to be of a type" , function() {
 		doormen.expect( "bob" ).to.be.a( 'string' ) ;
 		doormen.expect( "bob" ).to.be.of.type( 'string' ) ;
@@ -3056,25 +3087,28 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).fail( "to do something with" , {a:1,b:2} ) ) , 'AssertionError: Expected "bob" to do something with { a: 1 , b: 2 }' ) ;
 	} ) ;
 	
-	it( "Promise" , async function() {
-		function resolveTimeout( value ) {
-			return new Promise( resolve => {
-				setTimeout( () => resolve( value ) , 50 ) ;
-			} ) ;
-		}
-		
-		function rejectTimeout( value ) {
-			return new Promise( resolve => {
-				setTimeout( () => resolve( value ) , 50 ) ;
-			} ) ;
-		}
-		
+	it( "Promise as values" , async function() {
 		await doormen.expect( Promise.resolve( 2 ) ).to.eventually.be( 2 ) ;
 		await doormen.expect( resolveTimeout( 2 ) ).to.be.eventually( 2 ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( resolveTimeout( 2 ) ).to.be.eventually( 3 ) ) ;
 		await doormen.expect( resolveTimeout( { a: 1 , b: 2 } ) ).to.be.eventually.equal.to( { a: 1 , b: 2 } ) ;
 		await doormen.expect( resolveTimeout( { a: 1 , b: 2 } ) ).to.equal.eventually( { a: 1 , b: 2 } ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( resolveTimeout( { a: 1 , b: 2 } ) ).to.equal.eventually( { a: 1 , b: 3 } ) ) ;
 		
-		await doormen.expect( Promise.reject( new Error( 'Reject!' ) ) ).to.eventually.be( 2 ) ;
+		await doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.be.rejected() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( resolveTimeout() ).to.be.rejected() ) ;
+		await doormen.expect( resolveTimeout() ).not.to.be.rejected() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).not.to.be.rejected() ) ;
+	} ) ;
+	
+	it( "Promise-returning functions" , async function() {
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.eventually.throw() ;
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		
+		await doormen.expect( () => resolveTimeout() ).not.to.eventually.throw() ;
+		await doormen.expect( () => resolveTimeout() ).not.to.reject() ;
+		await doormen.shouldRejectAssertion( doormen.expect( () => resolveTimeout() ).to.reject() ) ;
 	} ) ;
 } ) ;
 
