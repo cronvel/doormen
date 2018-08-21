@@ -3104,11 +3104,13 @@ describe( "Expect BDD assertion library" , function() {
 	it( "Promise-returning functions" , async function() {
 		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.eventually.throw() ;
 		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
-		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.eventually.throw() ) ;
 		
 		await doormen.expect( () => resolveTimeout() ).not.to.eventually.throw() ;
 		await doormen.expect( () => resolveTimeout() ).not.to.reject() ;
-		await doormen.shouldRejectAssertion( doormen.expect( () => resolveTimeout() ).to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.eventually.throw() ) ;
 	} ) ;
 } ) ;
 

@@ -195,8 +195,9 @@ var inspectOptions = {
 
 
 // A class for actual function, arguments, return value and thrown error
-function FunctionCall( fn , thisArg , ... args ) {
+function FunctionCall( fn , isAsync , thisArg , ... args ) {
 	this.function = fn ;
+	this.isAsync = isAsync ;
 	this.this = thisArg ;
 	this.args = args ;
 	this.hasThrown = false ;
@@ -204,12 +205,27 @@ function FunctionCall( fn , thisArg , ... args ) {
 	this.return = undefined ;
 
 	try {
-		if ( this.this ) { this.return = this.function.call( this.this , ... this.args ) ; }
-		else { this.return = this.function( ... this.args ) ; }
+		this.return = this.function.call( this.this || null , ... this.args ) ;
 	}
 	catch ( error ) {
 		this.hasThrown = true ;
 		this.error = error ;
+	}
+
+	if ( this.isAsync ) {
+		if ( this.hasThrown ) {
+			this.promise = Promise.resolve() ;
+		}
+		else {
+			this.promise = Promise.resolve( this.return )
+				.then(
+					value => this.return = value ,
+					error => {
+						this.hasThrown = true ;
+						this.error = error ;
+					}
+				) ;
+		}
 	}
 }
 
@@ -218,10 +234,6 @@ function FunctionCall( fn , thisArg , ... args ) {
 function inspectVar( variable ) {
 	if ( typeof variable === 'function' ) {
 		return ( variable.name || '(anonymous)' ) + "()" ;
-	}
-
-	if ( variable instanceof RegExp ) {
-		return variable.toString() ;
 	}
 
 	if ( variable instanceof Error ) {
@@ -323,6 +335,10 @@ function assertionError( from , actual , expectationType , ... expectations ) {
 
 var assert = {} ;
 module.exports = assert ;
+
+
+
+assert.__assertionError__ = assertionError ;
 
 
 
@@ -1258,7 +1274,7 @@ assert.throw = function throw_( from , fn , fnThisAndArgs , expectedErrorInstanc
 
 	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
 
-	var call = new FunctionCall( fn , ... fnThisAndArgs ) ;
+	var call = new FunctionCall( fn , false , ... fnThisAndArgs ) ;
 
 	if ( expectedErrorInstance ) {
 		if ( ! call.hasThrown || ! ( call.error instanceof expectedErrorInstance ) ) {
@@ -1275,7 +1291,7 @@ assert.throw = function throw_( from , fn , fnThisAndArgs , expectedErrorInstanc
 		throw assertionError( from , call , 'to throw' ) ;
 	}
 } ;
-assert.throw.extra = true ;
+assert.throw.fnParams = true ;
 assert.throw.inspect = true ;
 assert.throw.glue = ' having ' ;
 
@@ -1291,7 +1307,7 @@ assert.notThrow = function notThrow( from , fn , fnThisAndArgs , notExpectedErro
 
 	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
 
-	var call = new FunctionCall( fn , ... fnThisAndArgs ) ;
+	var call = new FunctionCall( fn , false , ... fnThisAndArgs ) ;
 
 	if ( notExpectedErrorInstance ) {
 		if ( call.hasThrown && call.error instanceof notExpectedErrorInstance ) {
@@ -1311,9 +1327,169 @@ assert.notThrow = function notThrow( from , fn , fnThisAndArgs , notExpectedErro
 		throw assertionError( from , call , 'not to throw' ) ;
 	}
 } ;
-assert.notThrow.extra = true ;
+assert.notThrow.fnParams = true ;
 assert.notThrow.inspect = true ;
 assert.notThrow.glue = ' having ' ;
+
+
+
+// Almost identical to .throw()
+assert['to reject'] =
+assert['to reject with'] =
+assert['to reject with a'] =
+assert['to reject with an'] =
+assert.reject = async function reject( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) {
+	if ( typeof fn !== 'function' ) {
+		throw assertionError( from , fn , 'to be a function' ) ;
+	}
+
+	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
+
+	var call = new FunctionCall( fn , true , ... fnThisAndArgs ) ;
+	await call.promise ;
+
+	if ( expectedErrorInstance ) {
+		if ( ! call.hasThrown || ! ( call.error instanceof expectedErrorInstance ) ) {
+			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			throw assertionError( from , call , 'to reject with ' + article , expectedErrorInstance ) ;
+		}
+
+		if ( expectedPartialError && ! isEqual( expectedPartialError , call.error , true , true ) ) {
+			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			throw assertionError( from , call , 'to reject with ' + article , expectedErrorInstance , expectedPartialError ) ;
+		}
+	}
+	else if ( ! call.hasThrown ) {
+		throw assertionError( from , call , 'to reject' ) ;
+	}
+} ;
+assert.throw.promise = assert.reject ;
+assert.reject.fnParams = true ;
+assert.reject.async = true ;
+assert.reject.inspect = true ;
+assert.reject.glue = ' having ' ;
+
+
+
+// Almost identical to .notThrow()
+assert['to not reject'] = assert['not to reject'] =
+assert['to reject not with'] = assert['to not reject with'] = assert['not to reject with'] =
+assert['to reject not with a'] = assert['to not reject with a'] = assert['not to reject with a'] =
+assert['to reject not with an'] = assert['to not reject with an'] = assert['not to reject with an'] =
+assert.notReject = async function notReject( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) {
+	if ( typeof fn !== 'function' ) {
+		throw assertionError( from , fn , 'to be a function' ) ;
+	}
+
+	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
+
+	var call = new FunctionCall( fn , true , ... fnThisAndArgs ) ;
+	await call.promise ;
+
+	if ( notExpectedErrorInstance ) {
+		if ( call.hasThrown && call.error instanceof notExpectedErrorInstance ) {
+			if ( notExpectedPartialError ) {
+				if ( isEqual( notExpectedPartialError , call.error , true , true ) ) {
+					let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+					throw assertionError( from , call , 'not to reject with ' + article , notExpectedErrorInstance , notExpectedPartialError ) ;
+				}
+			}
+			else {
+				let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+				throw assertionError( from , call , 'not to reject with ' + article , notExpectedErrorInstance ) ;
+			}
+		}
+	}
+	else if ( call.hasThrown ) {
+		throw assertionError( from , call , 'not to reject' ) ;
+	}
+} ;
+assert.notThrow.promise = assert.notReject ;
+assert.notReject.fnParams = true ;
+assert.notReject.async = true ;
+assert.notReject.inspect = true ;
+assert.notReject.glue = ' having ' ;
+
+
+
+/* Promises */
+
+
+
+// Almost identical to .throw()
+assert['to be rejected'] =
+assert['to be rejected with'] =
+assert['to be rejected with a'] =
+assert['to be rejected with an'] =
+assert.rejected = async function rejected( from , promise , expectedErrorInstance , expectedPartialError ) {
+	var error , hasThrown = false ;
+
+	try {
+		await promise ;
+	}
+	catch ( error_ ) {
+		hasThrown = true ;
+		error = error_ ;
+	}
+
+	if ( expectedErrorInstance ) {
+		if ( ! hasThrown || ! ( error instanceof expectedErrorInstance ) ) {
+			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			throw assertionError( from , promise , 'to be rejected with ' + article , expectedErrorInstance ) ;
+		}
+
+		if ( expectedPartialError && ! isEqual( expectedPartialError , error , true , true ) ) {
+			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			throw assertionError( from , promise , 'to be rejected with ' + article , expectedErrorInstance , expectedPartialError ) ;
+		}
+	}
+	else if ( ! hasThrown ) {
+		throw assertionError( from , promise , 'to be rejected' ) ;
+	}
+} ;
+assert.rejected.promise = true ;
+assert.rejected.async = true ;
+assert.rejected.inspect = true ;
+
+
+
+// Almost identical to .notThrow()
+assert['not to be rejected'] = assert['to not be rejected'] = assert['to be not rejected'] =
+assert['not to be rejected with'] = assert['to not be rejected with'] = assert['to be not rejected with'] =
+assert['not to be rejected with a'] = assert['to not be rejected with a'] = assert['to be not rejected with a'] =
+assert['not to be rejected with an'] = assert['to not be rejected with an'] = assert['to be not rejected with an'] =
+assert.notRejected = async function notRejected( from , promise , notExpectedErrorInstance , notExpectedPartialError ) {
+	var error , hasThrown = false ;
+
+	try {
+		await promise ;
+	}
+	catch ( error_ ) {
+		hasThrown = true ;
+		error = error_ ;
+	}
+
+	if ( notExpectedErrorInstance ) {
+		if ( hasThrown && error instanceof notExpectedErrorInstance ) {
+			if ( notExpectedPartialError ) {
+				if ( isEqual( notExpectedPartialError , error , true , true ) ) {
+					let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+					throw assertionError( from , promise , 'not to be rejected with ' + article , notExpectedErrorInstance , notExpectedPartialError ) ;
+				}
+			}
+			else {
+				let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+				throw assertionError( from , promise , 'not to be rejected with ' + article , notExpectedErrorInstance ) ;
+			}
+		}
+	}
+	else if ( hasThrown ) {
+		throw assertionError( from , promise , 'not to be rejected' ) ;
+	}
+} ;
+assert.notRejected.promise = true ;
+assert.notRejected.async = true ;
+assert.notRejected.inspect = true ;
 
 
 
@@ -2173,6 +2349,20 @@ doormen.shouldThrow = function shouldThrow( fn , from ) {
 
 
 
+doormen.shouldReject = async function shouldReject( fn , from ) {
+	var thrown = false ;
+	from = from || shouldReject ;
+
+	try { await fn() ; }
+	catch ( error ) { thrown = true ; }
+
+	if ( ! thrown ) {
+		throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have rejected." , from ) ;
+	}
+} ;
+
+
+
 // For internal usage or dev only
 doormen.shouldThrowAssertion = function shouldThrowAssertion( fn , from ) {
 	var error , thrown = false ;
@@ -2188,6 +2378,29 @@ doormen.shouldThrowAssertion = function shouldThrowAssertion( fn , from ) {
 		// Throw a new error? Seems better to re-throw with a modified message, or the stack trace would be lost?
 		//throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, but have thrown: " + error , from ) ;
 		error.message = "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, instead it had thrown: " + error.message ;
+		throw error ;
+	}
+
+	return error ;
+} ;
+
+
+
+// For internal usage or dev only
+doormen.shouldRejectAssertion = async function shouldRejectAssertion( fn , from ) {
+	var error , thrown = false ;
+	from = from || shouldRejectAssertion ;
+
+	try { await fn() ; }
+	catch ( error_ ) { thrown = true ; error = error_ ; }
+
+	if ( ! thrown ) {
+		throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have rejected." , from ) ;
+	}
+	if ( ! ( error instanceof doormen.AssertionError ) ) {
+		// Throw a new error? Seems better to re-throw with a modified message, or the stack trace would be lost?
+		//throw new doormen.AssertionError( "Function '" + ( fn.name || '(anonymous)' ) + "' should have thrown an AssertionError, but have thrown: " + error , from ) ;
+		error.message = "Function '" + ( fn.name || '(anonymous)' ) + "' should have rejected with an AssertionError, instead it had rejected with: " + error.message ;
 		throw error ;
 	}
 
@@ -2334,7 +2547,8 @@ function factory( hooks = {} ) {
 		else { assertion.value = assert.NONE ; }
 
 		assertion.expectationType = null ;
-		assertion.extra = null ;	// Extra-values, for function arguments
+		assertion.fnArgs = null ;	// Extra-values, for function arguments
+		assertion.isPromise = false ;	// true if it is asynchronous
 		assertion.expectFn = ExpectFn ;
 		assertion.proxy = new Proxy( assertion , handler ) ;
 
@@ -2360,14 +2574,23 @@ module.exports.factory = factory ;
 
 var expectation = {} ;
 
-
-
+// Set arguments for a function call
 expectation['with args'] =
 expectation.with =
 expectation.args =
 expectation.withArgs = ( expect , ... args ) => {
-	if ( ! expect.extra ) { expect.extra = [ null , ... args ] ; }
-	else { expect.extra = [ expect.extra[ 0 ] , ... args ] ; }
+	if ( ! expect.fnArgs ) { expect.fnArgs = [ null , ... args ] ; }
+	else { expect.fnArgs = [ expect.fnArgs[ 0 ] , ... args ] ; }
+} ;
+
+// Set the 'this' binding of a method
+expectation['method of'] = ( expect , object ) => {
+	if ( ! expect.fnArgs ) { expect.fnArgs = [ object ] ; }
+	else { expect.fnArgs[ 0 ] = object ; }
+
+	if ( typeof expect.value !== 'function' ) {
+		expect.value = object[ expect.value ] ;
+	}
 } ;
 
 
@@ -2375,6 +2598,12 @@ expectation.withArgs = ( expect , ... args ) => {
 var handler = {
 	get: ( target , property ) => {
 		//console.error( "Getting:" , property ) ;
+
+		// First, check special flags
+		if ( property === 'eventually' ) {
+			target.isPromise = true ;
+			return target.proxy ;
+		}
 
 		if ( typeof property === 'string' && ! Function.prototype[ property ] && ! Object.prototype[ property ] && ! ExpectPrototype[ property ] ) {
 			//console.error( ">>> inside" ) ;
@@ -2395,7 +2624,7 @@ var handler = {
 		return target[ property ] ;
 	} ,
 	apply: ( target , thisArg , args ) => {
-		var fn ;
+		var fn , promise ;
 
 		fn = expectation[ target.expectationType ] ;
 
@@ -2412,9 +2641,51 @@ var handler = {
 			throw new Error( "Unknown expectationType '" + target.expectationType + "'." ) ;
 		}
 
+		if ( target.isPromise ) {
+			if ( ! fn.promise ) {
+				// If it's a promise, resolve it and then call the proxy again
+				return Promise.resolve( target.value )
+					.then(
+						value => {
+							target.value = value ;
+							target.isPromise = false ;
+							target.proxy( ... args ) ;
+						} ,
+						() => {
+							target.expectFn.stats.fail ++ ;
+							if ( target.expectFn.hooks.fail ) { target.expectFn.hooks.fail() ; }
+							throw assert.__assertionError__( handler.apply , target.value , "to resolve" ) ;
+						}
+					) ;
+			}
+
+			if ( typeof fn.promise === 'function' ) { fn = fn.promise ; }
+		}
+
+		if ( fn.async ) {
+			if ( fn.fnParams ) {
+				promise = fn( handler.apply , target.value , target.fnArgs , ... args ) ;
+			}
+			else {
+				promise = fn( handler.apply , target.value , ... args ) ;
+			}
+
+			return promise.then(
+				() => {
+					target.expectFn.stats.ok ++ ;
+					if ( target.expectFn.hooks.ok ) { target.expectFn.hooks.ok() ; }
+				} ,
+				error => {
+					target.expectFn.stats.fail ++ ;
+					if ( target.expectFn.hooks.fail ) { target.expectFn.hooks.fail() ; }
+					throw error ;
+				}
+			) ;
+		}
+
 		try {
-			if ( fn.extra ) {
-				fn( handler.apply , target.value , target.extra , ... args ) ;
+			if ( fn.fnParams ) {
+				fn( handler.apply , target.value , target.fnArgs , ... args ) ;
 			}
 			else {
 				fn( handler.apply , target.value , ... args ) ;
@@ -4424,8 +4695,6 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 	SOFTWARE.
 */
 
-/* global Map, Set */
-
 /*
 	Variable inspector.
 */
@@ -4631,20 +4900,25 @@ function inspect_( runtime , options , variable ) {
 		if ( options.sort ) { propertyList.sort() ; }
 
 		// Special Objects
-		specialObject = specialObjectSubstitution( variable , options ) ;
+		specialObject = specialObjectSubstitution( variable , runtime , options ) ;
 
 		if ( options.protoBlackList && options.protoBlackList.has( proto ) ) {
 			str += options.style.limit( '[skip]' ) + options.style.newline ;
 		}
 		else if ( specialObject !== undefined ) {
-			str += '=> ' + inspect_( {
-				depth: runtime.depth ,
-				ancestors: runtime.ancestors ,
-				noPre: true
-			} ,
-			options ,
-			specialObject
-			) ;
+			if ( typeof specialObject === 'string' ) {
+				str += '=> ' + specialObject ;
+			}
+			else {
+				str += '=> ' + inspect_( {
+					depth: runtime.depth ,
+					ancestors: runtime.ancestors ,
+					noPre: true
+				} ,
+				options ,
+				specialObject
+				) ;
+			}
 		}
 		else if ( isFunc && ! options.funcDetails ) {
 			str += options.style.newline ;
@@ -4760,50 +5034,89 @@ function keyNeedingQuotes( key ) {
 
 
 
+var promiseStates = [ 'pending' , 'fulfilled' , 'rejected' ] ;
+
+
+
 // Some special object are better written down when substituted by something else
-function specialObjectSubstitution( object , options ) {
+function specialObjectSubstitution( object , runtime , options ) {
 	if ( typeof object.constructor !== 'function' ) {
 		// Some objects have no constructor, e.g.: Object.create(null)
 		//console.error( object ) ;
 		return ;
 	}
 
-	switch ( object.constructor.name ) {
-		case 'String' :
-			if ( object instanceof String ) {
-				return object.toString() ;
+	if ( object instanceof String ) {
+		return object.toString() ;
+	}
+
+	if ( object instanceof RegExp ) {
+		return object.toString() ;
+	}
+
+	if ( object instanceof Date ) {
+		return object.toString() + ' [' + object.getTime() + ']' ;
+	}
+
+	if ( typeof Set === 'function' && object instanceof Set ) {
+		// This is an ES6 'Set' Object
+		return Array.from( object ) ;
+	}
+
+	if ( typeof Map === 'function' && object instanceof Map ) {
+		// This is an ES6 'Map' Object
+		return Array.from( object ) ;
+	}
+
+	if ( object instanceof Promise ) {
+		if ( process && process.binding && process.binding( 'util' ) && process.binding( 'util' ).getPromiseDetails ) {
+			let details = process.binding( 'util' ).getPromiseDetails( object ) ;
+			let state =  promiseStates[ details[ 0 ] ] ;
+			let str = 'Promise <' + state + '>' ;
+
+			if ( state === 'fulfilled' ) {
+				str += ' ' + inspect_(
+					{
+						depth: runtime.depth ,
+						ancestors: runtime.ancestors ,
+						noPre: true
+					} ,
+					options ,
+					details[ 1 ]
+				) ;
 			}
-			break ;
-		case 'RegExp' :
-			if ( object instanceof RegExp ) {
-				return object.toString() ;
+			else if ( state === 'rejected' ) {
+				if ( details[ 1 ] instanceof Error ) {
+					str += ' ' + inspectError(
+						{
+							style: options.style ,
+							noErrorStack: true
+						} ,
+						details[ 1 ]
+					) ;
+				}
+				else {
+					str += ' ' + inspect_(
+						{
+							depth: runtime.depth ,
+							ancestors: runtime.ancestors ,
+							noPre: true
+						} ,
+						options ,
+						details[ 1 ]
+					) ;
+				}
 			}
-			break ;
-		case 'Date' :
-			if ( object instanceof Date ) {
-				return object.toString() + ' [' + object.getTime() + ']' ;
-			}
-			break ;
-		case 'Set' :
-			if ( typeof Set === 'function' && object instanceof Set ) {
-				// This is an ES6 'Set' Object
-				return Array.from( object ) ;
-			}
-			break ;
-		case 'Map' :
-			if ( typeof Map === 'function' && object instanceof Map ) {
-				// This is an ES6 'Map' Object
-				return Array.from( object ) ;
-			}
-			break ;
-		case 'ObjectID' :
-			if ( object._bsontype ) {
-				// This is a MongoDB ObjectID, rather boring to display in its original form
-				// due to esoteric characters that confuse both the user and the terminal displaying it.
-				// Substitute it to its string representation
-				return object.toString() ;
-			}
-			break ;
+
+			return str ;
+		}
+	}
+
+	if ( object._bsontype ) {
+		// This is a MongoDB ObjectID, rather boring to display in its original form
+		// due to esoteric characters that confuse both the user and the terminal displaying it.
+		// Substitute it to its string representation
+		return object.toString() ;
 	}
 
 	if ( options.useInspect && typeof object.inspect === 'function' ) {
@@ -4815,6 +5128,10 @@ function specialObjectSubstitution( object , options ) {
 
 
 
+/*
+	Options:
+		noErrorStack: set to true if the stack should not be displayed
+*/
 function inspectError( options , error ) {
 	var str = '' , stack , type , code ;
 
@@ -4828,7 +5145,7 @@ function inspectError( options , error ) {
 	if ( ! options.style ) { options.style = inspectStyle.none ; }
 	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
 
-	if ( error.stack ) { stack = inspectStack( options , error.stack ) ; }
+	if ( error.stack && ! options.noErrorStack ) { stack = inspectStack( options , error.stack ) ; }
 
 	type = error.type || error.constructor.name ;
 	code = error.code || error.name || error.errno || error.number ;
@@ -5093,21 +5410,21 @@ module.exports = function toTitleCase( str , options ) {
 },{}],25:[function(require,module,exports){
 /*
 	Tree Kit
-	
-	Copyright (c) 2014 - 2016 Cédric Ronvel
-	
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
 	The MIT License (MIT)
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-	
+
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-	
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -5125,11 +5442,10 @@ module.exports = function toTitleCase( str , options ) {
 	Stand-alone fork of extend.js, without options.
 */
 
-module.exports = function clone( originalObject , circular )
-{
+module.exports = function clone( originalObject , circular ) {
 	// First create an empty object with
 	// same prototype of our original source
-	
+
 	var propertyIndex , descriptor , keys , current , nextSource , indexOf ,
 		copies = [ {
 			source: originalObject ,
@@ -5138,48 +5454,43 @@ module.exports = function clone( originalObject , circular )
 		cloneObject = copies[ 0 ].target ,
 		sourceReferences = [ originalObject ] ,
 		targetReferences = [ cloneObject ] ;
-	
+
 	// First in, first out
-	while ( current = copies.shift() )	// jshint ignore:line
-	{
+	while ( ( current = copies.shift() ) ) {
 		keys = Object.getOwnPropertyNames( current.source ) ;
 
-		for ( propertyIndex = 0 ; propertyIndex < keys.length ; propertyIndex ++ )
-		{
+		for ( propertyIndex = 0 ; propertyIndex < keys.length ; propertyIndex ++ ) {
 			// Save the source's descriptor
 			descriptor = Object.getOwnPropertyDescriptor( current.source , keys[ propertyIndex ] ) ;
-			
-			if ( ! descriptor.value || typeof descriptor.value !== 'object' )
-			{
+
+			if ( ! descriptor.value || typeof descriptor.value !== 'object' ) {
 				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 				continue ;
 			}
-			
+
 			nextSource = descriptor.value ;
 			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( Object.getPrototypeOf( nextSource ) ) ;
-			
-			if ( circular )
-			{
+
+			if ( circular ) {
 				indexOf = sourceReferences.indexOf( nextSource ) ;
-				
-				if ( indexOf !== -1 )
-				{
+
+				if ( indexOf !== -1 ) {
 					// The source is already referenced, just assign reference
 					descriptor.value = targetReferences[ indexOf ] ;
 					Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 					continue ;
 				}
-				
+
 				sourceReferences.push( nextSource ) ;
 				targetReferences.push( descriptor.value ) ;
 			}
-			
+
 			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
-			
+
 			copies.push( { source: nextSource , target: descriptor.value } ) ;
 		}
 	}
-	
+
 	return cloneObject ;
 } ;
 
