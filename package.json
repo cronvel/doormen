@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.7.22",
+  "version": "0.7.23",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "browserify": "^16.2.2",
-    "uglify-js-es6": "^2.8.9"
+    "uglify-es": "^3.3.9"
   },
   "scripts": {
     "test": "tea-time -R dot"
