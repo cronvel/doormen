@@ -185,8 +185,8 @@ var inspect = require( 'string-kit/lib/inspect.js' ).inspect ;
 var inspectOptions = {
 	style: 'inline' ,
 	depth: 2 ,
-	maxLength: 40 ,
-	outputMaxLength: 80 ,
+	maxLength: 80 ,
+	outputMaxLength: 160 ,
 	noDescriptor: true ,
 	noType: true ,
 	noArrayProperty: true
