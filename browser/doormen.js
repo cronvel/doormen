@@ -384,7 +384,7 @@ assert.NONE = {} ;
 // Defined
 assert['to be defined'] =
 assert.defined =
-assert.isDefined = function isDefined( from , actual ) {
+assert.isDefined = ( from , actual ) => {
 	if ( actual === undefined ) {
 		throw assertionError( from , actual , 'to be defined' ) ;
 	}
@@ -396,7 +396,7 @@ assert.isDefined = function isDefined( from , actual ) {
 assert['to be not defined'] = assert['to not be defined'] = assert['not to be defined'] =
 assert['to be undefined'] =
 assert.undefined =
-assert.isUndefined = function isUndefined( from , actual ) {
+assert.isUndefined = ( from , actual ) => {
 	if ( actual !== undefined ) {
 		throw assertionError( from , actual , 'to be undefined' ) ;
 	}
@@ -410,7 +410,7 @@ assert['to be truthy'] =
 assert.ok =
 assert.isOk =
 assert.truthy =
-assert.isTruthy = function isTruthy( from , actual ) {
+assert.isTruthy = ( from , actual ) => {
 	if ( ! actual ) {
 		throw assertionError( from , actual , 'to be truthy' ) ;
 	}
@@ -426,7 +426,7 @@ assert.nok =
 assert.ko =
 assert.isNotOk =
 assert.falsy =
-assert.isFalsy = function isFalsy( from , actual ) {
+assert.isFalsy = ( from , actual ) => {
 	if ( actual ) {
 		throw assertionError( from , actual , 'to be falsy' ) ;
 	}
@@ -437,7 +437,7 @@ assert.isFalsy = function isFalsy( from , actual ) {
 // True
 assert['to be true'] =
 assert.true =
-assert.isTrue = function isTrue( from , actual ) {
+assert.isTrue = ( from , actual ) => {
 	if ( actual !== true ) {
 		throw assertionError( from , actual , 'to be true' ) ;
 	}
@@ -448,7 +448,7 @@ assert.isTrue = function isTrue( from , actual ) {
 // Not true
 assert['to be not true'] = assert['to not be true'] = assert['not to be true'] =
 assert.notTrue =
-assert.isNotTrue = function isNotTrue( from , actual ) {
+assert.isNotTrue = ( from , actual ) => {
 	if ( actual === true ) {
 		throw assertionError( from , actual , 'not to be true' ) ;
 	}
@@ -459,7 +459,7 @@ assert.isNotTrue = function isNotTrue( from , actual ) {
 // False
 assert['to be false'] =
 assert.false =
-assert.isFalse = function isFalse( from , actual ) {
+assert.isFalse = ( from , actual ) => {
 	if ( actual !== false ) {
 		throw assertionError( from , actual , 'to be false' ) ;
 	}
@@ -470,7 +470,7 @@ assert.isFalse = function isFalse( from , actual ) {
 // Not false
 assert['to be not false'] = assert['to not be false'] = assert['not to be false'] =
 assert.notFalse =
-assert.isNotFalse = function isNotFalse( from , actual ) {
+assert.isNotFalse = ( from , actual ) => {
 	if ( actual === false ) {
 		throw assertionError( from , actual , 'not to be false' ) ;
 	}
@@ -481,7 +481,7 @@ assert.isNotFalse = function isNotFalse( from , actual ) {
 // Null
 assert['to be null'] =
 assert.null =
-assert.isNull = function isNull( from , actual ) {
+assert.isNull = ( from , actual ) => {
 	if ( actual !== null ) {
 		throw assertionError( from , actual , 'to be null' ) ;
 	}
@@ -492,7 +492,7 @@ assert.isNull = function isNull( from , actual ) {
 // Not null
 assert['to be not null'] = assert['to not be null'] = assert['not to be null'] =
 assert.notNull =
-assert.isNotNull = function isNotNull( from , actual ) {
+assert.isNotNull = ( from , actual ) => {
 	if ( actual === null ) {
 		throw assertionError( from , actual , 'not to be null' ) ;
 	}
@@ -504,7 +504,7 @@ assert.isNotNull = function isNotNull( from , actual ) {
 assert['to be NaN'] =
 assert['to be nan'] =
 assert.NaN =
-assert.isNaN = function isNaN( from , actual ) {
+assert.isNaN = ( from , actual ) => {
 	if ( ! Number.isNaN( actual ) ) {
 		throw assertionError( from , actual , 'to be NaN' ) ;
 	}
@@ -516,7 +516,7 @@ assert.isNaN = function isNaN( from , actual ) {
 assert['to be not NaN'] = assert['to not be NaN'] = assert['not to be NaN'] =
 assert['to be not nan'] = assert['to not be nan'] = assert['not to be nan'] =
 assert.notNaN =
-assert.isNotNaN = function isNaN( from , actual ) {
+assert.isNotNaN = ( from , actual ) => {
 	if ( Number.isNaN( actual ) ) {
 		throw assertionError( from , actual , 'not to be NaN' ) ;
 	}
@@ -525,7 +525,7 @@ assert.isNotNaN = function isNaN( from , actual ) {
 
 
 assert['to be finite'] =
-assert.finite = function finite( from , actual ) {
+assert.finite = ( from , actual ) => {
 	if ( typeof actual !== 'number' ) {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
@@ -538,7 +538,7 @@ assert.finite = function finite( from , actual ) {
 
 
 assert['to be not finite'] = assert['to not be finite'] = assert['not to be finite'] =
-assert.notFinite = function notFinite( from , actual ) {
+assert.notFinite = ( from , actual ) => {
 	if ( typeof actual !== 'number' ) {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
@@ -556,7 +556,7 @@ assert.notFinite = function notFinite( from , actual ) {
 
 // identical
 assert['to be'] =
-assert.strictEqual = function strictEqual( from , actual , expected ) {
+assert.strictEqual = ( from , actual , expected ) => {
 	if ( actual !== expected && ! ( Number.isNaN( actual ) && Number.isNaN( expected ) ) ) {
 		throw assertionError( from , actual , 'to be' , expected ) ;
 	}
@@ -568,7 +568,7 @@ assert.strictEqual.inspect = true ;
 
 // Not identical
 assert['to be not'] = assert['to not be'] = assert['not to be'] =
-assert.notStrictEqual = function notStrictEqual( from , actual , notExpected ) {
+assert.notStrictEqual = ( from , actual , notExpected ) => {
 	if ( actual === notExpected || ( Number.isNaN( actual ) && Number.isNaN( notExpected ) ) ) {
 		throw assertionError( from , actual , 'not to be' , notExpected ) ;
 	}
@@ -581,7 +581,7 @@ assert.notStrictEqual.inspect = true ;
 assert['to be equal to'] =
 assert['to equal'] =
 assert['to eql'] =		// compatibility with expect.js
-assert.equal = function equal( from , actual , expected ) {
+assert.equal = ( from , actual , expected ) => {
 	if ( ! isEqual( actual , expected ) ) {
 		throw assertionError( from , actual , 'to equal' , expected ) ;
 	}
@@ -595,7 +595,7 @@ assert.equal.inspect = true ;
 assert['to be not equal to'] = assert['to not be equal to'] = assert['not to be equal to'] =
 assert['to not equal'] = assert['not to equal'] =
 assert['to not eql'] = assert['not to eql'] =		// compatibility with expect.js
-assert.notEqual = function notEqual( from , actual , notExpected ) {
+assert.notEqual = ( from , actual , notExpected ) => {
 	if ( isEqual( actual , notExpected ) ) {
 		throw assertionError( from , actual , 'not to equal' , notExpected ) ;
 	}
@@ -608,7 +608,7 @@ assert.notEqual.inspect = true ;
 assert['to be like'] =
 assert['to be alike'] =
 assert['to be alike to'] =
-assert.like = function like( from , actual , expected ) {
+assert.like = ( from , actual , expected ) => {
 	if ( ! isEqual( actual , expected , true ) ) {
 		throw assertionError( from , actual , 'to be like' , expected ) ;
 	}
@@ -622,7 +622,7 @@ assert.like.inspect = true ;
 assert['to be not like'] = assert['to not be like'] = assert['not to be like'] =
 assert['to be not alike'] = assert['to not be alike'] = assert['not to be alike'] =
 assert['to be not alike to'] = assert['to not be alike to'] = assert['not to be alike to'] =
-assert.notLike = function notLike( from , actual , notExpected ) {
+assert.notLike = ( from , actual , notExpected ) => {
 	if ( isEqual( actual , notExpected , true ) ) {
 		throw assertionError( from , actual , 'not to be like' , notExpected ) ;
 	}
@@ -639,7 +639,7 @@ assert['to partially equal'] =
 assert['to partial equal'] =
 assert['to equal partial'] =
 assert.partialEqual =
-assert.partiallyEqual = function partiallyEqual( from , actual , expected ) {
+assert.partiallyEqual = ( from , actual , expected ) => {
 	if ( ! isEqual( expected , actual , false , true ) ) {
 		throw assertionError( from , actual , 'to partially equal' , expected ) ;
 	}
@@ -657,7 +657,7 @@ assert['to not partially equal'] = assert['not to partially equal'] =
 assert['to not partial equal'] = assert['not to partial equal'] =
 assert['to not equal partial'] = assert['not to equal partial'] =
 assert.notPartialEqual =
-assert.notPartiallyEqual = function notPartiallyEqual( from , actual , notExpected ) {
+assert.notPartiallyEqual = ( from , actual , notExpected ) => {
 	if ( isEqual( notExpected , actual , false , true ) ) {
 		throw assertionError( from , actual , 'not to partially equal' , notExpected ) ;
 	}
@@ -670,7 +670,7 @@ assert.notPartiallyEqual.inspect = true ;
 assert['to be partially like'] =
 assert['to be like partial'] =
 assert.partialLike =
-assert.partiallyLike = function partiallyLike( from , actual , expected ) {
+assert.partiallyLike = ( from , actual , expected ) => {
 	if ( ! isEqual( expected , actual , true , true ) ) {
 		throw assertionError( from , actual , 'to be partially like' , expected ) ;
 	}
@@ -684,7 +684,7 @@ assert.partiallyLike.inspect = true ;
 assert['to be not partially like'] = assert['to not be partially like'] = assert['not to be partially like'] =
 assert['to be not like partial'] = assert['to not be like partial'] = assert['not to be like partial'] =
 assert.notPartialLike =
-assert.notPartiallyLike = function notPartiallyLike( from , actual , notExpected ) {
+assert.notPartiallyLike = ( from , actual , notExpected ) => {
 	if ( isEqual( notExpected , actual , true , true ) ) {
 		throw assertionError( from , actual , 'not to be partially like' , notExpected ) ;
 	}
@@ -697,7 +697,7 @@ assert.notPartiallyLike.inspect = true ;
 assert['to be shallow clone'] =
 assert['to be shallow clone of'] =
 assert['to be a shallow clone of'] =
-assert.shallowCloneOf = function shallowCloneOf( from , actual , expected ) {
+assert.shallowCloneOf = ( from , actual , expected ) => {
 	if ( typeof actual !== 'function' && ( ! actual || typeof actual !== 'object' ) ) {
 		throw assertionError( from , actual , 'to be be an object or a function' ) ;
 	}
@@ -744,7 +744,7 @@ assert.shallowCloneOf.inspect = true ;
 assert['to be not shallow clone'] = assert['to not be shallow clone'] = assert['not to be shallow clone'] =
 assert['to be not shallow clone of'] = assert['to not be shallow clone of'] = assert['not to be shallow clone of'] =
 assert['to be not a shallow clone of'] = assert['to not be a shallow clone of'] = assert['not to be a shallow clone of'] =
-assert.notShallowCloneOf = function notShallowCloneOf( from , actual , notExpected ) {
+assert.notShallowCloneOf = ( from , actual , notExpected ) => {
 	if ( typeof actual !== 'function' && ( ! actual || typeof actual !== 'object' ) ) {
 		throw assertionError( from , actual , 'to be be an object or a function' ) ;
 	}
@@ -771,7 +771,7 @@ assert.notShallowCloneOf.inspect = true ;
 // Epsilon aware comparison, or with a custom delta
 assert['to be close to'] =
 assert['to be around'] =
-assert.around = function around( from , actual , value , delta ) {
+assert.around = ( from , actual , value , delta ) => {
 	if ( typeof actual !== 'number' ) {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
@@ -798,7 +798,7 @@ assert['not to be close to'] =
 assert['to be not around'] =
 assert['to not be around'] =
 assert['not to be around'] =
-assert.notAround = function notAround( from , actual , value , delta ) {
+assert.notAround = ( from , actual , value , delta ) => {
 	if ( typeof actual !== 'number' ) {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
@@ -824,7 +824,7 @@ assert['to be greater than'] =
 assert.above =
 assert.gt =
 assert.greater =
-assert.greaterThan = function greaterThan( from , actual , value ) {
+assert.greaterThan = ( from , actual , value ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -840,7 +840,7 @@ assert['to be at least'] =
 assert['to be greater than or equal to'] =
 assert.least =
 assert.gte =
-assert.greaterThanOrEqualTo = function greaterThanOrEqualTo( from , actual , value ) {
+assert.greaterThanOrEqualTo = ( from , actual , value ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -858,7 +858,7 @@ assert['to be lesser than'] =
 assert.below =
 assert.lt =
 assert.lesser =
-assert.lesserThan = function lesserThan( from , actual , value ) {
+assert.lesserThan = ( from , actual , value ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -874,7 +874,7 @@ assert['to be at most'] =
 assert['to be lesser than or equal to'] =
 assert.most =
 assert.lte =
-assert.lesserThanOrEqualTo = function lesserThanOrEqualTo( from , actual , value ) {
+assert.lesserThanOrEqualTo = ( from , actual , value ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -887,7 +887,7 @@ assert.lesserThanOrEqualTo = function lesserThanOrEqualTo( from , actual , value
 
 
 assert['to be within'] =
-assert.within = function within( from , actual , lower , higher ) {
+assert.within = ( from , actual , lower , higher ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -902,7 +902,7 @@ assert.within = function within( from , actual , lower , higher ) {
 assert['to be not within'] =
 assert['to not be within'] =
 assert['not to be within'] =
-assert.notWithin = function notWithin( from , actual , lower , higher ) {
+assert.notWithin = ( from , actual , lower , higher ) => {
 	if ( typeof actual !== 'number' && ! ( actual instanceof Date ) ) {
 		throw assertionError( from , actual , 'to be a number or a Date' ) ;
 	}
@@ -920,7 +920,7 @@ assert.notWithin = function notWithin( from , actual , lower , higher ) {
 
 // String regexp match
 assert['to match'] =
-assert.match = function match( from , actual , expected ) {
+assert.match = ( from , actual , expected ) => {
 	if ( typeof actual !== 'string' ) {
 		throw assertionError( from , actual , 'to be a string' ) ;
 	}
@@ -935,7 +935,7 @@ assert.match = function match( from , actual , expected ) {
 // Not string regexp match
 assert['to not match'] =
 assert['not to match'] =
-assert.notMatch = function notMatch( from , actual , notExpected ) {
+assert.notMatch = ( from , actual , notExpected ) => {
 	if ( typeof actual !== 'string' ) {
 		throw assertionError( from , actual , 'to be a string' ) ;
 	}
@@ -954,7 +954,7 @@ assert.notMatch = function notMatch( from , actual , notExpected ) {
 assert['to have length'] =
 assert['to have length of'] =
 assert['to have a length of'] =
-assert.lengthOf = function lengthOf( from , actual , expected ) {
+assert.lengthOf = ( from , actual , expected ) => {
 	if ( typeof actual !== 'string' && ( ! actual || typeof actual !== 'object' ) ) {
 		throw assertionError( from , actual , 'to have some length' ) ;
 	}
@@ -969,7 +969,7 @@ assert.lengthOf = function lengthOf( from , actual , expected ) {
 assert['to have not length'] = assert['to not have length'] = assert['not to have length'] =
 assert['to have length not of'] = assert['to have not length of'] = assert['to not have length of'] = assert['not to have length of'] =
 assert['to have a length not of'] = assert['to have not a length of'] = assert['to not have a length of'] = assert['not to have a length of'] =
-assert.notLengthOf = function notLengthOf( from , actual , notExpected ) {
+assert.notLengthOf = ( from , actual , notExpected ) => {
 	if ( typeof actual !== 'string' && ( ! actual || typeof actual !== 'object' ) ) {
 		throw assertionError( from , actual , 'to have some length' ) ;
 	}
@@ -986,19 +986,19 @@ assert['to have'] =
 assert['to include'] =
 assert.has =
 assert.include =
-assert.contain = function contain( from , actual , expected ) {
+assert.contain = ( from , actual , ... expected ) => {
 	var has = false ;
 
 	if ( actual && typeof actual === 'object' ) {
 		if ( Array.isArray( actual ) ) {
-			if ( actual.indexOf( expected ) !== -1 ) { has = true ; }
+			has = expected.every( value => actual.includes( value ) ) ;
 		}
 		else if ( typeof actual.has === 'function' ) {
-			if ( actual.has( expected ) ) { has = true ; }
+			has = expected.every( value => actual.has( value ) ) ;
 		}
 	}
 	else if ( typeof actual === 'string' ) {
-		if ( actual.indexOf( expected ) !== -1 ) { has = true ; }
+		has = expected.every( value => actual.includes( value ) ) ;
 	}
 
 	if ( ! has ) {
@@ -1014,19 +1014,19 @@ assert['to have not'] = assert['to not have'] = assert['not to have'] =
 assert['to include not'] = assert['to not include'] = assert['not to include'] =
 assert.hasNot =
 assert.notInclude =
-assert.notContain = function notContain( from , actual , notExpected ) {
+assert.notContain = ( from , actual , ... notExpected ) => {
 	var has = false ;
 
 	if ( actual && typeof actual === 'object' ) {
 		if ( Array.isArray( actual ) ) {
-			if ( actual.indexOf( notExpected ) !== -1 ) { has = true ; }
+			has = notExpected.some( value => actual.includes( value ) ) ;
 		}
 		else if ( typeof actual.has === 'function' ) {
-			if ( actual.has( notExpected ) ) { has = true ; }
+			has = notExpected.some( value => actual.has( value ) ) ;
 		}
 	}
 	else if ( typeof actual === 'string' ) {
-		if ( actual.indexOf( notExpected ) !== -1 ) { has = true ; }
+		has = notExpected.some( value => actual.includes( value ) ) ;
 	}
 
 	if ( has ) {
@@ -1037,8 +1037,55 @@ assert.notContain.inspect = true ;
 
 
 
+assert['to only contain'] = assert['to contain only'] =
+assert['to only have'] = assert['to have only'] =
+assert['to only include'] = assert['to include only'] =
+assert.includeOnly =
+assert.containOnly = ( from , actual , ... expected ) => {
+	var has = false ;
+
+	if ( actual && typeof actual === 'object' ) {
+		if ( Array.isArray( actual ) ) {
+			// Turn 'actual' to a Set to dedup everything
+			actual = new Set( actual ) ;
+		}
+
+		if ( typeof actual.has === 'function' ) {
+			// Turn 'expected' to a Set to dedup everything
+			expected = new Set( expected ) ;
+			// Check size, then iterate...
+			has = actual.size === expected.size && [ ... expected ].every( value => actual.has( value ) ) ;
+		}
+	}
+	else if ( typeof actual === 'string' ) {
+		// Does not make sens at all to use this assertion for strings, but well...
+		has = expected.every( value => actual === value ) ;
+	}
+
+	if ( ! has ) {
+		throw assertionError( from , actual , 'to contain only' , expected ) ;
+	}
+} ;
+assert.containOnly.inspect = true ;
+assert.containOnly.glue = ', ' ;
+
+
+
+assert['not to only contain'] = assert['to not only contain'] =
+assert['not to contain only'] = assert['to not contain only'] = assert['to contain not only'] =
+assert['not to only have'] = assert['to not only have'] =
+assert['not to have only'] = assert['to not have only'] = assert['to have not only'] =
+assert['not to only include'] = assert['to not only include'] =
+assert['not to include only'] = assert['to not include only'] = assert['to include not only'] =
+assert.notIncludeOnly =
+assert.notContainOnly = ( from , actual , ... expected ) => {
+	throw new AssertionError( "Ambigous assertion type 'not to contain only'" , from ) ;
+} ;
+
+
+
 assert['to be empty'] =
-assert.empty = function empty( from , actual ) {
+assert.empty = ( from , actual ) => {
 	var isEmpty = true ;
 
 	if ( actual ) {
@@ -1069,7 +1116,7 @@ assert.empty = function empty( from , actual ) {
 
 
 assert['to be not empty'] = assert['to not be empty'] = assert['not to be empty'] =
-assert.notEmpty = function notEmpty( from , actual ) {
+assert.notEmpty = ( from , actual ) => {
 	var isEmpty = true ;
 
 	if ( actual ) {
@@ -1106,7 +1153,7 @@ assert.notEmpty = function notEmpty( from , actual ) {
 assert['to have key'] =
 assert['to have keys'] =
 assert.key =
-assert.keys = function keys_( from , actual , ... keys ) {
+assert.keys = ( from , actual , ... keys ) => {
 	if ( ! typeChecker.looseObject( actual ) ) {
 		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
@@ -1127,7 +1174,7 @@ assert['to have not keys'] = assert['to not have keys'] = assert['not to have ke
 assert['to have no key'] =
 assert.noKey =
 assert.notKey =
-assert.notKeys = function notKeys( from , actual , ... keys ) {
+assert.notKeys = ( from , actual , ... keys ) => {
 	if ( ! typeChecker.looseObject( actual ) ) {
 		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
@@ -1146,7 +1193,7 @@ assert.notKeys.glue = ', ' ;
 assert['to have own key'] =
 assert['to have own keys'] =
 assert.ownKey =
-assert.ownKeys = function ownKeys( from , actual , ... keys ) {
+assert.ownKeys = ( from , actual , ... keys ) => {
 	if ( ! typeChecker.looseObject( actual ) ) {
 		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
@@ -1165,7 +1212,7 @@ assert.ownKeys.glue = ', ' ;
 assert['to only have own key'] = assert['to have only own key'] = assert['to have own only key'] =
 assert['to only have own keys'] = assert['to have only own keys'] = assert['to have own only keys'] =
 assert.onlyOwnKey =
-assert.onlyOwnKeys = function ownKeys( from , actual , ... keys ) {
+assert.onlyOwnKeys = ( from , actual , ... keys ) => {
 	if ( ! typeChecker.looseObject( actual ) ) {
 		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
@@ -1192,7 +1239,7 @@ assert['to have not own keys'] = assert['to not have own keys'] = assert['not to
 assert['to have no own key'] =
 assert.noOwnKey =
 assert.notOwnKey =
-assert.notOwnKeys = function notKeys( from , actual , ... keys ) {
+assert.notOwnKeys = ( from , actual , ... keys ) => {
 	if ( ! typeChecker.looseObject( actual ) ) {
 		throw assertionError( from , actual , 'to be an object or a function' ) ;
 	}
@@ -1209,7 +1256,7 @@ assert.notOwnKeys.glue = ', ' ;
 
 
 assert['to have property'] =
-assert.property = function property( from , actual , key , value ) {
+assert.property = function( from , actual , key , value ) {
 	assert.key( from , actual , key ) ;
 
 	if ( arguments.length >= 4 ) {
@@ -1221,7 +1268,7 @@ assert.property = function property( from , actual , key , value ) {
 
 assert['to have not property'] = assert['to not have property'] = assert['not to have property'] =
 assert['to have no property'] =
-assert.notProperty = function notProperty( from , actual , key , value ) {
+assert.notProperty = function( from , actual , key , value ) {
 	if ( arguments.length >= 4 ) {
 		if ( key in actual ) {
 			assert.notEqual( from , actual[ key ] , value ) ;
@@ -1235,7 +1282,7 @@ assert.notProperty = function notProperty( from , actual , key , value ) {
 
 
 assert['to have own property'] =
-assert.ownProperty = function ownProperty( from , actual , key , value ) {
+assert.ownProperty = function( from , actual , key , value ) {
 	assert.ownKey( from , actual , key ) ;
 
 	if ( arguments.length >= 4 ) {
@@ -1247,7 +1294,7 @@ assert.ownProperty = function ownProperty( from , actual , key , value ) {
 
 assert['to have not own property'] = assert['to not have own property'] = assert['not to have own property'] =
 assert['to have no own property'] =
-assert.notOwnProperty = function notOwnProperty( from , actual , key , value ) {
+assert.notOwnProperty = function( from , actual , key , value ) {
 	if ( arguments.length >= 4 ) {
 		if ( actual.hasOwnProperty( key ) ) {
 			assert.notEqual( from , actual[ key ] , value ) ;
@@ -1267,7 +1314,7 @@ assert.notOwnProperty = function notOwnProperty( from , actual , key , value ) {
 assert['to throw'] =
 assert['to throw a'] =
 assert['to throw an'] =
-assert.throw = function throw_( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) {
+assert.throw = ( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
 		throw assertionError( from , fn , 'to be a function' ) ;
 	}
@@ -1300,7 +1347,7 @@ assert.throw.glue = ' having ' ;
 assert['to not throw'] = assert['not to throw'] =
 assert['to throw not a'] = assert['to not throw a'] = assert['not to throw a'] =
 assert['to throw not an'] = assert['to not throw an'] = assert['not to throw an'] =
-assert.notThrow = function notThrow( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) {
+assert.notThrow = ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
 		throw assertionError( from , fn , 'to be a function' ) ;
 	}
@@ -1338,7 +1385,7 @@ assert['to reject'] =
 assert['to reject with'] =
 assert['to reject with a'] =
 assert['to reject with an'] =
-assert.reject = async function reject( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) {
+assert.reject = async ( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
 		throw assertionError( from , fn , 'to be a function' ) ;
 	}
@@ -1376,7 +1423,7 @@ assert['to not reject'] = assert['not to reject'] =
 assert['to reject not with'] = assert['to not reject with'] = assert['not to reject with'] =
 assert['to reject not with a'] = assert['to not reject with a'] = assert['not to reject with a'] =
 assert['to reject not with an'] = assert['to not reject with an'] = assert['not to reject with an'] =
-assert.notReject = async function notReject( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) {
+assert.notReject = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
 		throw assertionError( from , fn , 'to be a function' ) ;
 	}
@@ -1421,7 +1468,7 @@ assert['to be rejected'] =
 assert['to be rejected with'] =
 assert['to be rejected with a'] =
 assert['to be rejected with an'] =
-assert.rejected = async function rejected( from , promise , expectedErrorInstance , expectedPartialError ) {
+assert.rejected = async ( from , promise , expectedErrorInstance , expectedPartialError ) => {
 	var error , hasThrown = false ;
 
 	try {
@@ -1458,7 +1505,7 @@ assert['not to be rejected'] = assert['to not be rejected'] = assert['to be not 
 assert['not to be rejected with'] = assert['to not be rejected with'] = assert['to be not rejected with'] =
 assert['not to be rejected with a'] = assert['to not be rejected with a'] = assert['to be not rejected with a'] =
 assert['not to be rejected with an'] = assert['to not be rejected with an'] = assert['to be not rejected with an'] =
-assert.notRejected = async function notRejected( from , promise , notExpectedErrorInstance , notExpectedPartialError ) {
+assert.notRejected = async ( from , promise , notExpectedErrorInstance , notExpectedPartialError ) => {
 	var error , hasThrown = false ;
 
 	try {
@@ -1500,7 +1547,7 @@ assert.notRejected.inspect = true ;
 // Type or instance
 assert['to be a'] =
 assert['to be an'] =
-assert.typeOrInstanceOf = function typeOrInstanceOf( from , actual , expected ) {
+assert.typeOrInstanceOf = ( from , actual , expected ) => {
 	if ( typeof expected === 'string' ) {
 		return assert.typeOf( from , actual , expected ) ;
 	}
@@ -1517,7 +1564,7 @@ assert['not to be a'] =
 assert['to be not an'] =
 assert['to not be an'] =
 assert['not to be an'] =
-assert.notTypeOrInstanceOf = function notTypeOrInstanceOf( from , actual , notExpected ) {
+assert.notTypeOrInstanceOf = ( from , actual , notExpected ) => {
 	if ( typeof notExpected === 'string' ) {
 		return assert.notTypeOf( from , actual , notExpected ) ;
 	}
@@ -1529,7 +1576,7 @@ assert.notTypeOrInstanceOf = function notTypeOrInstanceOf( from , actual , notEx
 
 // Type
 assert['to be of type'] =
-assert.typeOf = function typeOf( from , actual , expected ) {
+assert.typeOf = ( from , actual , expected ) => {
 	if ( ! typeChecker[ expected ] ) {
 		throw new Error( "Unknown type '" + expected + "'." ) ;
 	}
@@ -1546,7 +1593,7 @@ assert.typeOf = function typeOf( from , actual , expected ) {
 assert['to be not of type'] =
 assert['to not be of type'] =
 assert['not to be of type'] =
-assert.notTypeOf = function notTypeOf( from , actual , notExpected ) {
+assert.notTypeOf = ( from , actual , notExpected ) => {
 	if ( ! typeChecker[ notExpected ] ) {
 		throw new Error( "Unknown type '" + notExpected + "'." ) ;
 	}
@@ -1561,7 +1608,7 @@ assert.notTypeOf = function notTypeOf( from , actual , notExpected ) {
 
 // Instance
 assert['to be an instance of'] =
-assert.instanceOf = function instanceOf( from , actual , expected ) {
+assert.instanceOf = ( from , actual , expected ) => {
 	if ( ! ( actual instanceof expected ) ) {
 		throw assertionError( from , actual , 'to be an instance of' , expected ) ;
 	}
@@ -1574,7 +1621,7 @@ assert.instanceOf.inspect = true ;
 assert['to be not an instance of'] =
 assert['to not be an instance of'] =
 assert['not to be an instance of'] =
-assert.notInstanceOf = function notInstanceOf( from , actual , notExpected ) {
+assert.notInstanceOf = ( from , actual , notExpected ) => {
 	if ( actual instanceof notExpected ) {
 		throw assertionError( from , actual , 'not to be an instance of' , notExpected ) ;
 	}
@@ -1584,7 +1631,7 @@ assert.notInstanceOf.inspect = true ;
 
 
 // Force failure
-assert.fail = function fail( from , actual , middleMessage , ... expectations ) {
+assert.fail = ( from , actual , middleMessage , ... expectations ) => {
 	throw assertionError( from , actual , { expectationType: 'fail' , middleMessage: middleMessage } , ... expectations ) ;
 } ;
 assert.fail.inspect = true ;
@@ -4907,7 +4954,7 @@ function inspect_( runtime , options , variable ) {
 		}
 		else if ( specialObject !== undefined ) {
 			if ( typeof specialObject === 'string' ) {
-				str += '=> ' + specialObject ;
+				str += '=> ' + specialObject + options.style.newline ;
 			}
 			else {
 				str += '=> ' + inspect_( {

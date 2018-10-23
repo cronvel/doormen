@@ -2862,15 +2862,56 @@ describe( "Expect BDD assertion library" , function() {
 	it( "expect a value to contain/not contain" , function() {
 		doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
+		doormen.expect( "Hello Bob!" ).to.include( 'Hello' , 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.not.have( 'Jack' ) ;
+		doormen.expect( "Hello Bob!" ).to.not.have( 'Hi' , 'Jack' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Bill' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Hi' , 'Bill' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Hello' , 'Bill' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Hi' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hi' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hello' , 'Bill' ) ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' ) ;
+		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' , 'Jack' ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' ) ;
+		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Jacky' , 'Bobby' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bobby' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Jack' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Jack' , 'Bobby' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' , 'Alice' ) ) ;
 		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Bob' ) ;
+		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Bob' , 'Alice' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain( 'Charlie' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Roger' , 'Jack' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' , 'Roger' ) ) ;
 		doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'Bob' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ ["Alice",1] , ["Bob",2] , ["Jack","two"] ] ) ).to.contain( 'bob' ) ) ;
+	} ) ;
+	
+	it( "expect a value to contain/not contain only" , function() {
+		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Jack' , 'Alice' , 'Bob' ) ;
+		doormen.expect( [ "Alice" , "Bob" , "Jack" , "Bob" ] ).to.contain.only( 'Jack' , 'Alice' , 'Bob' ) ;
+		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Alice' ) ;
+		doormen.expect( [ "Jack" , "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Alice' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Alice' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Bob' , 'Bob' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Tony' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Tony' ) ) ;
+
+		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' ) ;
+		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" , "Bob" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' ) ;
+		doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Alice' ) ;
+		doormen.expect( new Set( [ "Jack" , "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Alice' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Alice' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Bob' , 'Bob' , 'Bob' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Tony' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Tony' ) ) ;
+
+		// Ambigous assertion
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain.only( 'Alice' ) ) ;
 	} ) ;
 	
 	it( "expect a value to be empty/not empty" , function() {
