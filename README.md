@@ -2907,6 +2907,23 @@ doormen.expect( {b:2,a:1} ).to.be.partially.like( Object.assign( Object.create( 
 doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.not.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 ```
 
+expect a value to map.
+
+```js
+doormen.expect( new Map() ).to.map( [] ) ;
+doormen.expect( new Map( [ [ "one", 1 ] ] ) ).to.map( [ [ "one", 1 ] ] ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ).to.map( [ [ "one", 1 ] ] ) ) ;
+doormen.expect( new Map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ).to.map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ;
+doormen.expect( new Map( [ [ "one", 1 ] , [ 2, {"two":2} ] ] ) ).to.map( [ [ "one", 1 ] , [ 2, {"two":2} ] ] ) ;
+
+// Keys and values should be checked with the equal algorithm
+doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ;
+doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":3} ] ] ) ) ;
+```
+
 expect a value to be close to (epsilon-aware).
 
 ```js

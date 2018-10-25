@@ -693,6 +693,51 @@ assert.notPartiallyLike.inspect = true ;
 
 
 
+// Map
+assert['to map'] =
+assert.map = ( from , actual , expected ) => {
+	if ( ! actual || typeof actual !== 'object' || typeof actual.get !== 'function' || typeof actual.keys !== 'function' ) {
+		throw assertionError( from , actual , 'to be be a mappable object' ) ;
+	}
+
+	if ( ! Array.isArray( expected ) ) {
+		throw new AssertionError( "Expectation are not map entries" , from ) ;
+	}
+
+	var actualKeys = [ ... actual.keys() ] ;
+
+	if ( actualKeys.length !== expected.length ) {
+		throw assertionError( from , actual , 'to map' , expected ) ;
+	}
+
+	expected.forEach( expectedEntry => {
+		var actualKey , indexOf ;
+
+		if ( ! Array.isArray( expectedEntry ) ) {
+			throw new AssertionError( "Expectation are not map entries" , from ) ;
+		}
+
+		indexOf = actualKeys.findIndex( k => isEqual( expectedEntry[ 0 ] , k ) ) ;
+
+		if (
+			( ( indexOf = actualKeys.indexOf( expectedEntry[ 0 ] ) ) !== -1 ) ||
+			( ( indexOf = actualKeys.findIndex( k => isEqual( expectedEntry[ 0 ] , k ) ) ) !== -1 )
+		) {
+			actualKey = actualKeys.splice( indexOf , 1 )[ 0 ] ;
+
+			if ( ! isEqual( expectedEntry[ 1 ] , actual.get( actualKey ) ) ) {
+				throw assertionError( from , actual , 'to map' , expected ) ;
+			}
+		}
+		else {
+			throw assertionError( from , actual , 'to map' , expected ) ;
+		}
+	} ) ;
+} ;
+assert.map.inspect = true ;
+
+
+
 // Shallow clone
 assert['to be shallow clone'] =
 assert['to be shallow clone of'] =

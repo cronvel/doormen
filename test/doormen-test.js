@@ -2784,6 +2784,16 @@ describe( "Expect BDD assertion library" , function() {
 	it( "expect a value to map" , function() {
 		doormen.expect( new Map() ).to.map( [] ) ;
 		doormen.expect( new Map( [ [ "one", 1 ] ] ) ).to.map( [ [ "one", 1 ] ] ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ).to.map( [ [ "one", 1 ] ] ) ) ;
+		doormen.expect( new Map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ).to.map( [ [ "one", 1 ] , [ 2, "two" ] ] ) ;
+		doormen.expect( new Map( [ [ "one", 1 ] , [ 2, {"two":2} ] ] ) ).to.map( [ [ "one", 1 ] , [ 2, {"two":2} ] ] ) ;
+		
+		// Keys and values should be checked with the equal algorithm
+		doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ;
+		doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {a:1} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":2} ] ] ) ).to.map( [ [ {a:1} , 1 ] , [ {b:2} , {"two":3} ] ] ) ) ;
 	} ) ;
 	
 	it( "expect a value to be close to (epsilon-aware)" , function() {
