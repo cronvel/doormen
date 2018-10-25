@@ -2781,6 +2781,11 @@ describe( "Expect BDD assertion library" , function() {
 		doormen.shouldThrowAssertion( () => doormen.expect( {b:2,a:1} ).to.not.be.partially.like( Object.assign( Object.create( null ) , {a:1,b:2} ) ) ) ;
 	} ) ;
 	
+	it( "expect a value to map" , function() {
+		doormen.expect( new Map() ).to.map( [] ) ;
+		doormen.expect( new Map( [ [ "one", 1 ] ] ) ).to.map( [ [ "one", 1 ] ] ) ;
+	} ) ;
+	
 	it( "expect a value to be close to (epsilon-aware)" , function() {
 		// 0.1 + 0.2 is not equal to 0.3 due to epsilon error in floating point numbers
 		doormen.expect( 0.1 + 0.2 ).not.to.be( 0.3 ) ;
