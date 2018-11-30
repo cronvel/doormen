@@ -1250,23 +1250,23 @@ describe( "Mask" , () => {
 		} ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 0 } ) ,
+			doormen.tierMask( schema , data , 0 ) ,
 			{}
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 1 } ) ,
+			doormen.tierMask( schema , data , 1 ) ,
 			{ a: 1 }
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 2 } ) ,
+			doormen.tierMask( schema , data , 2 ) ,
 			{ a: 1 , c: 'blah!' }
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 3 } ) ,
+			doormen.tierMask( schema , data , 3 ) ,
 			{ a: 1 , b: true , c: 'blah!' }
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 4 } ) ,
+			doormen.tierMask( schema , data , 4 ) ,
 			{ a: 1 , b: true , c: 'blah!' }
 		) ;
 	} ) ;
@@ -1341,17 +1341,17 @@ describe( "Mask" , () => {
 		} ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 1 } ) ,
+			doormen.tierMask( schema , data , 1 ) ,
 			{ a: 1 , d: { e: 7 } }
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 2 } ) ,
+			doormen.tierMask( schema , data , 2 ) ,
 			{
 				a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
 			}
 		) ;
 		doormen.equals(
-			doormen.mask( schema , data , { tier: 3 } ) ,
+			doormen.tierMask( schema , data , 3 ) ,
 			{
 				a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
 			}
@@ -1378,7 +1378,17 @@ describe( "Mask" , () => {
 		} ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'meta' ] } ) ,
+			doormen.tagMask( schema , data , [ 'meta' ] ) ,
+			{
+				_id: '1978f09ac3e' ,
+				slug: 'ten-things-about-nothing' ,
+				title: '10 things you should know about nothing'
+			}
+		) ;
+
+		// Test the non-array syntax
+		doormen.equals(
+			doormen.tagMask( schema , data , 'meta' ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1387,7 +1397,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1396,7 +1406,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' , 'content' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' , 'content' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1406,7 +1416,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' , 'meta' , 'content' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' , 'meta' , 'content' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1454,7 +1464,7 @@ describe( "Mask" , () => {
 		} ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'meta' ] } ) ,
+			doormen.tagMask( schema , data , [ 'meta' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1464,7 +1474,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1476,7 +1486,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' , 'content' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' , 'content' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1489,7 +1499,7 @@ describe( "Mask" , () => {
 		) ;
 
 		doormen.equals(
-			doormen.mask( schema , data , { tags: [ 'internal' , 'meta' , 'content' ] } ) ,
+			doormen.tagMask( schema , data , [ 'internal' , 'meta' , 'content' ] ) ,
 			{
 				_id: '1978f09ac3e' ,
 				slug: 'ten-things-about-nothing' ,
@@ -1503,7 +1513,7 @@ describe( "Mask" , () => {
 		) ;
 	} ) ;
 
-	it( "patchTier()" , () => {
+	it( ".patchTier()" , () => {
 		var schema = {
 			type: 'strictObject' ,
 			properties: {
@@ -1551,8 +1561,61 @@ describe( "Mask" , () => {
 		doormen.equals(  doormen.patchTier( schema , { 'embedded.unexistant': 'useless' } )  ,  3  ) ;
 	} ) ;
 
-	it( "patchTags()" , () => {
-		throw new Error( 'TODO' ) ;
+	it( ".checkPatchByTags()" , () => {
+		var schema = {
+			properties: {
+				_id: {} ,
+				slug: { tags: [ 'internal' , 'meta' ] } ,
+				accesses: {
+					of: {
+						properties: {
+							userId: {} ,
+							accessLevel: { tags: [ 'internal' ] }
+						}
+					}
+				} ,
+				title: { tags: [ 'meta' ] } ,
+				post: { tags: [ 'content' ] }
+			}
+		} ;
+
+		doormen.checkPatchByTags( schema , { slug: 'bob' } , 'meta' ) ;
+		doormen.checkPatchByTags( schema , { slug: 'bob' } , 'internal' ) ;
+		doormen.checkPatchByTags( schema , { slug: 'bob' } , [ 'meta' , 'content' ] ) ;
+		doormen.shouldThrow( () => doormen.checkPatchByTags( schema , { slug: 'bob' } , 'content' ) ) ;
+		doormen.shouldThrow( () => doormen.checkPatchByTags( schema , { slug: 'bob' } , [ 'content' , 'unknown' ] ) ) ;
+		
+		doormen.checkPatchByTags( schema , { title: 'bob' } , 'meta' ) ;
+		doormen.checkPatchByTags( schema , { title: 'bob' } , [ 'content' , 'meta' ] ) ;
+		doormen.shouldThrow( () => doormen.checkPatchByTags( schema , { title: 'bob' } , 'content' ) ) ;
+		
+		doormen.checkPatchByTags( schema , { "accesses.public.accessLevel": 5 } , 'internal' ) ;
+		doormen.shouldThrow( () => doormen.checkPatchByTags( schema , { "accesses.public.accessLevel": 5 } , 'meta' ) ) ;
+
+		doormen.checkPatchByTags( schema , { slug: 'bob' , title: 'bob' } , [ 'meta' , 'unknown' ] ) ;
+		doormen.checkPatchByTags( schema , { slug: 'bob' , "accesses.public.accessLevel": 5 } , [ 'internal' , 'unknown' ] ) ;
+		
+		doormen.checkPatchByTags( schema , { post: 'my content' } , [ 'content' , 'unknown' ] ) ;
+		doormen.shouldThrow( () => doormen.checkPatchByTags( schema , { slug: 'bob' , post: 'my content' } , [ 'content' , 'unknown' ] ) ) ;
+	} ) ;
+
+	it( "should validate a patch with the 'allowedTags' option" , () => {
+		var schema ;
+
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				a: { type: 'string' , sanitize: 'toString' , tags: [ 'meta' ] } ,
+				b: { type: 'string' , tags: [ 'meta' , 'internal' ] } ,
+				c: { type: 'string' , tags: [ 'content' ] }
+			}
+		} ;
+
+		doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 'one' , b: 'two' , c: 'three' } ) ;
+		doormen.patch( { allowedTags: 'meta' } , schema , { a: 'one' , b: 'two' } ) ;
+		doormen.shouldThrow( () => doormen.patch( { allowedTags: 'meta' } , schema , { a: 'one' , b: 'two' , c: 'three' } ) ) ;
+		doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 1 , b: 'two' , c: 'three' } ) ;
+		doormen.equals( doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
 	} ) ;
 } ) ;
 

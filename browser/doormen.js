@@ -1858,8 +1858,11 @@ doormen.AssertionError = require( './AssertionError.js' ) ;
 doormen.ValidatorError = require( './ValidatorError.js' ) ;
 doormen.SchemaError = require( './SchemaError.js' ) ;
 
+var mask = require( './mask.js' ) ;
+doormen.tierMask = mask.tierMask ;
+doormen.tagMask = mask.tagMask ;
+
 doormen.isEqual = require( './isEqual.js' ) ;
-doormen.mask = require( './mask.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
 doormen.assert = require( './assert.js' ) ;
 doormen.expect = require( './expect.js' ) ;
@@ -2302,7 +2305,7 @@ function schemaPath_( schema , path , index ) {
 
 
 // Get the tier of a patch, i.e. the highest tier for all path of the patch.
-doormen.patchTier = function pathsMaxTier( schema , patch ) {
+doormen.patchTier = function patchTier( schema , patch ) {
 	var i , iMax , path ,
 		maxTier = 1 ,
 		paths = Object.keys( patch ) ;
@@ -2321,6 +2324,54 @@ doormen.patchTier = function pathsMaxTier( schema , patch ) {
 
 
 
+// Check if a patch is allowed by a tag-list
+doormen.checkPatchByTags = function( schema , patch , allowedTags ) {
+	var path ;
+
+	if ( ! ( allowedTags instanceof Set ) ) {
+		if ( Array.isArray( allowedTags ) ) { allowedTags = new Set( allowedTags ) ; }
+		else { allowedTags = new Set( [ allowedTags ] ) ; }
+	}
+
+	for ( path in patch ) {
+		checkOnePatchPathByTags( schema , path , allowedTags , patch[ path ] ) ;
+	}
+} ;
+
+
+
+// /!\ A UTILISER AUSSI DANS doormen.patch() AVEC L'OPTION 'allowedTags'
+
+function checkOnePatchPathByTags( schema , path , allowedTags , element ) {
+	var subSchema , tag , found ;
+
+	path = path.split( '.' ) ;
+
+	while ( path.length ) {
+		subSchema = doormen.path( schema , path ) ;
+
+		if ( subSchema.tags ) {
+			found = false ;
+
+			for ( tag of subSchema.tags ) {
+				if ( allowedTags.has( tag ) ) {
+					found = true ;
+					break ;
+				}
+			}
+
+			if ( ! found ) {
+				if ( this && this.validatorError ) { this.validatorError( "Not allowed by tags" , element ) ; }
+				else { throw new doormen.ValidatorError( "Not allowed by tags" , element ) ; }
+			}
+		}
+
+		path.pop() ;
+	}
+}
+
+
+
 /*
 	doormen.patch( schema , patch )
 	doormen.patch( options , schema , patch )
@@ -2328,7 +2379,7 @@ doormen.patchTier = function pathsMaxTier( schema , patch ) {
 	Validate the 'patch' format
 */
 doormen.patch = function schemaPatch( ... args ) {
-	var patch , schema , options , context , sanitized , key , subSchema ;
+	var patch , schema , options , context , sanitized , path , subSchema ;
 
 
 	// Share a lot of code with the doormen() function
@@ -2363,19 +2414,24 @@ doormen.patch = function schemaPatch( ... args ) {
 		validate: true ,
 		errors: [] ,
 		check: check ,
+		checkAllowed: options.allowedTags ? checkOnePatchPathByTags : null ,
+		allowedTags: options.allowedTags ?
+			new Set( Array.isArray( options.allowedTags ) ? options.allowedTags : [ options.allowedTags ] ) :
+			null ,
 		validatorError: validatorError ,
 		report: !! options.report ,
 		export: !! options.export
 	} ;
 
-	for ( key in patch ) {
+	for ( path in patch ) {
 		// Don't try-catch! Let it throw!
-		subSchema = doormen.path( schema , key ) ;
+		if ( context.checkAllowed ) { context.checkAllowed( schema , path , context.allowedTags , patch[ path ] ) ; }
+		subSchema = doormen.path( schema , path ) ;
 
-		//sanitized[ key ] = doormen( options , subSchema , patch[ key ] ) ;
-		sanitized[ key ] = context.check( subSchema , patch[ key ] , {
-			path: 'patch.' + key ,
-			key: key
+		//sanitized[ path ] = doormen( options , subSchema , patch[ path ] ) ;
+		sanitized[ path ] = context.check( subSchema , patch[ path ] , {
+			path: 'patch.' + path ,
+			key: path
 		} , true ) ;
 	}
 
@@ -2388,7 +2444,6 @@ doormen.patch = function schemaPatch( ... args ) {
 	}
 
 	return sanitized ;
-
 } ;
 
 
@@ -3331,25 +3386,45 @@ module.exports = {
 
 
 
-//mask( schema , data , criteria )
-function mask( schema , data , criteria ) {
+// tierMask( schema , data , tier )
+exports.tierMask = function( schema , data , tier = 0 ) {
 	if ( ! schema || typeof schema !== 'object' ) {
 		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
 
-	if ( ! criteria || typeof criteria !== 'object' ) { criteria = {} ; }
-
 	var context = {
-		tier: criteria.tier ,
-		tags: criteria.tags ,
+		mask: exports.tierMask ,
+		tier: tier ,
 		iterate: iterate ,
-		check: mask.check
+		check: checkTier
 	} ;
 
 	return context.iterate( schema , data ) ;
-}
+} ;
 
-module.exports = mask ;
+
+
+// tagMask( schema , data , tags )
+exports.tagMask = function( schema , data , tags ) {
+	if ( ! schema || typeof schema !== 'object' ) {
+		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
+	}
+
+	if ( ! ( tags instanceof Set ) ) {
+		if ( Array.isArray( tags ) ) { tags = new Set( tags ) ; }
+		else { tags = new Set( [ tags ] ) ; }
+	}
+
+	var context = {
+		mask: exports.tagMask ,
+		tags: tags ,
+		iterate: iterate ,
+		check: checkTags
+	} ;
+
+	return context.iterate( schema , data ) ;
+} ;
+
 
 
 
@@ -3362,7 +3437,7 @@ function iterate( schema , data_ ) {
 	if ( Array.isArray( schema ) ) {
 		for ( i = 0 ; i < schema.length ; i ++ ) {
 			try {
-				data = mask( schema[ i ] , data_ ) ;
+				data = this.mask( schema[ i ] , data_ ) ;
 			}
 			catch( error ) {
 				continue ;
@@ -3447,31 +3522,27 @@ function iterate( schema , data_ ) {
 
 
 
-mask.check = function maskCheck( schema ) {
+function checkTier( schema ) {
+	if ( schema.tier === undefined ) { return ; }
+	if ( this.tier < schema.tier ) { return false ; }
+	return true ;
+}
+
+
+
+function checkTags( schema ) {
 	var i , iMax ;
 
-	if ( this.tier !== undefined ) {
-		if ( schema.tier === undefined ) { return ; }
+	if ( ! Array.isArray( schema.tags ) || ! schema.tags.length ) { return ; }
 
-		if ( this.tier < schema.tier ) { return false ; }
+	iMax = schema.tags.length ;
 
-		return true ;
-	}
-	else if ( this.tags ) {
-		if ( ! Array.isArray( schema.tags ) || ! schema.tags.length ) { return ; }
-
-		iMax = this.tags.length ;
-
-		for ( i = 0 ; i < iMax ; i ++ ) {
-			if ( schema.tags.indexOf( this.tags[ i ] ) !== -1 ) { return true ; }
-		}
-
-		return false ;
+	for ( i = 0 ; i < iMax ; i ++ ) {
+		if ( this.tags.has( schema.tags[ i ] ) ) { return true ; }
 	}
 
-	return ;
-} ;
-
+	return false ;
+}
 
 
 },{}],12:[function(require,module,exports){
