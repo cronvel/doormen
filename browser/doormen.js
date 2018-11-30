@@ -2658,7 +2658,6 @@ doormen.not.alike = function notAlike( left , right ) {
 } ;
 
 
-
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25}],7:[function(require,module,exports){
 /*
@@ -3862,7 +3861,9 @@ var singleSchema = {
 		filter: { optional: true , type: 'strictObject' } ,
 
 		tier: { optional: true , type: 'integer' } ,
-		tags: { optional: true , type: 'array' , of: { type: 'string' } } ,
+		tags: {
+			optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' }
+		} ,
 
 		// Top-level filters
 		instanceOf: { optional: true , type: 'classId' } ,
