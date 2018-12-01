@@ -1513,6 +1513,74 @@ describe( "Mask" , () => {
 		) ;
 	} ) ;
 
+	it( "depthLimit with mask and nested data" , () => {
+		var schema = {
+			properties: {
+				title: { tags: [ 'meta' ] } ,
+				post: { tags: [ 'meta' ] } ,
+				accesses: {
+					of: {
+						properties: {
+							userId: { tags: [ 'meta' ] } ,
+							accessLevel: { tags: [ 'internal' ] }
+						}
+					}
+				}
+			}
+		} ;
+
+		var data = {
+			title: '10 things you should know about nothing' ,
+			post: 'blah blah blah blah' ,
+			accesses: [
+				{
+					userId: 'bob' ,
+					accessLevel: 2
+				} ,
+				{
+					userId: 'bill' ,
+					accessLevel: 3
+				}
+			]
+		} ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'meta' ] ) ,
+			{
+				title: '10 things you should know about nothing' ,
+				post: 'blah blah blah blah' ,
+				accesses: [ { userId: 'bob' } , { userId: 'bill' } ]
+			}
+		) ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'meta' ] , 1 ) ,
+			{
+				title: '10 things you should know about nothing' ,
+				post: 'blah blah blah blah' ,
+				accesses: [ { userId: 'bob' , accessLevel: 2 } , { userId: 'bill' , accessLevel: 3 } ]
+			}
+		) ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'meta' ] , 2 ) ,
+			{
+				title: '10 things you should know about nothing' ,
+				post: 'blah blah blah blah' ,
+				accesses: [ { userId: 'bob' , accessLevel: 2 } , { userId: 'bill' , accessLevel: 3 } ]
+			}
+		) ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'meta' ] , 3 ) ,
+			{
+				title: '10 things you should know about nothing' ,
+				post: 'blah blah blah blah' ,
+				accesses: [ { userId: 'bob' } , { userId: 'bill' } ]
+			}
+		) ;
+	} ) ;
+
 	it( ".patchTier()" , () => {
 		var schema = {
 			type: 'strictObject' ,

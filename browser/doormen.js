@@ -3386,7 +3386,7 @@ module.exports = {
 
 
 // tierMask( schema , data , tier )
-exports.tierMask = function( schema , data , tier = 0 ) {
+exports.tierMask = function( schema , data , tier = 0 , depthLimit = Infinity ) {
 	if ( ! schema || typeof schema !== 'object' ) {
 		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
@@ -3395,7 +3395,9 @@ exports.tierMask = function( schema , data , tier = 0 ) {
 		mask: exports.tierMask ,
 		tier: tier ,
 		iterate: iterate ,
-		check: checkTier
+		check: checkTier ,
+		depth: 0 ,
+		depthLimit: depthLimit
 	} ;
 
 	return context.iterate( schema , data ) ;
@@ -3404,7 +3406,7 @@ exports.tierMask = function( schema , data , tier = 0 ) {
 
 
 // tagMask( schema , data , tags )
-exports.tagMask = function( schema , data , tags ) {
+exports.tagMask = function( schema , data , tags , depthLimit = Infinity ) {
 	if ( ! schema || typeof schema !== 'object' ) {
 		throw new TypeError( 'Bad schema, it should be an object or an array of object!' ) ;
 	}
@@ -3418,7 +3420,9 @@ exports.tagMask = function( schema , data , tags ) {
 		mask: exports.tagMask ,
 		tags: tags ,
 		iterate: iterate ,
-		check: checkTags
+		check: checkTags ,
+		depth: 0 ,
+		depthLimit: depthLimit
 	} ;
 
 	return context.iterate( schema , data ) ;
@@ -3436,7 +3440,7 @@ function iterate( schema , data_ ) {
 	if ( Array.isArray( schema ) ) {
 		for ( i = 0 ; i < schema.length ; i ++ ) {
 			try {
-				data = this.mask( schema[ i ] , data_ ) ;
+				data = this.mask( schema[ i ] , data_ , this.tier || this.tags , this.depthLimit - this.depth ) ;
 			}
 			catch( error ) {
 				continue ;
@@ -3457,6 +3461,7 @@ function iterate( schema , data_ ) {
 	// if it's undefined, then recursivity can be checked
 
 	// 2) Recursivity
+	if ( this.depth >= this.depthLimit ) { return data ; }
 
 	if ( schema.of && typeof schema.of === 'object' ) {
 		if ( ! data || ( typeof data !== 'object' && typeof data !== 'function' ) ) { return data ; }
@@ -3466,7 +3471,9 @@ function iterate( schema , data_ ) {
 			else { src = data ; }
 
 			for ( i = 0 ; i < src.length ; i ++ ) {
+				this.depth ++ ;
 				data[ i ] = this.iterate( schema.of , src[ i ] ) ;
+				this.depth -- ;
 			}
 		}
 		else {
@@ -3474,7 +3481,9 @@ function iterate( schema , data_ ) {
 			else { src = data ; }
 
 			for ( key in src ) {
+				this.depth ++ ;
 				data[ key ] = this.iterate( schema.of , src[ key ] ) ;
+				this.depth -- ;
 			}
 		}
 	}
@@ -3497,7 +3506,9 @@ function iterate( schema , data_ ) {
 					continue ;
 				}
 
+				this.depth ++ ;
 				returnValue = this.iterate( schema.properties[ key ] , src[ key ] ) ;
+				this.depth -- ;
 
 				// Do not create new properties with undefined
 				if ( returnValue !== undefined ) { data[ key ] = returnValue ; }
@@ -3512,7 +3523,9 @@ function iterate( schema , data_ ) {
 		else { src = data ; }
 
 		for ( i = 0 ; i < schema.elements.length ; i ++ ) {
+			this.depth ++ ;
 			data[ i ] = this.iterate( schema.elements[ i ] , src[ i ] ) ;
+			this.depth -- ;
 		}
 	}
 
