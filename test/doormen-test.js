@@ -173,6 +173,20 @@ describe( "Equality checker" , () => {
 		doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
 	} ) ;
 
+	it( "Equality of functions" , () => {
+		var o = {} ;
+		var fn = function() {} ;
+		var fn2 = function() {} ;
+
+		doormen.equals( fn , fn ) ;
+		doormen.not.equals( fn , fn2 ) ;
+		doormen.equals( { a: fn } , { a: fn } ) ;
+		doormen.equals( { b: 2 , a: fn } , { a: fn , b: 2 } ) ;
+		doormen.equals( [ fn ] , [ fn ] ) ;
+		doormen.equals( [ 1 , 2 , fn ] , [ 1 , 2 , fn ] ) ;
+		doormen.not.equals( [ 1 , 2 , fn ] , [ 1 , 2 ] ) ;
+	} ) ;
+
 	it( "should test equality of objects with different prototype" ) ;
 
 	it( "Equality of arrays" , () => {
