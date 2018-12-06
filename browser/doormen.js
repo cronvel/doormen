@@ -2237,11 +2237,11 @@ function clone( value ) {
 
 
 
-doormen.path = function schemaPath( schema , path ) {
+doormen.path = function schemaPath( schema , path , noSubmasking = false ) {
 	var index = 0 ;
 
 	if ( ! Array.isArray( path ) ) {
-		if ( typeof path !== 'string' ) { throw new Error( "Argument #1 'path' should be a string" ) ; }
+		if ( typeof path !== 'string' ) { throw new Error( "Argument #1 'path' should be a string or an array" ) ; }
 		path = path.split( '.' ) ;
 	}
 
@@ -2252,16 +2252,18 @@ doormen.path = function schemaPath( schema , path ) {
 	// Skip empty path
 	while ( index < path.length && ! path[ index ] ) { index ++ ; }
 
-	return schemaPath_( schema , path , index ) ;
+	return schemaPath_( schema , path , index , noSubmasking ) ;
 } ;
 
 
 
-function schemaPath_( schema , path , index ) {
+function schemaPath_( schema , path , index , noSubmasking ) {
 	var key ;
 
 	// Found it! return now!
 	if ( index >= path.length ) { return schema ; }
+
+	if ( noSubmasking && schema.noSubmasking ) { return null ; }
 
 	key = path[ index ] ;
 
@@ -2279,7 +2281,7 @@ function schemaPath_( schema , path , index ) {
 
 		if ( schema.properties[ key ] ) {
 			//path.shift() ;
-			return schemaPath_( schema.properties[ key ] , path , index + 1 ) ;
+			return schemaPath_( schema.properties[ key ] , path , index + 1 , noSubmasking ) ;
 		}
 		else if ( ! schema.extraProperties ) {
 			throw new doormen.SchemaError( "Bad path (at " + path + "), property '" + key + "' not found and the schema does not allow extra properties." ) ;
@@ -2292,7 +2294,7 @@ function schemaPath_( schema , path , index ) {
 		}
 
 		//path.shift() ;
-		return schemaPath_( schema.of , path , index + 1 ) ;
+		return schemaPath_( schema.of , path , index + 1 , noSubmasking ) ;
 	}
 
 	// "element" is not supported ATM

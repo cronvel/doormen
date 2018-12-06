@@ -3331,6 +3331,7 @@ var schema = {
 				} ,
 				key4: {
 					type: 'strictObject' ,
+					noSubmasking: true ,
 					of: {
 						type: 'string' ,
 						another: 'custom'
@@ -3379,6 +3380,33 @@ var schema = {
 		doormen.shouldThrow( () => {
 			doormen.path( schema , 'key3.unexistant' ) ;
 		} ) ;
+		
+		// Test the noSubmasking option
+		doormen.equals(
+			doormen.path( schema , '' , true ) ,
+			schema
+		) ;
+		doormen.equals(
+			doormen.path( schema , 'key4' , true ) ,
+			schema.properties.key4
+		) ;
+		doormen.equals(
+			doormen.path( schema , 'key4.anything' , true ) ,
+			null
+		) ;
+		schema.noSubmasking = true ;
+		doormen.equals(
+			doormen.path( schema , '' , true ) ,
+			schema
+		) ;
+		doormen.equals(
+			doormen.path( schema , 'key4' , true ) ,
+			null
+		) ;
+		doormen.equals(
+			doormen.path( schema , 'key4.anything' , true ) ,
+			null
+		) ;
 ```
 
 <a name="mongodbs-objectid"></a>
