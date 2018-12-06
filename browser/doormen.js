@@ -2340,8 +2340,6 @@ doormen.checkPatchByTags = function( schema , patch , allowedTags ) {
 
 
 
-// /!\ A UTILISER AUSSI DANS doormen.patch() AVEC L'OPTION 'allowedTags'
-
 function checkOnePatchPathByTags( schema , path , allowedTags , element ) {
 	var subSchema , tag , found ;
 
@@ -3457,8 +3455,9 @@ function iterate( schema , data_ ) {
 	checkValue = this.check( schema ) ;
 
 	if ( checkValue === false ) { return ; }
-	else if ( checkValue === true ) { return data ; }
-	// if it's undefined, then recursivity can be checked
+	else if ( checkValue === true && schema.noSubmasking ) { return data ; }
+
+	// if it's undefined or there is submasking, then recursivity can be checked
 
 	// 2) Recursivity
 	if ( this.depth >= this.depthLimit ) { return data ; }
@@ -3512,6 +3511,14 @@ function iterate( schema , data_ ) {
 
 				// Do not create new properties with undefined
 				if ( returnValue !== undefined ) { data[ key ] = returnValue ; }
+			}
+
+			if ( schema.extraProperties ) {
+				for ( key in src ) {
+					if ( ! schema.properties[ key ] ) {
+						data[ key ] = src[ key ] ;
+					}
+				}
 			}
 		}
 	}

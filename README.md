@@ -210,6 +210,21 @@ doormen.equals( { a: 2 , b: 5 , c: undefined } , { a: 2 , b: 5 , d: undefined } 
 doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
 ```
 
+Equality of functions.
+
+```js
+var o = {} ;
+var fn = function() {} ;
+var fn2 = function() {} ;
+doormen.equals( fn , fn ) ;
+doormen.not.equals( fn , fn2 ) ;
+doormen.equals( { a: fn } , { a: fn } ) ;
+doormen.equals( { b: 2 , a: fn } , { a: fn , b: 2 } ) ;
+doormen.equals( [ fn ] , [ fn ] ) ;
+doormen.equals( [ 1 , 2 , fn ] , [ 1 , 2 , fn ] ) ;
+doormen.not.equals( [ 1 , 2 , fn ] , [ 1 , 2 ] ) ;
+```
+
 Equality of arrays.
 
 ```js
@@ -1319,6 +1334,7 @@ var schema = {
 		d2: {
 			type: 'strictObject' ,
 			tier: 2 ,
+			extraProperties: true ,
 			properties: {
 				e: {
 					type: 'number' ,
@@ -1358,13 +1374,32 @@ doormen.equals(
 doormen.equals(
 	doormen.tierMask( schema , data , 2 ) ,
 	{
-		a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
+		a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , g: 'bob' }
 	}
 ) ;
 doormen.equals(
 	doormen.tierMask( schema , data , 3 ) ,
 	{
 		a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
+	}
+) ;
+
+// Test extra-properties
+data.d.extra = 'val' ;
+data.d2.extra = 'val' ;
+doormen.equals(
+	doormen.tierMask( schema , data , 2 ) ,
+	{
+		a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , g: 'bob' , extra: 'val' }
+	}
+) ;
+
+// Test submasking
+schema.properties.d2.noSubmasking = true ;
+doormen.equals(
+	doormen.tierMask( schema , data , 2 ) ,
+	{
+		a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' , extra: 'val' }
 	}
 ) ;
 ```

@@ -1320,6 +1320,7 @@ describe( "Mask" , () => {
 				d2: {
 					type: 'strictObject' ,
 					tier: 2 ,
+					extraProperties: true ,
 					properties: {
 						e: {
 							type: 'number' ,
@@ -1361,13 +1362,32 @@ describe( "Mask" , () => {
 		doormen.equals(
 			doormen.tierMask( schema , data , 2 ) ,
 			{
-				a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
+				a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , g: 'bob' }
 			}
 		) ;
 		doormen.equals(
 			doormen.tierMask( schema , data , 3 ) ,
 			{
 				a: 1 , b: true , c: 'blah!' , d: { e: 7 , f: false , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' }
+			}
+		) ;
+		
+		// Test extra-properties
+		data.d.extra = 'val' ;
+		data.d2.extra = 'val' ;
+		doormen.equals(
+			doormen.tierMask( schema , data , 2 ) ,
+			{
+				a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , g: 'bob' , extra: 'val' }
+			}
+		) ;
+		
+		// Test submasking
+		schema.properties.d2.noSubmasking = true ;
+		doormen.equals(
+			doormen.tierMask( schema , data , 2 ) ,
+			{
+				a: 1 , c: 'blah!' , d: { e: 7 , g: 'bob' } , d2: { e: 7 , f: false , g: 'bob' , extra: 'val' }
 			}
 		) ;
 	} ) ;
