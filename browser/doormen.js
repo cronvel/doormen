@@ -4692,7 +4692,7 @@ process.umask = function() { return 0; };
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4771,7 +4771,7 @@ module.exports = {
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4887,7 +4887,7 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -5533,7 +5533,7 @@ module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A",
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -5572,7 +5572,7 @@ module.exports = function( str ) {
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
