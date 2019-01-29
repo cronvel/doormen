@@ -1,7 +1,7 @@
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -46,9 +46,7 @@ else {
 describe( "Assertion utilities" , () => {
 
 	it( "doormen.shouldThrow() should throw if the callback has not throw, and catch if it has throw" , () => {
-
 		var thrown ;
-
 
 		thrown = false ;
 
@@ -61,7 +59,6 @@ describe( "Assertion utilities" , () => {
 
 		if ( ! thrown ) { throw new Error( 'It should throw!' ) ; }
 
-
 		thrown = false ;
 
 		try {
@@ -72,13 +69,10 @@ describe( "Assertion utilities" , () => {
 		}
 
 		if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
-
 	} ) ;
 
 	it( "doormen.not() should throw if the data validate, and catch if it has throw" , () => {
-
 		var thrown ;
-
 
 		thrown = false ;
 
@@ -91,7 +85,6 @@ describe( "Assertion utilities" , () => {
 
 		if ( ! thrown ) { throw new Error( 'It should throw' ) ; }
 
-
 		thrown = false ;
 
 		try {
@@ -102,7 +95,6 @@ describe( "Assertion utilities" , () => {
 		}
 
 		if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
-
 	} ) ;
 } ) ;
 
@@ -2084,7 +2076,6 @@ describe( "Sanitize" , () => {
 describe( "Sanitize + Patch reporting" , () => {
 
 	it( "sanitize should should report in the provided patch object" , () => {
-
 		var schema , patch ;
 
 		patch = {} ;
@@ -2160,7 +2151,6 @@ describe( "Full report mode" , () => {
 	it( "should return an object with all contained data weither it validates or not, the sanitized data, and an array of errors" , () => {
 
 		var report , schema ;
-
 		schema = {
 			of: { type: 'string' , sanitize: 'trim' }
 		} ;
@@ -2200,7 +2190,6 @@ describe( "Full report mode" , () => {
 describe( "Patch validation" , () => {
 
 	it( "should validate a patch" , () => {
-
 		var schema ;
 
 		schema = {
@@ -2223,8 +2212,33 @@ describe( "Patch validation" , () => {
 		doormen.equals( doormen.patch( schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
 	} ) ;
 
-	it( "forbidden path in a patch should throw" , () => {
+	it( "should validate a patch of an array" , () => {
+		var schema ;
 
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				array: {
+					type: 'array' , of: {
+						type: 'string' ,
+						sanitize: 'toString'
+					}
+				}
+			}
+		} ;
+
+		doormen( schema , { array: [ 'one' , 'two' , 'three' ] } ) ;
+		doormen.equals( doormen( schema , { array: [ 1 , 'two' , 'three' ] } ) , { array: [ '1' , 'two' , 'three' ] } ) ;
+
+		doormen.patch( schema , {} ) ;
+		doormen.patch( schema , { array: [ 1 , 'two' , 'three' ] } ) ;
+		doormen.equals( doormen.patch( schema , { array: [ 1 , 'two' , 'three' ] } ) , { array: [ '1' , 'two' , 'three' ] } ) ;
+
+		doormen.equals( doormen.patch( schema , { 'array.1': 'two' } ) , { 'array.1': 'two' } ) ;
+		doormen.equals( doormen.patch( schema , { 'array.1': 2 } ) , { 'array.1': '2' } ) ;
+	} ) ;
+
+	it( "forbidden path in a patch should throw" , () => {
 		var schema ;
 
 		schema = {
@@ -2256,7 +2270,6 @@ describe( "Patch validation" , () => {
 	} ) ;
 
 	it( "non-object patch should not validate" , () => {
-
 		var schema ;
 
 		schema = {
@@ -2275,7 +2288,6 @@ describe( "Patch validation" , () => {
 	} ) ;
 
 	it( "should validate a patch with deep path" , () => {
-
 		var schema ;
 
 		schema = {
