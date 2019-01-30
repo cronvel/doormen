@@ -2332,6 +2332,12 @@ var schema ;
 schema = {
 	type: 'strictObject' ,
 	properties: {
+		object: {
+			type: 'object' , of: {
+				type: 'string' ,
+				sanitize: 'toString'
+			}
+		} ,
 		array: {
 			type: 'array' , of: {
 				type: 'string' ,
@@ -2342,6 +2348,11 @@ schema = {
 } ;
 doormen.patch( schema , { array: { $push: 1 } } ) ;
 doormen.equals( doormen.patch( schema , { array: { $push: 1 } } ) , { array: { $push: '1' } } ) ;
+doormen.patch( schema , { 'array.0': { $set: 1 } } ) ;
+doormen.equals( doormen.patch( schema , { 'array.0': { $set: 1 } } ) , { 'array.0': { $set: '1' } } ) ;
+doormen.patch( schema , { 'object.a': { $unset: true } } ) ;
+doormen.equals( doormen.patch( schema , { 'object.a': { $unset: true } } ) , { 'object.a': { $unset: true } } ) ;
+doormen.equals( doormen.patch( schema , { 'object.a': { $unset: null } } ) , { 'object.a': { $unset: true } } ) ;
 ```
 
 <a name="patch-application"></a>

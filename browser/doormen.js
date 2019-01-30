@@ -2445,10 +2445,19 @@ doormen.patch = function schemaPatch( ... args ) {
 				subSchema = doormen.path( schema , path ) ;
 			}
 
-			sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , {
-				displayPath: 'patch.' + path ,
-				key: path
-			} , true ) ;
+			if ( patchCommands[ patchCommandName ].sanitize ) {
+				sanitized[ path ][ patchCommandName ] = patchCommands[ patchCommandName ].sanitize( value ) ;
+				context.check( subSchema , value , {
+					displayPath: 'patch.' + path ,
+					key: path
+				} , true ) ;
+			}
+			else {
+				sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , {
+					displayPath: 'patch.' + path ,
+					key: path
+				} , true ) ;
+			}
 		}
 		else {
 			subSchema = doormen.path( schema , path ) ;
@@ -2526,6 +2535,7 @@ patchCommands.$set = ( data , path , value ) => treePath.set( data , path , valu
 
 patchCommands.$delete = patchCommands.$unset = ( data , path ) => treePath.delete( data , path ) ;
 patchCommands.$delete.getValue = () => undefined ;
+patchCommands.$delete.sanitize = () => true ;
 
 patchCommands.$push = ( data , path , value ) => treePath.append( data , path , value ) ;
 patchCommands.$push.applyToChildren = true ;
