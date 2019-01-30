@@ -2,7 +2,7 @@
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -55,7 +55,7 @@ AssertionError.prototype.name = 'AssertionError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -100,7 +100,7 @@ SchemaError.prototype.name = 'SchemaError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -147,7 +147,7 @@ ValidatorError.prototype.name = 'ValidatorError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -1716,7 +1716,7 @@ assert.fail.none = true ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -1752,7 +1752,7 @@ module.exports.isBrowser = true ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2228,7 +2228,7 @@ function check( schema , data_ , element , isPatch ) {
 
 
 
-var clone_ = require( 'tree-kit/lib/clone.js' ) ;
+const clone_ = require( 'tree-kit/lib/clone.js' ) ;
 
 function clone( value ) {
 	if ( value && typeof value === 'object' ) { return clone_( value ) ; }
@@ -2379,7 +2379,9 @@ function checkOnePatchPathByTags( schema , path , allowedTags , element ) {
 	Validate the 'patch' format
 */
 doormen.patch = function schemaPatch( ... args ) {
-	var patch , schema , options , context , sanitized , path , subSchema ;
+	var patch , path , value ,
+		schema , subSchema ,
+		sanitized , options , context , patchCommandName ;
 
 
 	// Share a lot of code with the doormen() function
@@ -2424,15 +2426,40 @@ doormen.patch = function schemaPatch( ... args ) {
 	} ;
 
 	for ( path in patch ) {
-		// Don't try-catch! Let it throw!
-		if ( context.checkAllowed ) { context.checkAllowed( schema , path , context.allowedTags , patch[ path ] ) ; }
-		subSchema = doormen.path( schema , path ) ;
+		value = patch[ path ] ;
 
-		//sanitized[ path ] = doormen( options , subSchema , patch[ path ] ) ;
-		sanitized[ path ] = context.check( subSchema , patch[ path ] , {
-			path: 'patch.' + path ,
-			key: path
-		} , true ) ;
+		// Don't try-catch! Let it throw!
+		if ( context.checkAllowed ) { context.checkAllowed( schema , path , context.allowedTags , value ) ; }
+
+		if ( ( patchCommandName = isPatchCommand( value ) ) ) {
+			value = value[ patchCommandName ] ;
+
+			if ( patchCommands[ patchCommandName ].getValue ) {
+				value = patchCommands[ patchCommandName ].getValue( value ) ;
+			}
+
+			if ( patchCommands[ patchCommandName ].applyToChildren ) {
+				subSchema = doormen.path( schema , path ).of || {} ;
+			}
+			else {
+				subSchema = doormen.path( schema , path ) ;
+			}
+
+			sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , {
+				displayPath: 'patch.' + path ,
+				key: path
+			} , true ) ;
+		}
+		else {
+			subSchema = doormen.path( schema , path ) ;
+
+			//sanitized[ path ] = doormen( options , subSchema , value ) ;
+			sanitized[ path ] = context.check( subSchema , value , {
+				displayPath: 'patch.' + path ,
+				key: path
+			} , true ) ;
+		}
+
 	}
 
 	if ( context.report ) {
@@ -2453,6 +2480,55 @@ doormen.patch.report = doormen.patch.bind( doormen , { report: true } ) ;
 doormen.patch.export = doormen.patch.bind( doormen , { export: true } ) ;
 
 
+
+const treePath = require( 'tree-kit/lib/path.js' ) ;
+
+doormen.applyPatch = function( data , patch ) {
+	var path , parts , value , patchCommandName ;
+
+	if ( ! patch || typeof patch !== 'object' ) { throw new Error( 'The patch should be an object' ) ; }
+
+	for ( path in patch ) {
+		value = patch[ path ] ;
+
+		if ( ( patchCommandName = isPatchCommand( value ) ) ) {
+			patchCommands[ patchCommandName ]( data , path , value[ patchCommandName ] ) ;
+		}
+		else {
+			treePath.set( data , path , value ) ;
+		}
+	}
+
+	return data ;
+} ;
+
+
+
+function isPatchCommand( value ) {
+	var key ;
+
+	if ( ! value || typeof value !== 'object' ) { return false ; }
+
+	for ( key in value ) {
+		if ( key[ 0 ] !== '$' ) { return false ; }
+
+		if ( ! patchCommands[ key ] ) {
+			throw new Error( "Bad command '" + key + "'" ) ;
+		}
+
+		return key ;
+	}
+}
+
+const patchCommands = {} ;
+
+patchCommands.$set = ( data , path , value ) => treePath.set( data , path , value ) ;
+
+patchCommands.$delete = patchCommands.$unset = ( data , path ) => treePath.delete( data , path ) ;
+patchCommands.$delete.getValue = () => undefined ;
+
+patchCommands.$push = ( data , path , value ) => treePath.append( data , path , value ) ;
+patchCommands.$push.applyToChildren = true ;
 
 
 
@@ -2659,11 +2735,11 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25}],7:[function(require,module,exports){
+},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25,"tree-kit/lib/path.js":26}],7:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2883,7 +2959,7 @@ var handler = {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3106,7 +3182,7 @@ filter.notIn = function notIn( data , params , element ) {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3265,7 +3341,7 @@ module.exports = isEqual ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3358,7 +3434,7 @@ module.exports = {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3571,7 +3647,7 @@ function checkTags( schema ) {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3841,7 +3917,7 @@ sanitizer.mongoId = function mongoId( data ) {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3984,7 +4060,7 @@ module.exports = schemaSchema ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4188,7 +4264,7 @@ module.exports = sentence ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2018 Cédric Ronvel
+	Copyright (c) 2015 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4920,8 +4996,10 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 
 
 
-var escape = require( './escape.js' ) ;
-var ansi = require( './ansi.js' ) ;
+const escape = require( './escape.js' ) ;
+const ansi = require( './ansi.js' ) ;
+
+const EMPTY = {} ;
 
 
 
@@ -4974,6 +5052,7 @@ function inspect( options , variable ) {
 		options.noFunc = true ;
 		options.noDescriptor = true ;
 		options.noType = true ;
+		options.noArrayProperty = true ;
 		options.enumOnly = true ;
 		options.funcDetails = false ;
 		options.proto = false ;
@@ -5042,6 +5121,9 @@ function inspect_( runtime , options , variable ) {
 	if ( variable === undefined ) {
 		str += pre + options.style.constant( 'undefined' ) + descriptorStr + options.style.newline ;
 	}
+	else if ( variable === EMPTY ) {
+		str += pre + options.style.constant( '[empty]' ) + descriptorStr + options.style.newline ;
+	}
 	else if ( variable === null ) {
 		str += pre + options.style.constant( 'null' ) + descriptorStr + options.style.newline ;
 	}
@@ -5106,10 +5188,11 @@ function inspect_( runtime , options , variable ) {
 			if ( ! isFunc || options.funcDetails ) { str += ' ' ; }	// if no funcDetails imply no space here
 		}
 
-		propertyList = Object.getOwnPropertyNames( variable ) ;
-
-		if ( options.noArrayProperty && Array.isArray( variable ) ) {
-			propertyList = propertyList.slice( 0 , variable.length ) ;
+		if ( isArray && options.noArrayProperty ) {
+			propertyList = [ ... Array( variable.length ).keys() ] ;
+		}
+		else {
+			propertyList = Object.getOwnPropertyNames( variable ) ;
 		}
 
 		if ( options.sort ) { propertyList.sort() ; }
@@ -5125,13 +5208,14 @@ function inspect_( runtime , options , variable ) {
 				str += '=> ' + specialObject + options.style.newline ;
 			}
 			else {
-				str += '=> ' + inspect_( {
-					depth: runtime.depth ,
-					ancestors: runtime.ancestors ,
-					noPre: true
-				} ,
-				options ,
-				specialObject
+				str += '=> ' + inspect_(
+					{
+						depth: runtime.depth ,
+						ancestors: runtime.ancestors ,
+						noPre: true
+					} ,
+					options ,
+					specialObject
 				) ;
 			}
 		}
@@ -5148,7 +5232,7 @@ function inspect_( runtime , options , variable ) {
 			str += options.style.limit( '[circular]' ) + options.style.newline ;
 		}
 		else {
-			str += ( isArray && options.noType ? '[' : '{' ) + options.style.newline ;
+			str += ( isArray && options.noType && options.noArrayProperty ? '[' : '{' ) + options.style.newline ;
 
 			// Do not use .concat() here, it doesn't works as expected with arrays...
 			nextAncestors = runtime.ancestors.slice() ;
@@ -5160,68 +5244,85 @@ function inspect_( runtime , options , variable ) {
 					continue ;
 				}
 
-				try {
-					descriptor = Object.getOwnPropertyDescriptor( variable , propertyList[ i ] ) ;
-
-					if ( ! descriptor.enumerable && options.enumOnly ) { continue ; }
-
-					keyIsProperty = ! isArray || ! descriptor.enumerable || isNaN( propertyList[ i ] ) ;
-
-					if ( ! options.noDescriptor && ( descriptor.get || descriptor.set ) ) {
-						str += inspect_( {
+				if ( isArray && options.noArrayProperty && ! ( propertyList[ i ] in variable ) ) {
+					// Hole in the array (sparse array, item deleted, ...)
+					str += inspect_(
+						{
 							depth: runtime.depth + 1 ,
 							ancestors: nextAncestors ,
 							key: propertyList[ i ] ,
-							keyIsProperty: keyIsProperty ,
-							descriptor: descriptor ,
-							forceType: 'getter/setter'
+							keyIsProperty: false
 						} ,
 						options ,
-						{ get: descriptor.get , set: descriptor.set }
-						) ;
-					}
-					else {
-						str += inspect_( {
-							depth: runtime.depth + 1 ,
-							ancestors: nextAncestors ,
-							key: propertyList[ i ] ,
-							keyIsProperty: keyIsProperty ,
-							descriptor: options.noDescriptor ? undefined : descriptor
-						} ,
-						options ,
-						variable[ propertyList[ i ] ]
-						) ;
-					}
-				}
-				catch ( error ) {
-					str += inspect_( {
-						depth: runtime.depth + 1 ,
-						ancestors: nextAncestors ,
-						key: propertyList[ i ] ,
-						keyIsProperty: keyIsProperty ,
-						descriptor: options.noDescriptor ? undefined : descriptor
-					} ,
-					options ,
-					error
+						EMPTY
 					) ;
+				}
+				else {
+					try {
+						descriptor = Object.getOwnPropertyDescriptor( variable , propertyList[ i ] ) ;
+						if ( ! descriptor.enumerable && options.enumOnly ) { continue ; }
+						keyIsProperty = ! isArray || ! descriptor.enumerable || isNaN( propertyList[ i ] ) ;
+
+						if ( ! options.noDescriptor && descriptor && ( descriptor.get || descriptor.set ) ) {
+							str += inspect_(
+								{
+									depth: runtime.depth + 1 ,
+									ancestors: nextAncestors ,
+									key: propertyList[ i ] ,
+									keyIsProperty: keyIsProperty ,
+									descriptor: descriptor ,
+									forceType: 'getter/setter'
+								} ,
+								options ,
+								{ get: descriptor.get , set: descriptor.set }
+							) ;
+						}
+						else {
+							str += inspect_(
+								{
+									depth: runtime.depth + 1 ,
+									ancestors: nextAncestors ,
+									key: propertyList[ i ] ,
+									keyIsProperty: keyIsProperty ,
+									descriptor: options.noDescriptor ? undefined : descriptor
+								} ,
+								options ,
+								variable[ propertyList[ i ] ]
+							) ;
+						}
+					}
+					catch ( error ) {
+						str += inspect_(
+							{
+								depth: runtime.depth + 1 ,
+								ancestors: nextAncestors ,
+								key: propertyList[ i ] ,
+								keyIsProperty: keyIsProperty ,
+								descriptor: options.noDescriptor ? undefined : descriptor
+							} ,
+							options ,
+							error
+						) ;
+					}
 				}
 
 				if ( i < propertyList.length - 1 ) { str += options.style.comma ; }
 			}
 
 			if ( options.proto ) {
-				str += inspect_( {
-					depth: runtime.depth + 1 ,
-					ancestors: nextAncestors ,
-					key: '__proto__' ,
-					keyIsProperty: true
-				} ,
-				options ,
-				proto
+				str += inspect_(
+					{
+						depth: runtime.depth + 1 ,
+						ancestors: nextAncestors ,
+						key: '__proto__' ,
+						keyIsProperty: true
+					} ,
+					options ,
+					proto
 				) ;
 			}
 
-			str += indent + ( isArray && options.noType ? ']' : '}' ) ;
+			str += indent + ( isArray && options.noType && options.noArrayProperty ? ']' : '}' ) ;
 			str += options.style.newline ;
 		}
 	}
@@ -5390,19 +5491,19 @@ function inspectStack( options , stack ) {
 	if ( ( options.browser || process.browser ) && stack.indexOf( '@' ) !== -1 ) {
 		// Assume a Firefox-compatible stack-trace here...
 		stack = stack
-		.replace( /[</]*(?=@)/g , '' )	// Firefox output some WTF </</</</< stuff in its stack trace -- removing that
-		.replace(
-			/^\s*([^@]*)\s*@\s*([^\n]*)(?::([0-9]+):([0-9]+))?$/mg ,
-			( matches , method , file , line , column ) => {
-				return options.style.errorStack( '    at ' ) +
+			.replace( /[</]*(?=@)/g , '' )	// Firefox output some WTF </</</</< stuff in its stack trace -- removing that
+			.replace(
+				/^\s*([^@]*)\s*@\s*([^\n]*)(?::([0-9]+):([0-9]+))?$/mg ,
+				( matches , method , file , line , column ) => {
+					return options.style.errorStack( '    at ' ) +
 						( method ? options.style.errorStackMethod( method ) + ' ' : '' ) +
 						options.style.errorStack( '(' ) +
 						( file ? options.style.errorStackFile( file ) : options.style.errorStack( 'unknown' ) ) +
 						( line ? options.style.errorStack( ':' ) + options.style.errorStackLine( line ) : '' ) +
 						( column ? options.style.errorStack( ':' ) + options.style.errorStackColumn( column ) : '' ) +
 						options.style.errorStack( ')' ) ;
-			}
-		) ;
+				}
+			) ;
 	}
 	else {
 		stack = stack.replace( /^[^\n]*\n/ , '' ) ;
@@ -5708,6 +5809,297 @@ module.exports = function clone( originalObject , circular ) {
 
 	return cloneObject ;
 } ;
+
+},{}],26:[function(require,module,exports){
+/*
+	Tree Kit
+
+	Copyright (c) 2014 - 2018 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+var treePath = {} ;
+module.exports = treePath ;
+
+
+
+treePath.op = function op( type , object , path , value ) {
+	var i , parts , last , pointer , key , isArray = false , pathArrayMode = false , isGenericSet , canBeEmpty = true ;
+
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		return ;
+	}
+
+	if ( typeof path === 'string' ) {
+		// Split the path into parts
+		if ( path ) { parts = path.match( /([.#[\]]|[^.#[\]]+)/g ) ; }
+		else { parts = [ '' ] ; }
+
+		if ( parts[ 0 ] === '.' ) { parts.unshift( '' ) ; }
+		if ( parts[ parts.length - 1 ] === '.' ) { parts.push( '' ) ; }
+	}
+	else if ( Array.isArray( path ) ) {
+		parts = path ;
+		pathArrayMode = true ;
+	}
+	else {
+		throw new TypeError( '[tree.path] .' + type + '(): the path argument should be a string or an array' ) ;
+	}
+
+	switch ( type ) {
+		case 'get' :
+		case 'delete' :
+			isGenericSet = false ;
+			break ;
+		case 'set' :
+		case 'define' :
+		case 'inc' :
+		case 'dec' :
+		case 'append' :
+		case 'prepend' :
+		case 'concat' :
+		case 'insert' :
+		case 'autoPush' :
+			isGenericSet = true ;
+			break ;
+		default :
+			throw new TypeError( "[tree.path] .op(): wrong type of operation '" + type + "'" ) ;
+	}
+
+	//console.log( parts ) ;
+	// The pointer start at the object's root
+	pointer = object ;
+
+	last = parts.length - 1 ;
+
+	for ( i = 0 ; i <= last ; i ++ ) {
+		if ( pathArrayMode ) {
+			if ( key === undefined ) {
+				key = parts[ i ] ;
+				continue ;
+			}
+
+			if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
+				if ( ! isGenericSet ) { return undefined ; }
+				pointer[ key ] = {} ;
+			}
+
+			pointer = pointer[ key ] ;
+			key = parts[ i ] ;
+
+			continue ;
+		}
+		else if ( parts[ i ] === '.' ) {
+			isArray = false ;
+
+			if ( key === undefined ) {
+				if ( ! canBeEmpty ) {
+					canBeEmpty = true ;
+					continue ;
+				}
+
+				key = '' ;
+			}
+
+			if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
+				if ( ! isGenericSet ) { return undefined ; }
+				pointer[ key ] = {} ;
+			}
+
+			pointer = pointer[ key ] ;
+			canBeEmpty = true ;
+
+			continue ;
+		}
+		else if ( parts[ i ] === '#' || parts[ i ] === '[' ) {
+			isArray = true ;
+			canBeEmpty = false ;
+
+			if ( key === undefined ) {
+				// The root element cannot be altered, we are in trouble if an array is expected but we have only a regular object.
+				if ( ! Array.isArray( pointer ) ) { return undefined ; }
+				continue ;
+			}
+
+			if ( ! pointer[ key ] || ! Array.isArray( pointer[ key ] ) ) {
+				if ( ! isGenericSet ) { return undefined ; }
+				pointer[ key ] = [] ;
+			}
+
+			pointer = pointer[ key ] ;
+
+			continue ;
+		}
+		else if ( parts[ i ] === ']' ) {
+			// Closing bracket: do nothing
+			canBeEmpty = false ;
+			continue ;
+		}
+
+		canBeEmpty = false ;
+
+		if ( ! isArray ) { key = parts[ i ] ; continue ; }
+
+		switch ( parts[ i ] ) {
+			case 'length' :
+				key = parts[ i ] ;
+				break ;
+
+			// Pseudo-key
+			case 'first' :
+				key = 0 ;
+				break ;
+			case 'last' :
+				key = pointer.length - 1 ;
+				if ( key < 0 ) { key = 0 ; }
+				break ;
+			case 'next' :
+				if ( ! isGenericSet ) { return undefined ; }
+				key = pointer.length ;
+				break ;
+			case 'insert' :
+				if ( ! isGenericSet ) { return undefined ; }
+				pointer.unshift( undefined ) ;
+				key = 0 ;
+				break ;
+
+			// default = number
+			default :
+				// Convert the string key to a numerical index
+				key = parseInt( parts[ i ] , 10 ) ;
+		}
+	}
+
+	switch ( type ) {
+		case 'get' :
+			return pointer[ key ] ;
+		case 'delete' :
+			if ( isArray && typeof key === 'number' ) { pointer.splice( key , 1 ) ; }
+			else { delete pointer[ key ] ; }
+			return ;
+		case 'set' :
+			pointer[ key ] = value ;
+			return pointer[ key ] ;
+		case 'define' :
+			// define: set only if it doesn't exist
+			if ( ! ( key in pointer ) ) { pointer[ key ] = value ; }
+			return pointer[ key ] ;
+		case 'inc' :
+			if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] ++ ; }
+			else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = 1 ; }
+			return pointer[ key ] ;
+		case 'dec' :
+			if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] -- ; }
+			else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = -1 ; }
+			return pointer[ key ] ;
+		case 'append' :
+			if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
+			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
+			//else ? do nothing???
+			return pointer[ key ] ;
+		case 'prepend' :
+			if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
+			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].unshift( value ) ; }
+			//else ? do nothing???
+			return pointer[ key ] ;
+		case 'concat' :
+			if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
+			else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
+				pointer[ key ] = pointer[ key ].concat( value ) ;
+			}
+			//else ? do nothing???
+			return pointer[ key ] ;
+		case 'insert' :
+			if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
+			else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
+				pointer[ key ] = value.concat( pointer[ key ] ) ;
+			}
+			//else ? do nothing???
+			return pointer[ key ] ;
+		case 'autoPush' :
+			if ( pointer[ key ] === undefined ) { pointer[ key ] = value ; }
+			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
+			else { pointer[ key ] = [ pointer[ key ] , value ] ; }
+			return pointer[ key ] ;
+	}
+} ;
+
+
+
+// get, set and delete use the same op() function
+treePath.get = treePath.op.bind( undefined , 'get' ) ;
+treePath.delete = treePath.op.bind( undefined , 'delete' ) ;
+treePath.set = treePath.op.bind( undefined , 'set' ) ;
+treePath.define = treePath.op.bind( undefined , 'define' ) ;
+treePath.inc = treePath.op.bind( undefined , 'inc' ) ;
+treePath.dec = treePath.op.bind( undefined , 'dec' ) ;
+treePath.append = treePath.op.bind( undefined , 'append' ) ;
+treePath.prepend = treePath.op.bind( undefined , 'prepend' ) ;
+treePath.concat = treePath.op.bind( undefined , 'concat' ) ;
+treePath.insert = treePath.op.bind( undefined , 'insert' ) ;
+treePath.autoPush = treePath.op.bind( undefined , 'autoPush' ) ;
+
+
+
+// Prototype used for object creation, so they can be created with Object.create( tree.path.prototype )
+treePath.prototype = {
+	get: function( path ) { return treePath.get( this , path ) ; } ,
+	delete: function( path ) { return treePath.delete( this , path ) ; } ,
+	set: function( path , value ) { return treePath.set( this , path , value ) ; } ,
+	define: function( path , value ) { return treePath.define( this , path , value ) ; } ,
+	inc: function( path , value ) { return treePath.inc( this , path , value ) ; } ,
+	dec: function( path , value ) { return treePath.dec( this , path , value ) ; } ,
+	append: function( path , value ) { return treePath.append( this , path , value ) ; } ,
+	prepend: function( path , value ) { return treePath.prepend( this , path , value ) ; } ,
+	concat: function( path , value ) { return treePath.concat( this , path , value ) ; } ,
+	insert: function( path , value ) { return treePath.insert( this , path , value ) ; } ,
+	autoPush: function( path , value ) { return treePath.autoPush( this , path , value ) ; }
+} ;
+
+
+
+// Upgrade an object so it can support get, set and delete at its root
+treePath.upgrade = function upgrade( object ) {
+	Object.defineProperties( object , {
+		get: { value: treePath.op.bind( undefined , 'get' , object ) } ,
+		delete: { value: treePath.op.bind( undefined , 'delete' , object ) } ,
+		set: { value: treePath.op.bind( undefined , 'set' , object ) } ,
+		define: { value: treePath.op.bind( undefined , 'define' , object ) } ,
+		inc: { value: treePath.op.bind( undefined , 'inc' , object ) } ,
+		dec: { value: treePath.op.bind( undefined , 'dec' , object ) } ,
+		append: { value: treePath.op.bind( undefined , 'append' , object ) } ,
+		prepend: { value: treePath.op.bind( undefined , 'prepend' , object ) } ,
+		concat: { value: treePath.op.bind( undefined , 'concat' , object ) } ,
+		insert: { value: treePath.op.bind( undefined , 'insert' , object ) } ,
+		autoPush: { value: treePath.op.bind( undefined , 'autoPush' , object ) }
+	} ) ;
+} ;
+
+
+
 
 },{}]},{},[5])(5)
 });

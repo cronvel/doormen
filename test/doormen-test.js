@@ -2327,6 +2327,26 @@ describe( "Patch validation" , () => {
 		doormen.equals( doormen.patch( schema , { a: 1 , "sub.d": "four" } ) , { a: "1" , "sub.d": "four" } ) ;
 	} ) ;
 
+	it( "should validate a patch with commands" , () => {
+		var schema ;
+
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				array: {
+					type: 'array' , of: {
+						type: 'string' ,
+						sanitize: 'toString'
+					}
+				}
+			}
+		} ;
+
+		doormen.patch( schema , { array: { $push: 1 } } ) ;
+		doormen.equals( doormen.patch( schema , { array: { $push: 1 } } ) , { array: { $push: '1' } } ) ;
+	} ) ;
+
+
 	it( "test doormen.reportPatch()" ) ;
 	it( "test doormen.exportPatch()" ) ;
 } ) ;
@@ -2412,12 +2432,12 @@ describe( "Patch application" , () => {
 		
 		patch = {
 			'object.a' : { $delete: true } ,
-			'array.2': { $delete: null }
+			'array.1': { $unset: null }
 		}
 		
 		expect( doormen.applyPatch( data , patch ) ).to.equal( {
 			object: { b: 'two' } ,
-			array: [ 'three' , 'four' ]
+			array: [ 'three' , undefined , 'five' ]
 		} ) ;
 	} ) ;
 
@@ -2440,6 +2460,18 @@ describe( "Patch application" , () => {
 			object: { a: 'one' , b: 'two' } ,
 			array: [ 'three' , 'four' , 'five' , 'six' ]
 		} ) ;
+	} ) ;
+
+	it( "unknown commands should throw" , () => {
+		var data , patch ;
+		
+		data = {
+			object: { a: 'one' , b: 'two' }
+		} ;
+		
+		patch = { 'object.a': { $unknown: true } }
+		
+		expect( () => doormen.applyPatch( data , patch ) ).to.throw() ;
 	} ) ;
 } ) ;
 

@@ -89,6 +89,7 @@ WARNING: MongoDB module not found, the end of the test is skipped.
    - [Sanitize + Patch reporting](#sanitize--patch-reporting)
    - [Full report mode](#full-report-mode)
    - [Patch validation](#patch-validation)
+   - [Patch application](#patch-application)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
    - [Conditionnal schema.](#conditionnal-schema)
@@ -108,44 +109,44 @@ doormen.shouldThrow() should throw if the callback has not throw, and catch if i
 
 ```js
 var thrown ;
-		thrown = false ;
-		try {
-			doormen.shouldThrow( () => {} ) ;
-		}
-		catch ( error ) {
-			thrown = true ;
-		}
-		if ( ! thrown ) { throw new Error( 'It should throw!' ) ; }
-		thrown = false ;
-		try {
-			doormen.shouldThrow( () => { throw new Error( 'Fatal error' ) ; } ) ;
-		}
-		catch ( error ) {
-			thrown = true ;
-		}
-		if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
+thrown = false ;
+try {
+	doormen.shouldThrow( () => {} ) ;
+}
+catch ( error ) {
+	thrown = true ;
+}
+if ( ! thrown ) { throw new Error( 'It should throw!' ) ; }
+thrown = false ;
+try {
+	doormen.shouldThrow( () => { throw new Error( 'Fatal error' ) ; } ) ;
+}
+catch ( error ) {
+	thrown = true ;
+}
+if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
 ```
 
 doormen.not() should throw if the data validate, and catch if it has throw.
 
 ```js
 var thrown ;
-		thrown = false ;
-		try {
-			doormen.not( { type: 'string' } , 'text' ) ;
-		}
-		catch ( error ) {
-			thrown = true ;
-		}
-		if ( ! thrown ) { throw new Error( 'It should throw' ) ; }
-		thrown = false ;
-		try {
-			doormen.not( { type: 'string' } , 1 ) ;
-		}
-		catch ( error ) {
-			thrown = true ;
-		}
-		if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
+thrown = false ;
+try {
+	doormen.not( { type: 'string' } , 'text' ) ;
+}
+catch ( error ) {
+	thrown = true ;
+}
+if ( ! thrown ) { throw new Error( 'It should throw' ) ; }
+thrown = false ;
+try {
+	doormen.not( { type: 'string' } , 1 ) ;
+}
+catch ( error ) {
+	thrown = true ;
+}
+if ( thrown ) { throw new Error( 'It should *NOT* throw' ) ; }
 ```
 
 <a name="equality-checker"></a>
@@ -2104,63 +2105,63 @@ sanitize should should report in the provided patch object.
 
 ```js
 var schema , patch ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
-			{ a: ' toto  ' , b: 'text  ' }
-		) ;
-		doormen.equals( patch , { a: 'toto' , b: 'text' } ) ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
-			{ a: 'toto' , b: 'text  ' }
-		) ;
-		doormen.equals( patch , { b: 'text' } ) ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
-			{ a: 'toto' , b: 'text' }
-		) ;
-		doormen.equals( patch , {} ) ;
-		schema = {
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: ' toto  ' , b: 'text  ' }
+) ;
+doormen.equals( patch , { a: 'toto' , b: 'text' } ) ;
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: 'toto' , b: 'text  ' }
+) ;
+doormen.equals( patch , { b: 'text' } ) ;
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	{ properties: { a: { sanitize: 'trim' } , b: { sanitize: 'trim' } } } ,
+	{ a: 'toto' , b: 'text' }
+) ;
+doormen.equals( patch , {} ) ;
+schema = {
+	properties: {
+		a: { sanitize: 'trim' } ,
+		sub: {
 			properties: {
-				a: { sanitize: 'trim' } ,
+				b: { sanitize: 'trim' } ,
 				sub: {
 					properties: {
-						b: { sanitize: 'trim' } ,
-						sub: {
-							properties: {
-								c: { sanitize: 'trim' }
-							}
-						}
+						c: { sanitize: 'trim' }
 					}
 				}
 			}
-		} ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			schema ,
-			{ a: ' toto  ' , sub: { b: 'text  ' , sub: { c: ' weee! ' } } }
-		) ;
-		doormen.equals( patch , { "a": "toto" , "sub.b": "text" , "sub.sub.c": "weee!" } ) ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			schema ,
-			{ a: 'toto' , sub: { b: 'text  ' , sub: { c: 'weee!' } } }
-		) ;
-		doormen.equals( patch , { "sub.b": "text" } ) ;
-		patch = {} ;
-		doormen(
-			{ patch: patch } ,
-			schema ,
-			{ a: ' toto  ' , sub: { b: 'text' , sub: { c: ' weee! ' } } }
-		) ;
-		doormen.equals( patch , { "a": "toto" , "sub.sub.c": "weee!" } ) ;
+		}
+	}
+} ;
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: ' toto  ' , sub: { b: 'text  ' , sub: { c: ' weee! ' } } }
+) ;
+doormen.equals( patch , { "a": "toto" , "sub.b": "text" , "sub.sub.c": "weee!" } ) ;
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: 'toto' , sub: { b: 'text  ' , sub: { c: 'weee!' } } }
+) ;
+doormen.equals( patch , { "sub.b": "text" } ) ;
+patch = {} ;
+doormen(
+	{ patch: patch } ,
+	schema ,
+	{ a: ' toto  ' , sub: { b: 'text' , sub: { c: ' weee! ' } } }
+) ;
+doormen.equals( patch , { "a": "toto" , "sub.sub.c": "weee!" } ) ;
 ```
 
 <a name="full-report-mode"></a>
@@ -2202,104 +2203,149 @@ should validate a patch.
 
 ```js
 var schema ;
-		schema = {
-			type: 'strictObject' ,
-			properties: {
-				a: { type: 'string' , sanitize: 'toString' } ,
-				b: { type: 'string' } ,
-				c: { type: 'string' }
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+doormen( schema , { a: 'one' , b: 'two' , c: 'three' } ) ;
+doormen.equals( doormen( schema , { a: 1 , b: 'two' , c: 'three' } ) , { a: '1' , b: 'two' , c: 'three' } ) ;
+doormen.not( schema , { a: 'one' , b: 'two' } ) ;
+doormen.patch( schema , {} ) ;
+doormen.patch( schema , { a: 'one' , b: 'two' , c: 'three' } ) ;
+doormen.equals( doormen.patch( schema , { a: 1 , b: 'two' , c: 'three' } ) , { a: '1' , b: 'two' , c: 'three' } ) ;
+doormen.patch( schema , { a: 'one' , b: 'two' } ) ;
+doormen.equals( doormen.patch( schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
+```
+
+should validate a patch of an array.
+
+```js
+var schema ;
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		array: {
+			type: 'array' , of: {
+				type: 'string' ,
+				sanitize: 'toString'
 			}
-		} ;
-		doormen( schema , { a: 'one' , b: 'two' , c: 'three' } ) ;
-		doormen.equals( doormen( schema , { a: 1 , b: 'two' , c: 'three' } ) , { a: '1' , b: 'two' , c: 'three' } ) ;
-		doormen.not( schema , { a: 'one' , b: 'two' } ) ;
-		doormen.patch( schema , {} ) ;
-		doormen.patch( schema , { a: 'one' , b: 'two' , c: 'three' } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1 , b: 'two' , c: 'three' } ) , { a: '1' , b: 'two' , c: 'three' } ) ;
-		doormen.patch( schema , { a: 'one' , b: 'two' } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
+		}
+	}
+} ;
+doormen( schema , { array: [ 'one' , 'two' , 'three' ] } ) ;
+doormen.equals( doormen( schema , { array: [ 1 , 'two' , 'three' ] } ) , { array: [ '1' , 'two' , 'three' ] } ) ;
+doormen.patch( schema , {} ) ;
+doormen.patch( schema , { array: [ 1 , 'two' , 'three' ] } ) ;
+doormen.equals( doormen.patch( schema , { array: [ 1 , 'two' , 'three' ] } ) , { array: [ '1' , 'two' , 'three' ] } ) ;
+doormen.equals( doormen.patch( schema , { 'array.1': 'two' } ) , { 'array.1': 'two' } ) ;
+doormen.equals( doormen.patch( schema , { 'array.1': 2 } ) , { 'array.1': '2' } ) ;
 ```
 
 forbidden path in a patch should throw.
 
 ```js
 var schema ;
-		schema = {
-			type: 'strictObject' ,
-			properties: {
-				a: { type: 'string' , sanitize: 'toString' } ,
-				b: { type: 'string' } ,
-				c: { type: 'string' }
-			}
-		} ;
-		doormen.patch.not( schema , { d: 'four' } ) ;
-		doormen.patch.not( schema , { c: 'three' , d: 'four' } ) ;
-		// Now allow extra properties, it should be ok
-		schema.extraProperties = true ;
-		doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
-		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
-		// Now allow any properties, it should still be ok
-		schema = {
-			type: 'strictObject' ,
-			of: { type: 'string' , sanitize: 'toString' }
-		} ;
-		doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
-		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+doormen.patch.not( schema , { d: 'four' } ) ;
+doormen.patch.not( schema , { c: 'three' , d: 'four' } ) ;
+// Now allow extra properties, it should be ok
+schema.extraProperties = true ;
+doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
+// Now allow any properties, it should still be ok
+schema = {
+	type: 'strictObject' ,
+	of: { type: 'string' , sanitize: 'toString' }
+} ;
+doormen.equals( doormen.patch( schema , { d: 'four' } ) , { d: 'four' } ) ;
+doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
 ```
 
 non-object patch should not validate.
 
 ```js
 var schema ;
-		schema = {
-			type: 'strictObject' ,
-			properties: {
-				a: { type: 'string' , sanitize: 'toString' } ,
-				b: { type: 'string' } ,
-				c: { type: 'string' }
-			}
-		} ;
-		doormen.patch.not( schema , null ) ;
-		doormen.patch.not( schema , false ) ;
-		doormen.patch.not( schema , 'mldjsr' ) ;
-		doormen.patch.not( schema , 8 ) ;
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		b: { type: 'string' } ,
+		c: { type: 'string' }
+	}
+} ;
+doormen.patch.not( schema , null ) ;
+doormen.patch.not( schema , false ) ;
+doormen.patch.not( schema , 'mldjsr' ) ;
+doormen.patch.not( schema , 8 ) ;
 ```
 
 should validate a patch with deep path.
 
 ```js
 var schema ;
-		schema = {
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		a: { type: 'string' , sanitize: 'toString' } ,
+		sub: {
 			type: 'strictObject' ,
 			properties: {
-				a: { type: 'string' , sanitize: 'toString' } ,
-				sub: {
-					type: 'strictObject' ,
-					properties: {
-						b: { type: 'string' } ,
-						c: { type: 'string' }
-					}
-				}
+				b: { type: 'string' } ,
+				c: { type: 'string' }
 			}
-		} ;
-		doormen( schema , { a: "one" , sub: { b: "two" , c: "three" } } ) ;
-		doormen.equals( doormen( schema , { a: 1 , sub: { b: "two" , c: "three" } } ) , { a: "1" , sub: { b: "two" , c: "three" } } ) ;
-		doormen.not( schema , { a: "one" , sub: { b: "two" } } ) ;
-		doormen.patch( schema , {} ) ;
-		doormen.patch( schema , { a: "one" , sub: { b: "two" , c: "three" } } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1 , sub: { b: "two" , c: "three" } } ) , { a: "1" , sub: { b: "two" , c: "three" } } ) ;
-		// Shall not pass! This patch means: replace "sub" by { b: "two" }, thus sub.c is missing
-		doormen.patch.not( schema , { a: "one" , sub: { b: "two" } } ) ;
-		// Pass: only replace sub.b, but keep existing value for sub.c
-		doormen.patch( schema , { a: "one" , "sub.b": "two" } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1 , "sub.b": "two" } ) , { a: "1" , "sub.b": "two" } ) ;
-		doormen.patch.not( schema , { a: "one" , "sub.d": "four" } ) ;
-		// Now allow extra-properties
-		schema.properties.sub.extraProperties = true ;
-		doormen.patch( schema , { a: "one" , "sub.d": "four" } ) ;
-		doormen.equals( doormen.patch( schema , { a: 1 , "sub.d": "four" } ) , { a: "1" , "sub.d": "four" } ) ;
+		}
+	}
+} ;
+doormen( schema , { a: "one" , sub: { b: "two" , c: "three" } } ) ;
+doormen.equals( doormen( schema , { a: 1 , sub: { b: "two" , c: "three" } } ) , { a: "1" , sub: { b: "two" , c: "three" } } ) ;
+doormen.not( schema , { a: "one" , sub: { b: "two" } } ) ;
+doormen.patch( schema , {} ) ;
+doormen.patch( schema , { a: "one" , sub: { b: "two" , c: "three" } } ) ;
+doormen.equals( doormen.patch( schema , { a: 1 , sub: { b: "two" , c: "three" } } ) , { a: "1" , sub: { b: "two" , c: "three" } } ) ;
+// Shall not pass! This patch means: replace "sub" by { b: "two" }, thus sub.c is missing
+doormen.patch.not( schema , { a: "one" , sub: { b: "two" } } ) ;
+// Pass: only replace sub.b, but keep existing value for sub.c
+doormen.patch( schema , { a: "one" , "sub.b": "two" } ) ;
+doormen.equals( doormen.patch( schema , { a: 1 , "sub.b": "two" } ) , { a: "1" , "sub.b": "two" } ) ;
+doormen.patch.not( schema , { a: "one" , "sub.d": "four" } ) ;
+// Now allow extra-properties
+schema.properties.sub.extraProperties = true ;
+doormen.patch( schema , { a: "one" , "sub.d": "four" } ) ;
+doormen.equals( doormen.patch( schema , { a: 1 , "sub.d": "four" } ) , { a: "1" , "sub.d": "four" } ) ;
 ```
 
+should validate a patch with commands.
+
+```js
+var schema ;
+schema = {
+	type: 'strictObject' ,
+	properties: {
+		array: {
+			type: 'array' , of: {
+				type: 'string' ,
+				sanitize: 'toString'
+			}
+		}
+	}
+} ;
+doormen.patch( schema , { array: { $push: 1 } } ) ;
+doormen.equals( doormen.patch( schema , { array: { $push: 1 } } ) , { array: { $push: '1' } } ) ;
+```
+
+<a name="patch-application"></a>
+# Patch application
 <a name="keys-attribute"></a>
 # 'keys' attribute
 'keys' should perform the check recursively for key itself, using the same given schema for all of them..
