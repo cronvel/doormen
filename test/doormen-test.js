@@ -2333,6 +2333,118 @@ describe( "Patch validation" , () => {
 
 
 
+describe( "Patch application" , () => {
+
+	it( "should apply a simple patch" , () => {
+		var data , patch ;
+		
+		data = {
+			object: {
+				a: 'one' ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 'four' , 'five' ]
+		} ;
+		
+		patch = {
+			'object.a' : 1 ,
+			'array.1': 4
+		}
+		
+		expect( doormen.applyPatch( data , patch ) ).to.equal( {
+			object: {
+				a: 1 ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 4 , 'five' ]
+		} ) ;
+
+		patch = {
+			'object.c' : 3 ,
+			'array.3': 6
+		}
+		
+		expect( doormen.applyPatch( data , patch ) ).to.equal( {
+			object: {
+				a: 1 ,
+				b: 'two' ,
+				c: 3
+			} ,
+			array: [ 'three' , 4 , 'five' , 6 ]
+		} ) ;
+	} ) ;
+
+	it( "advanced patch command: set a property with '$set'" , () => {
+		var data , patch ;
+		
+		data = {
+			object: {
+				a: 'one' ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 'four' , 'five' ]
+		} ;
+		
+		patch = {
+			'object.a' : { $set: 1 } ,
+			'array.1': { $set: 4 }
+		}
+		
+		expect( doormen.applyPatch( data , patch ) ).to.equal( {
+			object: {
+				a: 1 ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 4 , 'five' ]
+		} ) ;
+	} ) ;
+
+	it( "advanced patch command: delete properties with '$delete' and the '$unset' alias" , () => {
+		var data , patch ;
+		
+		data = {
+			object: {
+				a: 'one' ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 'four' , 'five' ]
+		} ;
+		
+		patch = {
+			'object.a' : { $delete: true } ,
+			'array.2': { $delete: null }
+		}
+		
+		expect( doormen.applyPatch( data , patch ) ).to.equal( {
+			object: { b: 'two' } ,
+			array: [ 'three' , 'four' ]
+		} ) ;
+	} ) ;
+
+	it( "advanced patch command: $push" , () => {
+		var data , patch ;
+		
+		data = {
+			object: {
+				a: 'one' ,
+				b: 'two'
+			} ,
+			array: [ 'three' , 'four' , 'five' ]
+		} ;
+		
+		patch = {
+			'array': { $push: 'six' }
+		}
+		
+		expect( doormen.applyPatch( data , patch ) ).to.equal( {
+			object: { a: 'one' , b: 'two' } ,
+			array: [ 'three' , 'four' , 'five' , 'six' ]
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "'keys' attribute" , () => {
 
 	it( "'keys' should perform the check recursively for key itself, using the same given schema for all of them." , () => {
