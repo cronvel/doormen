@@ -2490,7 +2490,7 @@ doormen.patch.export = doormen.patch.bind( doormen , { export: true } ) ;
 
 
 
-const treePath = require( 'tree-kit/lib/path.js' ) ;
+const dotPath = require( 'tree-kit/lib/dotPath.js' ) ;
 
 doormen.applyPatch = function( data , patch ) {
 	var path , parts , value , patchCommandName ;
@@ -2504,7 +2504,7 @@ doormen.applyPatch = function( data , patch ) {
 			patchCommands[ patchCommandName ]( data , path , value[ patchCommandName ] ) ;
 		}
 		else {
-			treePath.set( data , path , value ) ;
+			dotPath.set( data , path , value ) ;
 		}
 	}
 
@@ -2531,13 +2531,13 @@ function isPatchCommand( value ) {
 
 const patchCommands = {} ;
 
-patchCommands.$set = ( data , path , value ) => treePath.set( data , path , value ) ;
+patchCommands.$set = ( data , path , value ) => dotPath.set( data , path , value ) ;
 
-patchCommands.$delete = patchCommands.$unset = ( data , path ) => treePath.delete( data , path ) ;
+patchCommands.$delete = patchCommands.$unset = ( data , path ) => dotPath.delete( data , path ) ;
 patchCommands.$delete.getValue = () => undefined ;
 patchCommands.$delete.sanitize = () => true ;
 
-patchCommands.$push = ( data , path , value ) => treePath.append( data , path , value ) ;
+patchCommands.$push = ( data , path , value ) => dotPath.append( data , path , value ) ;
 patchCommands.$push.applyToChildren = true ;
 
 
@@ -2745,7 +2745,7 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25,"tree-kit/lib/path.js":26}],7:[function(require,module,exports){
+},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./expect.js":7,"./filter.js":8,"./isEqual.js":9,"./keywords.js":10,"./mask.js":11,"./sanitizer.js":12,"./schemaSchema.js":13,"./sentence.js":14,"./typeChecker.js":15,"tree-kit/lib/clone.js":25,"tree-kit/lib/dotPath.js":26}],7:[function(require,module,exports){
 /*
 	Doormen
 
@@ -5851,264 +5851,275 @@ module.exports = function clone( originalObject , circular ) {
 
 
 
-var treePath = {} ;
-module.exports = treePath ;
+const dotPath = {} ;
+module.exports = dotPath ;
 
 
 
-treePath.op = function op( type , object , path , value ) {
-	var i , parts , last , pointer , key , isArray = false , pathArrayMode = false , isGenericSet , canBeEmpty = true ;
+const EMPTY_PATH = [] ;
 
+function toPathArray( path ) {
+	if ( Array.isArray( path ) ) {
+		return path ;
+	}
+	else if ( ! path ) {
+		return EMPTY_PATH ;
+	}
+	else if ( typeof path === 'string' ) {
+		return path.split( '.' ) ;
+	}
+
+	throw new TypeError( '[tree.dotPath]: the path argument should be a string or an array' ) ;
+}
+
+
+
+// Walk the tree using the path array.
+function walk( object , pathArray ) {
+	var i , iMax ,
+		pointer = object ;
+
+	for ( i = 0 , iMax = pathArray.length ; i < iMax ; i ++ ) {
+		if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+			return undefined ;
+		}
+
+		pointer = pointer[ pathArray[ i ] ] ;
+	}
+
+	return pointer ;
+}
+
+
+
+// Walk the tree, stop before the last path part.
+function walkBeforeLast( object , pathArray ) {
+	var i , iMax ,
+		pointer = object ;
+
+	for ( i = 0 , iMax = pathArray.length - 1 ; i < iMax ; i ++ ) {
+		if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+			return undefined ;
+		}
+
+		pointer = pointer[ pathArray[ i ] ] ;
+	}
+
+	return pointer ;
+}
+
+
+
+// Walk the tree, create missing element: pave the path up to before the last part of the path.
+// Return that before-the-last element.
+// Object MUST be an object! no check are performed for the first step!
+function pave( object , pathArray ) {
+	var i , iMax ,
+		key ,
+		pointer = object ;
+
+	for ( i = 0 , iMax = pathArray.length - 1 ; i < iMax ; i ++ ) {
+		key = pathArray[ i ] ;
+
+		if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
+			pointer[ key ] = {} ;
+		}
+
+		pointer = pointer[ key ] ;
+	}
+
+	return pointer ;
+}
+
+
+
+dotPath.get = function( object , path ) {
+	return walk( object , toPathArray( path ) ) ;
+} ;
+
+
+
+dotPath.set = function( object , path , value ) {
 	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
-		return ;
+		// Throw?
+		return undefined ;
 	}
 
-	if ( typeof path === 'string' ) {
-		// Split the path into parts
-		if ( path ) { parts = path.match( /([.#[\]]|[^.#[\]]+)/g ) ; }
-		else { parts = [ '' ] ; }
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
 
-		if ( parts[ 0 ] === '.' ) { parts.unshift( '' ) ; }
-		if ( parts[ parts.length - 1 ] === '.' ) { parts.push( '' ) ; }
-	}
-	else if ( Array.isArray( path ) ) {
-		parts = path ;
-		pathArrayMode = true ;
-	}
-	else {
-		throw new TypeError( '[tree.path] .' + type + '(): the path argument should be a string or an array' ) ;
-	}
+	pointer[ pathArray[ pathArray.length - 1 ] ] = value ;
 
-	switch ( type ) {
-		case 'get' :
-		case 'delete' :
-			isGenericSet = false ;
-			break ;
-		case 'set' :
-		case 'define' :
-		case 'inc' :
-		case 'dec' :
-		case 'append' :
-		case 'prepend' :
-		case 'concat' :
-		case 'insert' :
-		case 'autoPush' :
-			isGenericSet = true ;
-			break ;
-		default :
-			throw new TypeError( "[tree.path] .op(): wrong type of operation '" + type + "'" ) ;
-	}
-
-	//console.log( parts ) ;
-	// The pointer start at the object's root
-	pointer = object ;
-
-	last = parts.length - 1 ;
-
-	for ( i = 0 ; i <= last ; i ++ ) {
-		if ( pathArrayMode ) {
-			if ( key === undefined ) {
-				key = parts[ i ] ;
-				continue ;
-			}
-
-			if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
-				if ( ! isGenericSet ) { return undefined ; }
-				pointer[ key ] = {} ;
-			}
-
-			pointer = pointer[ key ] ;
-			key = parts[ i ] ;
-
-			continue ;
-		}
-		else if ( parts[ i ] === '.' ) {
-			isArray = false ;
-
-			if ( key === undefined ) {
-				if ( ! canBeEmpty ) {
-					canBeEmpty = true ;
-					continue ;
-				}
-
-				key = '' ;
-			}
-
-			if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
-				if ( ! isGenericSet ) { return undefined ; }
-				pointer[ key ] = {} ;
-			}
-
-			pointer = pointer[ key ] ;
-			canBeEmpty = true ;
-
-			continue ;
-		}
-		else if ( parts[ i ] === '#' || parts[ i ] === '[' ) {
-			isArray = true ;
-			canBeEmpty = false ;
-
-			if ( key === undefined ) {
-				// The root element cannot be altered, we are in trouble if an array is expected but we have only a regular object.
-				if ( ! Array.isArray( pointer ) ) { return undefined ; }
-				continue ;
-			}
-
-			if ( ! pointer[ key ] || ! Array.isArray( pointer[ key ] ) ) {
-				if ( ! isGenericSet ) { return undefined ; }
-				pointer[ key ] = [] ;
-			}
-
-			pointer = pointer[ key ] ;
-
-			continue ;
-		}
-		else if ( parts[ i ] === ']' ) {
-			// Closing bracket: do nothing
-			canBeEmpty = false ;
-			continue ;
-		}
-
-		canBeEmpty = false ;
-
-		if ( ! isArray ) { key = parts[ i ] ; continue ; }
-
-		switch ( parts[ i ] ) {
-			case 'length' :
-				key = parts[ i ] ;
-				break ;
-
-			// Pseudo-key
-			case 'first' :
-				key = 0 ;
-				break ;
-			case 'last' :
-				key = pointer.length - 1 ;
-				if ( key < 0 ) { key = 0 ; }
-				break ;
-			case 'next' :
-				if ( ! isGenericSet ) { return undefined ; }
-				key = pointer.length ;
-				break ;
-			case 'insert' :
-				if ( ! isGenericSet ) { return undefined ; }
-				pointer.unshift( undefined ) ;
-				key = 0 ;
-				break ;
-
-			// default = number
-			default :
-				// Convert the string key to a numerical index
-				key = parseInt( parts[ i ] , 10 ) ;
-		}
-	}
-
-	switch ( type ) {
-		case 'get' :
-			return pointer[ key ] ;
-		case 'delete' :
-			if ( isArray && typeof key === 'number' ) { pointer.splice( key , 1 ) ; }
-			else { delete pointer[ key ] ; }
-			return ;
-		case 'set' :
-			pointer[ key ] = value ;
-			return pointer[ key ] ;
-		case 'define' :
-			// define: set only if it doesn't exist
-			if ( ! ( key in pointer ) ) { pointer[ key ] = value ; }
-			return pointer[ key ] ;
-		case 'inc' :
-			if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] ++ ; }
-			else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = 1 ; }
-			return pointer[ key ] ;
-		case 'dec' :
-			if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] -- ; }
-			else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = -1 ; }
-			return pointer[ key ] ;
-		case 'append' :
-			if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
-			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
-			//else ? do nothing???
-			return pointer[ key ] ;
-		case 'prepend' :
-			if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
-			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].unshift( value ) ; }
-			//else ? do nothing???
-			return pointer[ key ] ;
-		case 'concat' :
-			if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
-			else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
-				pointer[ key ] = pointer[ key ].concat( value ) ;
-			}
-			//else ? do nothing???
-			return pointer[ key ] ;
-		case 'insert' :
-			if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
-			else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
-				pointer[ key ] = value.concat( pointer[ key ] ) ;
-			}
-			//else ? do nothing???
-			return pointer[ key ] ;
-		case 'autoPush' :
-			if ( pointer[ key ] === undefined ) { pointer[ key ] = value ; }
-			else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
-			else { pointer[ key ] = [ pointer[ key ] , value ] ; }
-			return pointer[ key ] ;
-	}
+	return value ;
 } ;
 
 
 
-// get, set and delete use the same op() function
-treePath.get = treePath.op.bind( undefined , 'get' ) ;
-treePath.delete = treePath.op.bind( undefined , 'delete' ) ;
-treePath.set = treePath.op.bind( undefined , 'set' ) ;
-treePath.define = treePath.op.bind( undefined , 'define' ) ;
-treePath.inc = treePath.op.bind( undefined , 'inc' ) ;
-treePath.dec = treePath.op.bind( undefined , 'dec' ) ;
-treePath.append = treePath.op.bind( undefined , 'append' ) ;
-treePath.prepend = treePath.op.bind( undefined , 'prepend' ) ;
-treePath.concat = treePath.op.bind( undefined , 'concat' ) ;
-treePath.insert = treePath.op.bind( undefined , 'insert' ) ;
-treePath.autoPush = treePath.op.bind( undefined , 'autoPush' ) ;
+dotPath.define = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
 
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
+	if ( ! ( key in pointer ) ) { pointer[ key ] = value ; }
 
-// Prototype used for object creation, so they can be created with Object.create( tree.path.prototype )
-treePath.prototype = {
-	get: function( path ) { return treePath.get( this , path ) ; } ,
-	delete: function( path ) { return treePath.delete( this , path ) ; } ,
-	set: function( path , value ) { return treePath.set( this , path , value ) ; } ,
-	define: function( path , value ) { return treePath.define( this , path , value ) ; } ,
-	inc: function( path , value ) { return treePath.inc( this , path , value ) ; } ,
-	dec: function( path , value ) { return treePath.dec( this , path , value ) ; } ,
-	append: function( path , value ) { return treePath.append( this , path , value ) ; } ,
-	prepend: function( path , value ) { return treePath.prepend( this , path , value ) ; } ,
-	concat: function( path , value ) { return treePath.concat( this , path , value ) ; } ,
-	insert: function( path , value ) { return treePath.insert( this , path , value ) ; } ,
-	autoPush: function( path , value ) { return treePath.autoPush( this , path , value ) ; }
+	return value ;
 } ;
 
 
 
-// Upgrade an object so it can support get, set and delete at its root
-treePath.upgrade = function upgrade( object ) {
-	Object.defineProperties( object , {
-		get: { value: treePath.op.bind( undefined , 'get' , object ) } ,
-		delete: { value: treePath.op.bind( undefined , 'delete' , object ) } ,
-		set: { value: treePath.op.bind( undefined , 'set' , object ) } ,
-		define: { value: treePath.op.bind( undefined , 'define' , object ) } ,
-		inc: { value: treePath.op.bind( undefined , 'inc' , object ) } ,
-		dec: { value: treePath.op.bind( undefined , 'dec' , object ) } ,
-		append: { value: treePath.op.bind( undefined , 'append' , object ) } ,
-		prepend: { value: treePath.op.bind( undefined , 'prepend' , object ) } ,
-		concat: { value: treePath.op.bind( undefined , 'concat' , object ) } ,
-		insert: { value: treePath.op.bind( undefined , 'insert' , object ) } ,
-		autoPush: { value: treePath.op.bind( undefined , 'autoPush' , object ) }
-	} ) ;
+dotPath.inc = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] ++ ; }
+	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = 1 ; }
+
+	return value ;
 } ;
 
 
+
+dotPath.dec = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] -- ; }
+	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = -1 ; }
+
+	return value ;
+} ;
+
+
+
+dotPath.concat = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
+	else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
+		pointer[ key ] = pointer[ key ].concat( value ) ;
+	}
+	//else ? do nothing???
+
+	return value ;
+} ;
+
+
+
+dotPath.insert = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
+	else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
+		pointer[ key ] = value.concat( pointer[ key ] ) ;
+	}
+	//else ? do nothing???
+
+	return value ;
+} ;
+
+
+
+dotPath.delete = function( object , path ) {
+	var pathArray = toPathArray( path ) ;
+	var pointer = walkBeforeLast( object , pathArray ) ;
+
+	if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+		return false ;
+	}
+
+	return delete pointer[ pathArray[ pathArray.length - 1 ] ] ;
+} ;
+
+
+
+dotPath.autoPush = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( pointer[ key ] === undefined ) { pointer[ key ] = value ; }
+	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
+	else { pointer[ key ] = [ pointer[ key ] , value ] ; }
+
+	return pointer[ key ] ;
+} ;
+
+
+
+dotPath.append = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
+	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
+	//else ? do nothing???
+
+	return pointer[ key ] ;
+} ;
+
+
+
+dotPath.prepend = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
+		// Throw?
+		return undefined ;
+	}
+
+	var pathArray = toPathArray( path ) ;
+	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
+
+	if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
+	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].unshift( value ) ; }
+	//else ? do nothing???
+
+	return pointer[ key ] ;
+} ;
 
 
 },{}]},{},[5])(5)
