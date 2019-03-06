@@ -2449,12 +2449,14 @@ doormen.patch = function schemaPatch( ... args ) {
 				sanitized[ path ][ patchCommandName ] = patchCommands[ patchCommandName ].sanitize( value ) ;
 				context.check( subSchema , value , {
 					displayPath: 'patch.' + path ,
+					path: path ,
 					key: path
 				} , true ) ;
 			}
 			else {
 				sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , {
 					displayPath: 'patch.' + path ,
+					path: path ,
 					key: path
 				} , true ) ;
 			}
@@ -2465,6 +2467,7 @@ doormen.patch = function schemaPatch( ... args ) {
 			//sanitized[ path ] = doormen( options , subSchema , value ) ;
 			sanitized[ path ] = context.check( subSchema , value , {
 				displayPath: 'patch.' + path ,
+				path: path ,
 				key: path
 			} , true ) ;
 		}
