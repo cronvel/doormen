@@ -337,96 +337,98 @@ when a data is null, undefined or unexistant, and the optional flag is set the s
 
 ```js
 doormen.not( { type: 'string' } , null ) ;
-		doormen( { optional: true , type: 'string' } , null ) ;
-		doormen.not( { type: 'string' } , undefined ) ;
-		doormen( { optional: true , type: 'string' } , undefined ) ;
-		doormen( { type: 'string' } , 'text' ) ;
-		doormen( { optional: true , type: 'string' } , 'text' ) ;
-		doormen.not( { type: 'string' } , 1 ) ;
-		doormen.not( { optional: true , type: 'string' } , 1 ) ;
-		doormen.not( { properties: { a: { type: 'string' } } } , {} ) ;
-		doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
+doormen( { optional: true , type: 'string' } , null ) ;
+doormen.not( { type: 'string' } , undefined ) ;
+doormen( { optional: true , type: 'string' } , undefined ) ;
+doormen( { type: 'string' } , 'text' ) ;
+doormen( { optional: true , type: 'string' } , 'text' ) ;
+doormen.not( { type: 'string' } , 1 ) ;
+doormen.not( { optional: true , type: 'string' } , 1 ) ;
+doormen.not( { properties: { a: { type: 'string' } } } , {} ) ;
+doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
+doormen( { properties: { a: { optional: true , type: 'string' } } } , { a: null } ) ;
+doormen( { properties: { a: { optional: true , type: 'string' } } } , { a: undefined } ) ;
 ```
 
 missing optional properties should not be created (i.e. with undefined)..
 
 ```js
 var result ;
-		result = doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
-		// {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
-		// that a key is not defined, so we have to check it explicitly
-		doormen.equals( 'a' in result , false ) ;
-		result = doormen( {
+result = doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
+// {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
+// that a key is not defined, so we have to check it explicitly
+doormen.equals( 'a' in result , false ) ;
+result = doormen( {
+	properties: {
+		a: { optional: true , type: 'string' } ,
+		b: { optional: true , type: 'string' } ,
+		c: {
+			optional: true ,
 			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
-					}
-				}
+				d: { optional: true , type: 'string' }
 			}
-		} ,
-		{}
-		) ;
-		doormen.equals( 'a' in result , false ) ;
-		doormen.equals( 'b' in result , false ) ;
-		doormen.equals( 'c' in result , false ) ;
-		result = doormen( {
+		}
+	}
+} ,
+{}
+) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , false ) ;
+result = doormen( {
+	properties: {
+		a: { optional: true , type: 'string' } ,
+		b: { optional: true , type: 'string' } ,
+		c: {
+			optional: true ,
 			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
-					}
-				}
+				d: { optional: true , type: 'string' }
 			}
-		} ,
-		{ c: undefined }
-		) ;
-		doormen.equals( 'a' in result , false ) ;
-		doormen.equals( 'b' in result , false ) ;
-		doormen.equals( 'c' in result , true ) ;
-		doormen.equals( result.c , undefined ) ;
-		result = doormen( {
+		}
+	}
+} ,
+{ c: undefined }
+) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( result.c , undefined ) ;
+result = doormen( {
+	properties: {
+		a: { optional: true , type: 'string' } ,
+		b: { optional: true , type: 'string' } ,
+		c: {
+			optional: true ,
 			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
-					}
-				}
+				d: { optional: true , type: 'string' }
 			}
-		} ,
-		{ c: null }
-		) ;
-		doormen.equals( 'a' in result , false ) ;
-		doormen.equals( 'b' in result , false ) ;
-		doormen.equals( 'c' in result , true ) ;
-		doormen.equals( result.c , null ) ;
-		result = doormen( {
+		}
+	}
+} ,
+{ c: null }
+) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( result.c , null ) ;
+result = doormen( {
+	properties: {
+		a: { optional: true , type: 'string' } ,
+		b: { optional: true , type: 'string' } ,
+		c: {
+			optional: true ,
 			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
-					}
-				}
+				d: { optional: true , type: 'string' }
 			}
-		} ,
-		{ c: {} }
-		) ;
-		doormen.equals( 'a' in result , false ) ;
-		doormen.equals( 'b' in result , false ) ;
-		doormen.equals( 'c' in result , true ) ;
-		doormen.equals( 'd' in result.c , false ) ;
+		}
+	}
+} ,
+{ c: {} }
+) ;
+doormen.equals( 'a' in result , false ) ;
+doormen.equals( 'b' in result , false ) ;
+doormen.equals( 'c' in result , true ) ;
+doormen.equals( 'd' in result.c , false ) ;
 ```
 
 when a data is null, undefined or unexistant, and a default value is specified in the schema, that default value should overwrite the original one.

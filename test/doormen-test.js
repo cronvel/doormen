@@ -354,7 +354,6 @@ describe( "Basic types" , () => {
 describe( "Optional and default data" , () => {
 
 	it( "when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate" , () => {
-
 		doormen.not( { type: 'string' } , null ) ;
 		doormen( { optional: true , type: 'string' } , null ) ;
 		doormen.not( { type: 'string' } , undefined ) ;
@@ -367,10 +366,11 @@ describe( "Optional and default data" , () => {
 
 		doormen.not( { properties: { a: { type: 'string' } } } , {} ) ;
 		doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
+		doormen( { properties: { a: { optional: true , type: 'string' } } } , { a: null } ) ;
+		doormen( { properties: { a: { optional: true , type: 'string' } } } , { a: undefined } ) ;
 	} ) ;
 
 	it( "missing optional properties should not be created (i.e. with undefined)." , () => {
-
 		var result ;
 
 		result = doormen( { properties: { a: { optional: true , type: 'string' } } } , {} ) ;
@@ -1710,6 +1710,30 @@ describe( "Mask" , () => {
 		doormen.shouldThrow( () => doormen.patch( { allowedTags: 'meta' } , schema , { a: 'one' , b: 'two' , c: 'three' } ) ) ;
 		doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 1 , b: 'two' , c: 'three' } ) ;
 		doormen.equals( doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
+	} ) ;
+
+	it( "Should find all tags in a schema" , () => {
+		var schema = {
+			properties: {
+				_id: {} ,
+				slug: { tags: [ 'internal' , 'meta' ] } ,
+				accesses: {
+					of: {
+						tags: [ 'nested' ] ,
+						properties: {
+							userId: {} ,
+							accessLevel: { tags: [ 'internal' ] }
+						}
+					}
+				} ,
+				title: { tags: [ 'meta' ] } ,
+				post: { tags: [ 'content' ] }
+			}
+		} ;
+
+		var tags = doormen.getAllSchemaTags( schema ) ;
+		expect( tags ).to.be.a( Set ) ;
+		doormen.equals( [ ... tags ] , [ 'internal' , 'meta' , 'nested' , 'content' ] ) ;
 	} ) ;
 } ) ;
 

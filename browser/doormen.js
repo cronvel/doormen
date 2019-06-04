@@ -1861,6 +1861,7 @@ doormen.SchemaError = require( './SchemaError.js' ) ;
 var mask = require( './mask.js' ) ;
 doormen.tierMask = mask.tierMask ;
 doormen.tagMask = mask.tagMask ;
+doormen.getAllSchemaTags = mask.getAllSchemaTags ;
 
 doormen.isEqual = require( './isEqual.js' ) ;
 doormen.keywords = require( './keywords.js' ) ;
@@ -3519,7 +3520,6 @@ exports.tagMask = function( schema , data , tags , depthLimit = Infinity ) {
 
 
 
-
 function iterate( schema , data_ ) {
 	var i , key , data = data_ , src , returnValue , checkValue ;
 
@@ -3653,6 +3653,53 @@ function checkTags( schema ) {
 
 	return false ;
 }
+
+
+
+// Return a Set of all existing tag in a schema
+exports.getAllSchemaTags = function( schema , tags = new Set() , depthLimit = 10 ) {
+	var i , key ;
+
+	if ( ! schema || typeof schema !== 'object' || depthLimit <= 0 ) { return tags ; }
+
+	// 0) Arrays are alternatives
+	if ( Array.isArray( schema ) ) {
+		for ( i = 0 ; i < schema.length ; i ++ ) {
+			this.getAllSchemaTags( schema[ i ] , tags , depthLimit - 1 ) ;
+		}
+
+		return tags ;
+	}
+
+
+	// 1) Mask
+	if ( schema.tags ) { schema.tags.forEach( tag => tags.add( tag ) ) ; }
+
+	if ( schema.noSubmasking ) { return tags ; }
+
+	// if it's undefined or there is submasking, then recursivity can be checked
+
+	// 2) Recursivity
+	if ( schema.of && typeof schema.of === 'object' ) {
+		this.getAllSchemaTags( schema.of , tags , depthLimit - 1 ) ;
+	}
+
+	if ( schema.properties && typeof schema.properties === 'object' && ! Array.isArray( schema.properties ) ) {
+		for ( key in schema.properties ) {
+			if ( schema.properties[ key ] || typeof schema.properties[ key ] === 'object' ) {
+				this.getAllSchemaTags( schema.properties[ key ] , tags , depthLimit - 1 ) ;
+			}
+		}
+	}
+
+	if ( Array.isArray( schema.elements ) ) {
+		for ( i = 0 ; i < schema.elements.length ; i ++ ) {
+			this.getAllSchemaTags( schema.elements[ i ] , tags , depthLimit - 1 ) ;
+		}
+	}
+
+	return tags ;
+} ;
 
 
 },{}],12:[function(require,module,exports){
