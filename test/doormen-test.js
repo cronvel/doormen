@@ -1020,7 +1020,7 @@ describe( "Children and recursivity" , () => {
 
 
 
-describe( "Properties having 'when'" , () => {
+describe( "Properties having 'when' [DEPRECATED] (should use constraints now)" , () => {
 
 	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'siblingVerify' condition is met for the 'sibling'" , () => {
 
@@ -2567,9 +2567,9 @@ describe( "Alternatives" , () => {
 
 
 
-describe( "Conditionnal schema." , () => {
+describe( "Conditionnal schema. [DEPRECATED] (should be turned into constraints)" , () => {
 
-	it( "'if - verify - then' syntaxe using an object in the 'if'" , () => {
+	it( "'if - verify - then' syntax using an object in the 'if'" , () => {
 
 		var schema = {
 			if: {
@@ -2604,7 +2604,7 @@ describe( "Conditionnal schema." , () => {
 		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
 	} ) ;
 
-	it( "'if - verify - then' syntaxe using an array of object in the 'if'" , () => {
+	it( "'if - verify - then' syntax using an array of object in the 'if'" , () => {
 
 		var schema = {
 			if: [
@@ -2660,7 +2660,7 @@ describe( "Conditionnal schema." , () => {
 		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
 	} ) ;
 
-	it( "'switch - case' syntaxe" , () => {
+	it( "'switch - case' syntax" , () => {
 
 		var schema = {
 			switch: 'type' ,
@@ -2699,6 +2699,98 @@ describe( "Conditionnal schema." , () => {
 		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
 		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
 		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Complex children constraints" , () => {
+
+	it( "Constraint 'unique' syntax" , () => {
+		var schema , o1 , o2 , o3 , o4 , a , result ;
+		// Without path nor convert
+		
+		schema = {
+			type: 'array' ,
+			constraints: [
+				{ type: 'unique' }
+			] ,
+			of: {
+				type: 'string'
+			}
+		} ;
+
+		doormen( schema , [ 'bob' , 'bill' , 'jack' ] ) ;
+		doormen.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
+		
+		// Turn fixing on
+		schema.constraints[0].fix = true ;
+
+		result = doormen( schema , [ 'bob' , 'bill' , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
+		expect( result ).to.be.like( [ 'bob' , 'bill' , 'jack' , 'jim' , 'joe' ] ) ;
+		
+		
+		// With path and convert
+		schema = {
+			type: 'array' ,
+			constraints: [
+				{
+					type: 'unique' ,
+					path: 'id' ,
+					convert: 'toString'
+				}
+			] ,
+			of: {
+				type: 'strictObject' ,
+			}
+		} ;
+		
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 'id1' , a: 'jack' } ] ) ;
+		doormen.not( schema , [ { id: '1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 1 , a: 'jack' } ] ) ;
+		
+		// Turn fixing on
+		schema.constraints[0].fix = true ;
+		
+		o1 = { id: '1' , a: 'bob' } ,
+		o2 = { id: 'id2' , a: 'bill' } ,
+		o3 = { id: 1 , a: 'jack' } ,
+		o4 = { id: 3 , a: 'jim' } ,
+		a = [ o1 , o2 , o3 , o4 ] ,
+		
+		result = doormen( schema , a ) ;
+		expect( result ).to.be.like( [ o1 , o2 , o4 ] ) ;
+		expect( result ).not.to.be( a ) ;
+		expect( result[ 0 ] ).to.be( o1 ) ;
+		expect( result[ 1 ] ).to.be( o2 ) ;
+		expect( result[ 2 ] ).to.be( o4 ) ;
+	} ) ;
+
+	it( "doormen.constraints() should only perform constraints validation/sanitization" , () => {
+		var schema , o1 , o2 , o3 , o4 , a , result ;
+		// Without path nor convert
+		
+		schema = {
+			type: 'array' ,
+			constraints: [
+				{ type: 'unique' }
+			] ,
+			of: {
+				sanitize: 'toString'
+			}
+		} ;
+
+		doormen.constraints( schema , [ 'bob' , 'bill' , 'jack' ] ) ;
+		doormen.constraints.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
+		
+		// Turn fixing on
+		schema.constraints[0].fix = true ;
+
+		result = doormen( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
+		expect( result ).to.be.like( [ 'bob' , 'bill' , '1' , '2' , '3' , 'jack' , 'jim' , 'joe' ] ) ;
+
+		result = doormen.constraints( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
+		expect( result ).to.be.like( [ 'bob' , 'bill' , 1 , 2 , 3 , 'jack' , 'jim' , 'joe' ] ) ;
 	} ) ;
 } ) ;
 
@@ -2890,132 +2982,6 @@ describe( "Export mode" , () => {
 		doormen.equals( data , [ 'ABC' , 'def' , 'toto' ] ) ;
 		doormen.equals( returned , [ 'ABC' , 'def' , 'toto' ] ) ;
 	} ) ;
-} ) ;
-
-
-
-describe( "Schema as a sentence" , () => {
-
-	it( "should transform a sentence into a schema" , () => {
-
-		doormen.equals( doormen.sentence( 'array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'it should have type of array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'it should have type of Uppercasetype' ) , { type: 'Uppercasetype' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an instance of Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an instance of lowercaseclass' ) , { instanceOf: 'lowercaseclass' } ) ;
-
-		doormen.equals( doormen.sentence( 'it should be an Array of string' ) ,
-			{ instanceOf: 'Array' , of: { type: 'string' } }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be an Array of Array of string' ) ,
-			{ instanceOf: 'Array' , of: { instanceOf: 'Array' , of: { type: 'string' } } }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number at least 5' ) ,
-			{ type: 'number' , min: 5 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number at most 7' ) ,
-			{ type: 'number' , max: 7 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number at least 5 and at most 7' ) ,
-			{ type: 'number' , min: 5 , max: 7 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number at least 5, at most 7' ) ,
-			{ type: 'number' , min: 5 , max: 7 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number between 3 and 11' ) ,
-			{ type: 'number' , min: 3 , max: 11 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a number greater than or equal to 4' ) ,
-			{ type: 'number' , min: 4 }
-		) ;
-
-		// equals is required
-		doormen.shouldThrow( () => { doormen.sentence( 'it should be a number greater than 4' ) ; } ) ;
-
-
-
-		doormen.equals( doormen.sentence( 'it should be an empty string' ) ,
-			{ type: 'string' , length: 0 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of 6' ) ,
-			{ type: 'string' , length: 6 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 8' ) ,
-			{ type: 'string' , minLength: 8 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at most 18' ) ,
-			{ type: 'string' , maxLength: 18 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 9 and at most 17' ) ,
-			{ type: 'string' , minLength: 9 , maxLength: 17 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length between 4 and 7' ) ,
-			{ type: 'string' , minLength: 4 , maxLength: 7 }
-		) ;
-
-		doormen.equals( doormen.sentence( 'it should have between 4 and 7 letters' ) ,
-			{ minLength: 4 , maxLength: 7 }
-		) ;
-
-
-
-		doormen.equals( doormen.sentence( 'after trim, it should be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-
-		doormen.equals( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-
-		doormen.equals( doormen.sentence( 'after trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-
-		doormen.equals( doormen.sentence( 'after sanitizers: trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-
-	} ) ;
-
-	it( "should accept a sentence instead of a schema" , () => {
-		doormen( 'should be a string' , "" ) ;
-		doormen( 'should be an empty string' , "" ) ;
-		doormen( 'should be a string' , "one two three" ) ;
-		doormen.not( 'should be an empty string' , "one two three" ) ;
-		doormen( 'after trim, it should be an empty string' , "    " ) ;
-		doormen.not( 'after trim, it should be an empty string' , "  !  " ) ;
-
-		doormen( 'should be an array' , [] ) ;
-		doormen( 'should be an Array' , [] ) ;
-		doormen( 'should be an empty array' , [] ) ;
-		doormen( 'should be an empty Array' , [] ) ;
-		doormen.not( 'should be an empty array' , [ 1 , 2 , 3 ] ) ;
-		doormen( 'should be an array' , [ 1 , 2 , 3 ] ) ;
-	} ) ;
-
 } ) ;
 
 
