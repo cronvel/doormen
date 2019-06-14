@@ -3609,7 +3609,7 @@ if ( ! process.browser ) {
 				mongodb = require( 'mongodb' ) ;
 			}
 			catch ( error ) {
-				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
 				return ;
 			}	// skip the remaining tests if the module is not found
 
@@ -3624,7 +3624,7 @@ if ( ! process.browser ) {
 				mongodb = require( 'mongodb' ) ;
 			}
 			catch ( error ) {
-				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
 				return ;
 			}	// skip the remaining tests if the module is not found
 

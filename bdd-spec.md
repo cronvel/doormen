@@ -1,5 +1,3 @@
-WARNING: MongoDB module not found, the end of the test is skipped.
-WARNING: MongoDB module not found, the end of the test is skipped.
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -3184,7 +3182,7 @@ var mongodb ;
 				mongodb = require( 'mongodb' ) ;
 			}
 			catch ( error ) {
-				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
 				return ;
 			}	// skip the remaining tests if the module is not found
 			doormen( { type: 'mongoId' } , new mongodb.ObjectID() ) ;
@@ -3198,7 +3196,7 @@ var mongodb ;
 				mongodb = require( 'mongodb' ) ;
 			}
 			catch ( error ) {
-				console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
 				return ;
 			}	// skip the remaining tests if the module is not found
 			doormen( { instanceOf: mongodb.ObjectID } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;

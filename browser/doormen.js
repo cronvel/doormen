@@ -1960,11 +1960,9 @@ constraints.extraction = function( data , params , element , clone ) {
 		return ;
 	}
 
-	values.shift( 1 ) ;
-
 	for ( i = 0 , iMax = params.targets.length ; i < iMax ; i ++ ) {
 		target = dotPath.get( data , params.targets[ i ] ) ;
-		value = values[ i ] ;
+		value = values[ i + 1 ] ;
 
 		if ( target && params.ifEmpty ) { continue ; }
 		if ( value === target ) { continue ; }
@@ -4750,6 +4748,8 @@ module.exports = {
 	magenta: '\x1b[35m' ,
 	cyan: '\x1b[36m' ,
 	white: '\x1b[37m' ,
+	grey: '\x1b[90m' ,
+	gray: '\x1b[90m' ,
 	brightBlack: '\x1b[90m' ,
 	brightRed: '\x1b[91m' ,
 	brightGreen: '\x1b[92m' ,
@@ -4768,6 +4768,8 @@ module.exports = {
 	bgMagenta: '\x1b[45m' ,
 	bgCyan: '\x1b[46m' ,
 	bgWhite: '\x1b[47m' ,
+	bgGrey: '\x1b[100m' ,
+	bgGray: '\x1b[100m' ,
 	bgBrightBlack: '\x1b[100m' ,
 	bgBrightRed: '\x1b[101m' ,
 	bgBrightGreen: '\x1b[102m' ,
@@ -4777,7 +4779,6 @@ module.exports = {
 	bgBrightCyan: '\x1b[106m' ,
 	bgBrightWhite: '\x1b[107m'
 } ;
-
 
 
 },{}],19:[function(require,module,exports){
@@ -4933,7 +4934,6 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 
 
 
-// Load modules
 var inspect = require( './inspect.js' ).inspect ;
 var inspectError = require( './inspect.js' ).inspectError ;
 var escape = require( './escape.js' ) ;
@@ -4944,6 +4944,7 @@ var ansi = require( './ansi.js' ) ;
 /*
 	%%		a single %
 	%s		string
+	%S		string, interpret ^ formatting
 	%r		raw string: without sanitizer
 	%f		float
 	%d	%i	integer
@@ -5147,6 +5148,22 @@ modes.s = arg => {
 
 modes.r = arg => modes.s( arg ) ;
 modes.r.noSanitize = true ;
+
+
+
+// string, interpret ^ formatting
+modes.S = ( arg , modeArg , options ) => {
+	// We do the sanitizing part on our own
+	var interpret = str => exports.markupMethod.call( options , options.argumentSanitizer ? options.argumentSanitizer( str ) : str ) ;
+
+	if ( typeof arg === 'string' ) { return interpret( arg ) ; }
+	if ( arg === null || arg === undefined || arg === true || arg === false ) { return '(' + arg + ')' ; }
+	if ( typeof arg === 'number' ) { return '' + arg ; }
+	if ( typeof arg.toString === 'function' ) { return interpret( arg.toString() ) ; }
+	return interpret( '(' + arg + ')' ) ;
+} ;
+
+modes.S.noSanitize = true ;
 
 
 
@@ -5626,7 +5643,8 @@ function inspect( options , variable ) {
 
 	if ( ! options.style ) { options.style = inspectStyle.none ; }
 	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
-	else { options.style = Object.assign( {} , inspectStyle.none , options.style ) ; }
+	// Too slow:
+	//else { options.style = Object.assign( {} , inspectStyle.none , options.style ) ; }
 
 	if ( options.depth === undefined ) { options.depth = 3 ; }
 	if ( options.maxLength === undefined ) { options.maxLength = 250 ; }
@@ -5648,7 +5666,7 @@ function inspect( options , variable ) {
 	var str = inspect_( runtime , options , variable ) ;
 
 	if ( str.length > options.outputMaxLength ) {
-		str = str.slice( 0 , options.outputMaxLength - 1 ) + '…' ;
+		str = options.style.truncate( str , options.outputMaxLength ) ;
 	}
 
 	return str ;
@@ -6042,7 +6060,7 @@ function inspectError( options , error ) {
 	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
 
 	if ( ! ( error instanceof Error ) ) {
-		return 'Not an error -- regular variable inspection: ' + inspect( options , error ) ;
+		return 'inspectError: not an error -- regular variable inspection: ' + inspect( options , error ) ;
 	}
 
 	if ( ! options.style ) { options.style = inspectStyle.none ; }
@@ -6058,6 +6076,10 @@ function inspectError( options , error ) {
 	str += options.style.errorMessage( error.message ) + '\n' ;
 
 	if ( stack ) { str += options.style.errorStack( stack ) + '\n' ; }
+
+	if ( error.from ) {
+		str += options.style.newline + options.style.errorFromMessage( 'Error created from:' ) + options.style.newline + inspectError( options , error.from ) ;
+	}
 
 	return str ;
 }
@@ -6147,7 +6169,9 @@ inspectStyle.none = {
 	errorStackMethodAs: inspectStyleNoop ,
 	errorStackFile: inspectStyleNoop ,
 	errorStackLine: inspectStyleNoop ,
-	errorStackColumn: inspectStyleNoop
+	errorStackColumn: inspectStyleNoop ,
+	errorFromMessage: inspectStyleNoop ,
+	truncate: ( str , maxLength ) => str.slice( 0 , maxLength - 1 ) + '…'
 } ;
 
 
@@ -6183,7 +6207,19 @@ inspectStyle.color = Object.assign( {} , inspectStyle.none , {
 	errorStackMethodAs: str => ansi.yellow + str + ansi.reset ,
 	errorStackFile: str => ansi.brightCyan + str + ansi.reset ,
 	errorStackLine: str => ansi.blue + str + ansi.reset ,
-	errorStackColumn: str => ansi.magenta + str + ansi.reset
+	errorStackColumn: str => ansi.magenta + str + ansi.reset ,
+	errorFromMessage: str => ansi.yellow + ansi.underline + str + ansi.reset ,
+	truncate: ( str , maxLength ) => {
+		var trail = ansi.gray + '…' + ansi.reset ;
+		str = str.slice( 0 , maxLength - trail.length ) ;
+
+		// Search for an ansi escape sequence at the end, that could be truncated.
+		// The longest one is '\x1b[107m': 6 characters.
+		var lastEscape = str.lastIndexOf( '\x1b' ) ;
+		if ( lastEscape >= str.length - 6 ) { str = str.slice( 0 , lastEscape ) ; }
+
+		return str + trail ;
+	}
 } ) ;
 
 
@@ -6209,9 +6245,9 @@ inspectStyle.html = Object.assign( {} , inspectStyle.none , {
 	errorStackMethodAs: str => '<span style="color:yellow">' + str + '</span>' ,
 	errorStackFile: str => '<span style="color:cyan">' + str + '</span>' ,
 	errorStackLine: str => '<span style="color:blue">' + str + '</span>' ,
-	errorStackColumn: str => '<span style="color:gray">' + str + '</span>'
+	errorStackColumn: str => '<span style="color:gray">' + str + '</span>' ,
+	errorFromMessage: str => '<span style="color:yellow">' + str + '</span>'
 } ) ;
-
 
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
