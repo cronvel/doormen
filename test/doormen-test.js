@@ -2569,97 +2569,6 @@ describe( "Alternatives" , () => {
 
 describe( "Conditionnal schema. [DEPRECATED] (should be turned into constraints)" , () => {
 
-	it( "'if - verify - then' syntax using an object in the 'if'" , () => {
-
-		var schema = {
-			if: {
-				verify: {
-					extraProperties: true ,
-					properties: {
-						type: { eq: 'alt1' }
-					}
-				} ,
-				then: {
-					extraProperties: true ,
-					properties: {
-						a: { type: 'string' }
-					}
-				}
-			} ,
-			extraProperties: true ,
-			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
-			}
-		} ;
-
-		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
-
-		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
-		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
-	} ) ;
-
-	it( "'if - verify - then' syntax using an array of object in the 'if'" , () => {
-
-		var schema = {
-			if: [
-				{
-					verify: {
-						extraProperties: true ,
-						properties: {
-							type: { eq: 'alt1' }
-						}
-					} ,
-					then: {
-						extraProperties: true ,
-						properties: {
-							a: { type: 'string' }
-						}
-					}
-				} ,
-				{
-					verify: {
-						extraProperties: true ,
-						properties: {
-							type: { eq: 'alt2' }
-						}
-					} ,
-					then: {
-						extraProperties: true ,
-						properties: {
-							b: { type: 'string' }
-						}
-					}
-				}
-			] ,
-			extraProperties: true ,
-			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
-			}
-		} ;
-
-		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
-
-		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
-		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
-
-		doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
-		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
-	} ) ;
-
 	it( "'switch - case' syntax" , () => {
 
 		var schema = {
@@ -2704,8 +2613,45 @@ describe( "Conditionnal schema. [DEPRECATED] (should be turned into constraints)
 
 
 
-describe( "Complex children constraints" , () => {
+describe( "Complex multiple-children constraints" , () => {
 
+	it( "Constraint 'condition' 'if-then' syntax" , () => {
+		var schema = {
+			constraints: [
+				{
+					enforce: 'condition' ,
+					if: {
+						extraProperties: true ,
+						properties: {
+							type: { eq: 'alt1' }
+						}
+					} ,
+					then: {
+						extraProperties: true ,
+						properties: {
+							a: { type: 'string' }
+						}
+					}
+				} ,
+			] ,
+			extraProperties: true ,
+			properties: {
+				type: { type: 'string' } ,
+				c: { type: 'string' }
+			}
+		} ;
+
+		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+
+		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+	} ) ;
+	
 	it( "Constraint 'unique' syntax" , () => {
 		var schema , o1 , o2 , o3 , o4 , a , result ;
 		// Without path nor convert
@@ -2713,7 +2659,7 @@ describe( "Complex children constraints" , () => {
 		schema = {
 			type: 'array' ,
 			constraints: [
-				{ type: 'unique' }
+				{ enforce: 'unique' }
 			] ,
 			of: {
 				type: 'string'
@@ -2724,7 +2670,7 @@ describe( "Complex children constraints" , () => {
 		doormen.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
 		
 		// Turn fixing on
-		schema.constraints[0].fix = true ;
+		schema.constraints[0].resolve = true ;
 
 		result = doormen( schema , [ 'bob' , 'bill' , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
 		expect( result ).to.be.like( [ 'bob' , 'bill' , 'jack' , 'jim' , 'joe' ] ) ;
@@ -2735,7 +2681,7 @@ describe( "Complex children constraints" , () => {
 			type: 'array' ,
 			constraints: [
 				{
-					type: 'unique' ,
+					enforce: 'unique' ,
 					path: 'id' ,
 					convert: 'toString'
 				}
@@ -2750,7 +2696,7 @@ describe( "Complex children constraints" , () => {
 		doormen.not( schema , [ { id: '1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 1 , a: 'jack' } ] ) ;
 		
 		// Turn fixing on
-		schema.constraints[0].fix = true ;
+		schema.constraints[0].resolve = true ;
 		
 		o1 = { id: '1' , a: 'bob' } ,
 		o2 = { id: 'id2' , a: 'bill' } ,
@@ -2773,7 +2719,7 @@ describe( "Complex children constraints" , () => {
 		schema = {
 			type: 'array' ,
 			constraints: [
-				{ type: 'unique' }
+				{ enforce: 'unique' }
 			] ,
 			of: {
 				sanitize: 'toString'
@@ -2784,7 +2730,7 @@ describe( "Complex children constraints" , () => {
 		doormen.constraints.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
 		
 		// Turn fixing on
-		schema.constraints[0].fix = true ;
+		schema.constraints[0].resolve = true ;
 
 		result = doormen( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
 		expect( result ).to.be.like( [ 'bob' , 'bill' , '1' , '2' , '3' , 'jack' , 'jim' , 'joe' ] ) ;
@@ -2822,8 +2768,8 @@ describe( "Purify" , () => {
 		doormen.equals( 'default' in doormen.purifySchema( { default: null } ) , true ) ;
 		doormen.equals( 'default' in doormen.purifySchema( { default: undefined } ) , true ) ;
 
-		doormen.equals( doormen.purifySchema(
-			{
+		doormen.equals(
+			doormen.purifySchema( {
 				extraProperties: true ,
 				properties: {
 					a: { optional: true , type: 'object' , of: { type: 'string' } } ,
@@ -2849,41 +2795,35 @@ describe( "Purify" , () => {
 					o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
 					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
 					q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-					r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } } ,
-					s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } } ,
-					t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] }
+					r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } }
+				}
+			} ) ,
+			{
+				extraProperties: true ,
+				properties: {
+					a: { optional: true , type: 'object' , of: { type: 'string' } } ,
+					b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } } ,
+					c: { default: 'default' , type: 'string' } ,
+					d: { filter: { blah: 'blih' } } ,
+					e: { properties: [ 'one' , 'two' , 'three' ] } ,
+					f: { type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] } ,
+					g: { in: [ { some: 'data' } , { some: 'other data' } ] } ,
+					h: { notIn: [ { some: 'data' } , { some: 'other data' } ] } ,
+					i: {
+						match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6
+					} ,
+					j: { match: "a regexp compatible string" } ,
+					k: { instanceOf: 'Date' } ,
+					l: { instanceOf: Date } ,
+					m: { of: [ { type: 'array' } , { type: 'string' } ] } ,
+					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
+					o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
+					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
+					q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
+					r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } }
 				}
 			}
-		) ,
-		{
-			extraProperties: true ,
-			properties: {
-				a: { optional: true , type: 'object' , of: { type: 'string' } } ,
-				b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } } ,
-				c: { default: 'default' , type: 'string' } ,
-				d: { filter: { blah: 'blih' } } ,
-				e: { properties: [ 'one' , 'two' , 'three' ] } ,
-				f: { type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] } ,
-				g: { in: [ { some: 'data' } , { some: 'other data' } ] } ,
-				h: { notIn: [ { some: 'data' } , { some: 'other data' } ] } ,
-				i: {
-					match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6
-				} ,
-				j: { match: "a regexp compatible string" } ,
-				k: { instanceOf: 'Date' } ,
-				l: { instanceOf: Date } ,
-				m: { of: [ { type: 'array' } , { type: 'string' } ] } ,
-				n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
-				o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
-				p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
-				q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-				r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } } ,
-				s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } } ,
-				t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] }
-			}
-		}
 		) ;
-
 	} ) ;
 
 	it( "Purify needs more tests (alternatives, etc)" ) ;
