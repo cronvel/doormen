@@ -1,0 +1,19 @@
+
+v0.10.0
+-------
+
+Constraints: condition, switch, unique, compound and extraction
+
+
+v0.10.x
+-------
+
+BREAKING:
+* 'if-verify-then' syntax removed, use the contraint 'condition' instead
+* 'switch-case' syntax removed, use the contraint 'switch' instead
+* 'when' syntax removed, use the contraint 'condition' instead, in conjunction with a forced 'value' in the 'then' schema
+* to plural form for the sub-modules and extensions: typeCheckers, sanitizers, filters, constraints: IT AFFECTS ALL CODE DEFINING EXTENSIONS
+
+New:
+* constraints, it is used for any combined data validation.
+* 'value' set a forced value

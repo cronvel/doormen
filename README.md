@@ -75,13 +75,12 @@ WARNING: MongoDB module not found, the end of the test is skipped.
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
    - [Basic types](#basic-types)
-   - [Optional and default data](#optional-and-default-data)
+   - [Optional, default and forced data](#optional-default-and-forced-data)
    - [Built-in types](#built-in-types)
    - [Mixed types](#mixed-types)
    - [Top-level filters](#top-level-filters)
    - [Filters](#filters)
    - [Children and recursivity](#children-and-recursivity)
-   - [Properties having 'when'](#properties-having-when)
    - [Mask](#mask)
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
@@ -92,11 +91,10 @@ WARNING: MongoDB module not found, the end of the test is skipped.
    - [Patch application](#patch-application)
    - ['keys' attribute](#keys-attribute)
    - [Alternatives](#alternatives)
-   - [Conditionnal schema.](#conditionnal-schema)
+   - [Complex multiple-children constraints](#complex-multiple-children-constraints)
    - [Schema validation](#schema-validation)
    - [Purify](#purify)
    - [Export mode](#export-mode)
-   - [Schema as a sentence](#schema-as-a-sentence)
    - [Expect BDD assertion library](#expect-bdd-assertion-library)
    - [Path in the schema](#path-in-the-schema)
    - [MongoDB's ObjectID](#mongodbs-objectid)
@@ -402,8 +400,8 @@ doormen.not( { type: 'function' } , [] ) ;
 doormen( { type: 'function' } , () => {} ) ;
 ```
 
-<a name="optional-and-default-data"></a>
-# Optional and default data
+<a name="optional-default-and-forced-data"></a>
+# Optional, default and forced data
 when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate.
 
 ```js
@@ -429,72 +427,76 @@ result = doormen( { properties: { a: { optional: true , type: 'string' } } } , {
 // {a:undefined} is equals to {} for doormen.equals() (this is the correct behaviour), but here we want to know for sure
 // that a key is not defined, so we have to check it explicitly
 doormen.equals( 'a' in result , false ) ;
-result = doormen( {
-	properties: {
-		a: { optional: true , type: 'string' } ,
-		b: { optional: true , type: 'string' } ,
-		c: {
-			optional: true ,
-			properties: {
-				d: { optional: true , type: 'string' }
+result = doormen(
+	{
+		properties: {
+			a: { optional: true , type: 'string' } ,
+			b: { optional: true , type: 'string' } ,
+			c: {
+				optional: true ,
+				properties: {
+					d: { optional: true , type: 'string' }
+				}
 			}
 		}
-	}
-} ,
-{}
+	} ,
+	{}
 ) ;
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , false ) ;
-result = doormen( {
-	properties: {
-		a: { optional: true , type: 'string' } ,
-		b: { optional: true , type: 'string' } ,
-		c: {
-			optional: true ,
-			properties: {
-				d: { optional: true , type: 'string' }
+result = doormen(
+	{
+		properties: {
+			a: { optional: true , type: 'string' } ,
+			b: { optional: true , type: 'string' } ,
+			c: {
+				optional: true ,
+				properties: {
+					d: { optional: true , type: 'string' }
+				}
 			}
 		}
-	}
-} ,
-{ c: undefined }
+	} ,
+	{ c: undefined }
 ) ;
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , true ) ;
 doormen.equals( result.c , undefined ) ;
-result = doormen( {
-	properties: {
-		a: { optional: true , type: 'string' } ,
-		b: { optional: true , type: 'string' } ,
-		c: {
-			optional: true ,
-			properties: {
-				d: { optional: true , type: 'string' }
+result = doormen(
+	{
+		properties: {
+			a: { optional: true , type: 'string' } ,
+			b: { optional: true , type: 'string' } ,
+			c: {
+				optional: true ,
+				properties: {
+					d: { optional: true , type: 'string' }
+				}
 			}
 		}
-	}
-} ,
-{ c: null }
+	} ,
+	{ c: null }
 ) ;
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
 doormen.equals( 'c' in result , true ) ;
 doormen.equals( result.c , null ) ;
-result = doormen( {
-	properties: {
-		a: { optional: true , type: 'string' } ,
-		b: { optional: true , type: 'string' } ,
-		c: {
-			optional: true ,
-			properties: {
-				d: { optional: true , type: 'string' }
+result = doormen(
+	{
+		properties: {
+			a: { optional: true , type: 'string' } ,
+			b: { optional: true , type: 'string' } ,
+			c: {
+				optional: true ,
+				properties: {
+					d: { optional: true , type: 'string' }
+				}
 			}
 		}
-	}
-} ,
-{ c: {} }
+	} ,
+	{ c: {} }
 ) ;
 doormen.equals( 'a' in result , false ) ;
 doormen.equals( 'b' in result , false ) ;
@@ -524,6 +526,29 @@ doormen.equals(
 		{} ) ,
 	{ a: 'default!' , b: { c: 5 } }
 ) ;
+```
+
+when the schema has a forced value, it should validate the data and set it to that value.
+
+```js
+var schema ;
+
+schema = { value: 'forced!' } ;
+doormen.equals( doormen( schema , null ) , 'forced!' ) ;
+doormen.equals( doormen( schema , undefined ) , 'forced!' ) ;
+doormen.equals( doormen( schema , 'bob' ) , 'forced!' ) ;
+doormen.equals( doormen( schema , {} ) , 'forced!' ) ;
+
+schema = { properties: { a: { value: 'forced!' } } } ;
+doormen.equals( doormen( schema , {} ) , { a: 'forced!' } ) ;
+doormen.equals( doormen( schema , { a: undefined } ) , { a: 'forced!' } ) ;
+doormen.equals( doormen( schema , { a: null } ) , { a: 'forced!' } ) ;
+doormen.equals( doormen( schema , { a: 'bob' } ) , { a: 'forced!' } ) ;
+doormen.equals( doormen( schema , { a: { jack: 'bob' } } ) , { a: 'forced!' } ) ;
+
+schema = { properties: { a: { value: 'forced!' } , b: { value: { c: 5 } } } } ;
+doormen.equals( doormen( schema , { a: null , b: undefined } ) , { a: 'forced!' , b: { c: 5 } } ) ;
+doormen.equals( doormen( schema , {} ) , { a: 'forced!' , b: { c: 5 } } ) ;
 ```
 
 <a name="built-in-types"></a>
@@ -1064,192 +1089,6 @@ var schema = {
 		doormen.not( schema , [] ) ;
 		doormen.not( schema , [ 'text' , 3 ] ) ;
 		doormen.not( schema , [ true ] ) ;
-```
-
-<a name="properties-having-when"></a>
-# Properties having 'when'
-when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'siblingVerify' condition is met for the 'sibling'.
-
-```js
-var schema = {
-			properties: {
-				a: {
-					type: 'number'
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-		doormen.not( schema , { a: 0 } ) ;
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-		schema = {
-			properties: {
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				} ,
-				a: {
-					type: 'number'
-				}
-			}
-		} ;
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-		doormen.not( schema , { a: 0 } ) ;
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-```
-
-'when' and 'clone'.
-
-```js
-var schema = {
-			properties: {
-				a: {
-					type: 'number'
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						verify: { type: 'unset' } ,
-						clone: true
-					}
-				}
-			}
-		} ;
-		doormen.equals(
-			doormen( schema , { a: 2 , b: '1' } ) ,
-			{ a: 2 , b: '1' }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 2 , b: null } ) ,
-			{ a: 2 , b: 2 }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 2 } ) ,
-			{ a: 2 , b: 2 }
-		) ;
-```
-
-complex dependencies tests.
-
-```js
-var schema = {
-			properties: {
-				c: {
-					type: 'string' ,
-					when: {
-						sibling: 'b' ,
-						siblingVerify: { in: [ undefined , 'text' ] } ,
-						set: undefined
-					}
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				} ,
-				a: {
-					type: 'number'
-				}
-			}
-		} ;
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' , c: 'toto' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-		doormen.equals(
-			doormen( schema , { a: 1 , b: undefined } ) ,
-			{ a: 1 }
-		) ;
-		doormen.not( schema , { a: 0 , b: undefined } ) ;
-		doormen.not( schema , { a: 0 } ) ;
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-```
-
-when circular 'when' properties exists, it should throw.
-
-```js
-var schema = {
-			properties: {
-				a: {
-					type: 'number' ,
-					when: {
-						sibling: 'b' ,
-						siblingVerify: { in: [ 'text' ] } ,
-						set: undefined
-					}
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-		// Circular 'when' throw
-		doormen.not( schema , { a: 0 , b: 'text' } ) ;
-		schema = {
-			properties: {
-				a: {
-					type: 'number' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-		// Circular 'when' throw
-		doormen.not( schema , { a: 0 , b: 'text' } ) ;
 ```
 
 <a name="mask"></a>
@@ -2405,101 +2244,58 @@ doormen( [ { type: 'boolean' } , { type: 'number' } ] , 5 ) ;
 doormen.not( [ { type: 'boolean' } , { type: 'number' } ] , 'toto' ) ;
 ```
 
-<a name="conditionnal-schema"></a>
-# Conditionnal schema.
-'if - verify - then' syntaxe using an object in the 'if'.
+<a name="complex-multiple-children-constraints"></a>
+# Complex multiple-children constraints
+Constraint 'condition' and 'if-then' syntax.
 
 ```js
 var schema = {
+	extraProperties: true ,
+	properties: {
+		type: { type: 'string' } ,
+		c: { type: 'string' }
+	} ,
+	constraints: [
+		{
+			enforce: 'condition' ,
 			if: {
-				verify: {
-					extraProperties: true ,
-					properties: {
-						type: { eq: 'alt1' }
-					}
-				} ,
-				then: {
-					extraProperties: true ,
-					properties: {
-						a: { type: 'string' }
-					}
+				extraProperties: true ,
+				properties: {
+					type: { eq: 'alt1' }
 				}
 			} ,
-			extraProperties: true ,
-			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
-			}
-		} ;
-		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
-		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
-```
-
-'if - verify - then' syntaxe using an array of object in the 'if'.
-
-```js
-var schema = {
-			if: [
-				{
-					verify: {
-						extraProperties: true ,
-						properties: {
-							type: { eq: 'alt1' }
-						}
-					} ,
-					then: {
-						extraProperties: true ,
-						properties: {
-							a: { type: 'string' }
-						}
-					}
-				} ,
-				{
-					verify: {
-						extraProperties: true ,
-						properties: {
-							type: { eq: 'alt2' }
-						}
-					} ,
-					then: {
-						extraProperties: true ,
-						properties: {
-							b: { type: 'string' }
-						}
-					}
+			then: {
+				extraProperties: true ,
+				properties: {
+					a: { type: 'string' }
 				}
-			] ,
-			extraProperties: true ,
-			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
 			}
-		} ;
-		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
-		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
-		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+		}
+	]
+} ;
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
 ```
 
-'switch - case' syntaxe.
+Constraint 'switch' and 'switch-case-otherCases' syntax.
 
 ```js
 var schema = {
-			switch: 'type' ,
+	extraProperties: true ,
+	properties: {
+		type: { type: 'string' } ,
+		c: { type: 'string' }
+	} ,
+	constraints: [
+		{
+			enforce: 'switch' ,
+			source: 'type' ,
 			case: {
 				alt1: {
 					extraProperties: true ,
@@ -2513,25 +2309,42 @@ var schema = {
 						b: { type: 'string' }
 					}
 				}
-			} ,
-			extraProperties: true ,
-			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
 			}
-		} ;
-		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
-		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
-		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
-		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+		}
+	]
+} ;
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
+// Add a default to the switch-case
+schema.constraints[0].otherCases = {
+	extraProperties: true ,
+	properties: {
+		d: { type: 'string' }
+	}
+} ;
+doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+doormen.not( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+doormen( schema , { type: 'std' , c: 'jack' , d: 'jim' } ) ;
+doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
 ```
 
 <a name="schema-validation"></a>
@@ -2557,8 +2370,8 @@ doormen.equals( doormen.purifySchema( { type: 'string' } ) , { type: 'string' } 
 doormen.equals( doormen.purifySchema( { type: 'string' , random: 'stuff' } ) , { type: 'string' } ) ;
 doormen.equals( 'default' in doormen.purifySchema( { default: null } ) , true ) ;
 doormen.equals( 'default' in doormen.purifySchema( { default: undefined } ) , true ) ;
-doormen.equals( doormen.purifySchema(
-	{
+doormen.equals(
+	doormen.purifySchema( {
 		extraProperties: true ,
 		properties: {
 			a: { optional: true , type: 'object' , of: { type: 'string' } } ,
@@ -2583,40 +2396,31 @@ doormen.equals( doormen.purifySchema(
 			n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
 			o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
 			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
-			q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-			r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } } ,
-			s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } } ,
-			t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] }
+		}
+	} ) ,
+	{
+		extraProperties: true ,
+		properties: {
+			a: { optional: true , type: 'object' , of: { type: 'string' } } ,
+			b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } } ,
+			c: { default: 'default' , type: 'string' } ,
+			d: { filter: { blah: 'blih' } } ,
+			e: { properties: [ 'one' , 'two' , 'three' ] } ,
+			f: { type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] } ,
+			g: { in: [ { some: 'data' } , { some: 'other data' } ] } ,
+			h: { notIn: [ { some: 'data' } , { some: 'other data' } ] } ,
+			i: {
+				match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6
+			} ,
+			j: { match: "a regexp compatible string" } ,
+			k: { instanceOf: 'Date' } ,
+			l: { instanceOf: Date } ,
+			m: { of: [ { type: 'array' } , { type: 'string' } ] } ,
+			n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
+			o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
+			p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
 		}
 	}
-) ,
-{
-	extraProperties: true ,
-	properties: {
-		a: { optional: true , type: 'object' , of: { type: 'string' } } ,
-		b: { type: 'array' , sanitize: [ 'toArray' ] , of: { type: 'integer' , min: 4 , max: 7 } } ,
-		c: { default: 'default' , type: 'string' } ,
-		d: { filter: { blah: 'blih' } } ,
-		e: { properties: [ 'one' , 'two' , 'three' ] } ,
-		f: { type: 'integer' , sanitize: [ 'some' , 'sanitizers' ] } ,
-		g: { in: [ { some: 'data' } , { some: 'other data' } ] } ,
-		h: { notIn: [ { some: 'data' } , { some: 'other data' } ] } ,
-		i: {
-			match: /a regexp/ , minLength: 4 , maxLength: 11 , length: 6
-		} ,
-		j: { match: "a regexp compatible string" } ,
-		k: { instanceOf: 'Date' } ,
-		l: { instanceOf: Date } ,
-		m: { of: [ { type: 'array' } , { type: 'string' } ] } ,
-		n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
-		o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
-		p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
-		q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-		r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } } ,
-		s: { if: { verify: { type: 'string' } , then: { in: [ 'toto' ] } } } ,
-		t: { if: [ { verify: { type: 'string' } , then: { in: [ 'toto' ] } } , { verify: { type: 'number' } , then: { in: [ 3 ] } } ] }
-	}
-}
 ) ;
 ```
 
@@ -2698,105 +2502,6 @@ var data , schema , returned ;
 		returned = doormen( schema , data ) ;
 		doormen.equals( data , [ 'ABC' , 'def' , 'toto' ] ) ;
 		doormen.equals( returned , [ 'ABC' , 'def' , 'toto' ] ) ;
-```
-
-<a name="schema-as-a-sentence"></a>
-# Schema as a sentence
-should transform a sentence into a schema.
-
-```js
-doormen.equals( doormen.sentence( 'array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'it should have type of array' ) , { type: 'array' } ) ;
-		doormen.equals( doormen.sentence( 'it should have type of Uppercasetype' ) , { type: 'Uppercasetype' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an instance of Array' ) , { instanceOf: 'Array' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an instance of lowercaseclass' ) , { instanceOf: 'lowercaseclass' } ) ;
-		doormen.equals( doormen.sentence( 'it should be an Array of string' ) ,
-			{ instanceOf: 'Array' , of: { type: 'string' } }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be an Array of Array of string' ) ,
-			{ instanceOf: 'Array' , of: { instanceOf: 'Array' , of: { type: 'string' } } }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number at least 5' ) ,
-			{ type: 'number' , min: 5 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number at most 7' ) ,
-			{ type: 'number' , max: 7 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number at least 5 and at most 7' ) ,
-			{ type: 'number' , min: 5 , max: 7 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number at least 5, at most 7' ) ,
-			{ type: 'number' , min: 5 , max: 7 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number between 3 and 11' ) ,
-			{ type: 'number' , min: 3 , max: 11 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a number greater than or equal to 4' ) ,
-			{ type: 'number' , min: 4 }
-		) ;
-		// equals is required
-		doormen.shouldThrow( () => { doormen.sentence( 'it should be a number greater than 4' ) ; } ) ;
-		doormen.equals( doormen.sentence( 'it should be an empty string' ) ,
-			{ type: 'string' , length: 0 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of 6' ) ,
-			{ type: 'string' , length: 6 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 8' ) ,
-			{ type: 'string' , minLength: 8 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at most 18' ) ,
-			{ type: 'string' , maxLength: 18 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length of at least 9 and at most 17' ) ,
-			{ type: 'string' , minLength: 9 , maxLength: 17 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should be a string and it should have a length between 4 and 7' ) ,
-			{ type: 'string' , minLength: 4 , maxLength: 7 }
-		) ;
-		doormen.equals( doormen.sentence( 'it should have between 4 and 7 letters' ) ,
-			{ minLength: 4 , maxLength: 7 }
-		) ;
-		doormen.equals( doormen.sentence( 'after trim, it should be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-		doormen.equals( doormen.sentence( 'after trim and toUpperCase it should be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-		doormen.equals( doormen.sentence( 'after trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-		doormen.equals( doormen.sentence( 'after sanitizers: trim and to-upper-case, it is expected to be a string between 5 and 8 chars' ) ,
-			{
-				sanitize: [ 'trim' , 'toUpperCase' ] , type: 'string' , minLength: 5 , maxLength: 8
-			}
-		) ;
-```
-
-should accept a sentence instead of a schema.
-
-```js
-doormen( 'should be a string' , "" ) ;
-doormen( 'should be an empty string' , "" ) ;
-doormen( 'should be a string' , "one two three" ) ;
-doormen.not( 'should be an empty string' , "one two three" ) ;
-doormen( 'after trim, it should be an empty string' , "    " ) ;
-doormen.not( 'after trim, it should be an empty string' , "  !  " ) ;
-doormen( 'should be an array' , [] ) ;
-doormen( 'should be an Array' , [] ) ;
-doormen( 'should be an empty array' , [] ) ;
-doormen( 'should be an empty Array' , [] ) ;
-doormen.not( 'should be an empty array' , [ 1 , 2 , 3 ] ) ;
-doormen( 'should be an array' , [ 1 , 2 , 3 ] ) ;
 ```
 
 <a name="expect-bdd-assertion-library"></a>
@@ -3596,53 +3301,53 @@ doormen(
 real world use case.
 
 ```js
-doormen.typeChecker.password = function( data ) {
-			if ( typeof data !== 'string' ) { return false ; }
-			if ( data.length < 8 ) { return false ; }
-			if ( ! data.match( /[a-z]/ ) || ! data.match( /[A-Z]/ ) || ! data.match( /[0-9.,;!?*%$#+-]/ ) ) { return false ; }
-			return true ;
-		} ;
-		var userSchema = {
+doormen.typeCheckers.password = function( data ) {
+	if ( typeof data !== 'string' ) { return false ; }
+	if ( data.length < 8 ) { return false ; }
+	if ( ! data.match( /[a-z]/ ) || ! data.match( /[A-Z]/ ) || ! data.match( /[0-9.,;!?*%$#+-]/ ) ) { return false ; }
+	return true ;
+} ;
+var userSchema = {
+	type: 'object' ,
+	properties: {
+		id: { type: 'string' } ,
+		name: {
+			type: 'string' ,
+			minLength: 2 ,
+			maxLength: 50
+		} ,
+		email: { type: 'email' } ,
+		password: { type: 'password' } ,
+		contact: {
+			optional: true ,
 			type: 'object' ,
 			properties: {
-				id: { type: 'string' } ,
-				name: {
-					type: 'string' ,
-					minLength: 2 ,
-					maxLength: 50
-				} ,
-				email: { type: 'email' } ,
-				password: { type: 'password' } ,
-				contact: {
-					optional: true ,
-					type: 'object' ,
-					properties: {
-						address: { optional: true , type: 'string' } ,
-						phone: { optional: true , type: 'string' } ,
-						fax: { optional: true , type: 'string' }
-					}
-				} ,
-				custom: {
-					optional: true ,
-					type: 'object' ,
-					of: { type: 'string' }
-				}
+				address: { optional: true , type: 'string' } ,
+				phone: { optional: true , type: 'string' } ,
+				fax: { optional: true , type: 'string' }
 			}
-		} ;
-		doormen( userSchema , {
-			id: 'alacon' ,
-			name: 'Doug' ,
-			email: 'doug@java.net' ,
-			password: 'myJavaCodeIsFasterThanYourC!'
-		} ) ;
-		doormen( userSchema , {
-			id: 'alanoix' ,
-			name: 'Étienne Jabert' ,
-			email: 'etienne-jabert@java.net' ,
-			password: 'superJabert!' ,
-			contact: {
-				fax: '0142559833'
-			}
-		} ) ;
+		} ,
+		custom: {
+			optional: true ,
+			type: 'object' ,
+			of: { type: 'string' }
+		}
+	}
+} ;
+doormen( userSchema , {
+	id: 'alacon' ,
+	name: 'Doug' ,
+	email: 'doug@java.net' ,
+	password: 'myJavaCodeIsFasterThanYourC!'
+} ) ;
+doormen( userSchema , {
+	id: 'alanoix' ,
+	name: 'Étienne Jabert' ,
+	email: 'etienne-jabert@java.net' ,
+	password: 'superJabert!' ,
+	contact: {
+		fax: '0142559833'
+	}
+} ) ;
 ```
 

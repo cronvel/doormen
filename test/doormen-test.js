@@ -351,7 +351,7 @@ describe( "Basic types" , () => {
 
 
 
-describe( "Optional and default data" , () => {
+describe( "Optional, default and forced data" , () => {
 
 	it( "when a data is null, undefined or unexistant, and the optional flag is set the schema, it should validate" , () => {
 		doormen.not( { type: 'string' } , null ) ;
@@ -380,38 +380,40 @@ describe( "Optional and default data" , () => {
 
 		doormen.equals( 'a' in result , false ) ;
 
-		result = doormen( {
-			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
+		result = doormen(
+			{
+				properties: {
+					a: { optional: true , type: 'string' } ,
+					b: { optional: true , type: 'string' } ,
+					c: {
+						optional: true ,
+						properties: {
+							d: { optional: true , type: 'string' }
+						}
 					}
 				}
-			}
-		} ,
-		{}
+			} ,
+			{}
 		) ;
 
 		doormen.equals( 'a' in result , false ) ;
 		doormen.equals( 'b' in result , false ) ;
 		doormen.equals( 'c' in result , false ) ;
 
-		result = doormen( {
-			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
+		result = doormen(
+			{
+				properties: {
+					a: { optional: true , type: 'string' } ,
+					b: { optional: true , type: 'string' } ,
+					c: {
+						optional: true ,
+						properties: {
+							d: { optional: true , type: 'string' }
+						}
 					}
 				}
-			}
-		} ,
-		{ c: undefined }
+			} ,
+			{ c: undefined }
 		) ;
 
 		doormen.equals( 'a' in result , false ) ;
@@ -419,19 +421,20 @@ describe( "Optional and default data" , () => {
 		doormen.equals( 'c' in result , true ) ;
 		doormen.equals( result.c , undefined ) ;
 
-		result = doormen( {
-			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
+		result = doormen(
+			{
+				properties: {
+					a: { optional: true , type: 'string' } ,
+					b: { optional: true , type: 'string' } ,
+					c: {
+						optional: true ,
+						properties: {
+							d: { optional: true , type: 'string' }
+						}
 					}
 				}
-			}
-		} ,
-		{ c: null }
+			} ,
+			{ c: null }
 		) ;
 
 		doormen.equals( 'a' in result , false ) ;
@@ -439,19 +442,20 @@ describe( "Optional and default data" , () => {
 		doormen.equals( 'c' in result , true ) ;
 		doormen.equals( result.c , null ) ;
 
-		result = doormen( {
-			properties: {
-				a: { optional: true , type: 'string' } ,
-				b: { optional: true , type: 'string' } ,
-				c: {
-					optional: true ,
-					properties: {
-						d: { optional: true , type: 'string' }
+		result = doormen(
+			{
+				properties: {
+					a: { optional: true , type: 'string' } ,
+					b: { optional: true , type: 'string' } ,
+					c: {
+						optional: true ,
+						properties: {
+							d: { optional: true , type: 'string' }
+						}
 					}
 				}
-			}
-		} ,
-		{ c: {} }
+			} ,
+			{ c: {} }
 		) ;
 
 		doormen.equals( 'a' in result , false ) ;
@@ -482,6 +486,26 @@ describe( "Optional and default data" , () => {
 		) ;
 	} ) ;
 
+	it( "when the schema has a forced value, it should validate the data and set it to that value" , () => {
+		var schema ;
+		
+		schema = { value: 'forced!' } ;
+		doormen.equals( doormen( schema , null ) , 'forced!' ) ;
+		doormen.equals( doormen( schema , undefined ) , 'forced!' ) ;
+		doormen.equals( doormen( schema , 'bob' ) , 'forced!' ) ;
+		doormen.equals( doormen( schema , {} ) , 'forced!' ) ;
+		
+		schema = { properties: { a: { value: 'forced!' } } } ;
+		doormen.equals( doormen( schema , {} ) , { a: 'forced!' } ) ;
+		doormen.equals( doormen( schema , { a: undefined } ) , { a: 'forced!' } ) ;
+		doormen.equals( doormen( schema , { a: null } ) , { a: 'forced!' } ) ;
+		doormen.equals( doormen( schema , { a: 'bob' } ) , { a: 'forced!' } ) ;
+		doormen.equals( doormen( schema , { a: { jack: 'bob' } } ) , { a: 'forced!' } ) ;
+		
+		schema = { properties: { a: { value: 'forced!' } , b: { value: { c: 5 } } } } ;
+		doormen.equals( doormen( schema , { a: null , b: undefined } ) , { a: 'forced!' , b: { c: 5 } } ) ;
+		doormen.equals( doormen( schema , {} ) , { a: 'forced!' , b: { c: 5 } } ) ;
+	} ) ;
 } ) ;
 
 
@@ -632,7 +656,6 @@ describe( "Mixed types" , () => {
 		doormen.not( { type: 'classId' } , [ 1 , 2 , 3 ] ) ;
 		doormen( { type: 'classId' } , () => {} ) ;
 	} ) ;
-
 } ) ;
 
 
@@ -1015,215 +1038,6 @@ describe( "Children and recursivity" , () => {
 		doormen.not( schema , [] ) ;
 		doormen.not( schema , [ 'text' , 3 ] ) ;
 		doormen.not( schema , [ true ] ) ;
-	} ) ;
-} ) ;
-
-
-
-describe( "Properties having 'when' [DEPRECATED] (should use constraints now)" , () => {
-
-	it( "when 'properties' is an object and one child's schema contains a 'when' properties, it should be deleted if the 'siblingVerify' condition is met for the 'sibling'" , () => {
-
-		var schema = {
-			properties: {
-				a: {
-					type: 'number'
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-
-		doormen.not( schema , { a: 0 } ) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-
-
-		schema = {
-			properties: {
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				} ,
-				a: {
-					type: 'number'
-				}
-			}
-		} ;
-
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-
-		doormen.not( schema , { a: 0 } ) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-	} ) ;
-
-	it( "'verify' vs 'siblingVerify'" ) ;
-
-	it( "'when' and 'clone'" , () => {
-
-		var schema = {
-			properties: {
-				a: {
-					type: 'number'
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						verify: { type: 'unset' } ,
-						clone: true
-					}
-				}
-			}
-		} ;
-
-		doormen.equals(
-			doormen( schema , { a: 2 , b: '1' } ) ,
-			{ a: 2 , b: '1' }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 2 , b: null } ) ,
-			{ a: 2 , b: 2 }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 2 } ) ,
-			{ a: 2 , b: 2 }
-		) ;
-	} ) ;
-
-	it( "complex dependencies tests" , () => {
-
-		var schema = {
-			properties: {
-				c: {
-					type: 'string' ,
-					when: {
-						sibling: 'b' ,
-						siblingVerify: { in: [ undefined , 'text' ] } ,
-						set: undefined
-					}
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				} ,
-				a: {
-					type: 'number'
-				}
-			}
-		} ;
-
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' , c: 'toto' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 0 , b: 'text' } ) ,
-			{ a: 0 , b: 'text' }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 , b: 'text' } ) ,
-			{ a: 1 }
-		) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 , b: undefined } ) ,
-			{ a: 1 }
-		) ;
-
-		doormen.not( schema , { a: 0 , b: undefined } ) ;
-		doormen.not( schema , { a: 0 } ) ;
-
-		doormen.equals(
-			doormen( schema , { a: 1 } ) ,
-			{ a: 1 }
-		) ;
-	} ) ;
-
-	it( "when circular 'when' properties exists, it should throw" , () => {
-
-		var schema = {
-			properties: {
-				a: {
-					type: 'number' ,
-					when: {
-						sibling: 'b' ,
-						siblingVerify: { in: [ 'text' ] } ,
-						set: undefined
-					}
-				} ,
-				b: {
-					type: 'string' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-
-		// Circular 'when' throw
-		doormen.not( schema , { a: 0 , b: 'text' } ) ;
-
-		schema = {
-			properties: {
-				a: {
-					type: 'number' ,
-					when: {
-						sibling: 'a' ,
-						siblingVerify: { in: [ 1 ] } ,
-						set: undefined
-					}
-				}
-			}
-		} ;
-
-		// Circular 'when' throw
-		doormen.not( schema , { a: 0 , b: 'text' } ) ;
 	} ) ;
 } ) ;
 
@@ -2567,31 +2381,97 @@ describe( "Alternatives" , () => {
 
 
 
-describe( "Conditionnal schema. [DEPRECATED] (should be turned into constraints)" , () => {
+describe( "Complex multiple-children constraints" , () => {
 
-	it( "'switch - case' syntax" , () => {
-
+	it( "Constraint 'condition' and 'if-then' syntax" , () => {
 		var schema = {
-			switch: 'type' ,
-			case: {
-				alt1: {
-					extraProperties: true ,
-					properties: {
-						a: { type: 'string' }
-					}
-				} ,
-				alt2: {
-					extraProperties: true ,
-					properties: {
-						b: { type: 'string' }
-					}
-				}
-			} ,
 			extraProperties: true ,
 			properties: {
 				type: { type: 'string' } ,
 				c: { type: 'string' }
-			}
+			} ,
+			constraints: [
+				{
+					enforce: 'condition' ,
+					if: {
+						extraProperties: true ,
+						properties: {
+							type: { eq: 'alt1' }
+						}
+					} ,
+					then: {
+						extraProperties: true ,
+						properties: {
+							a: { type: 'string' }
+						}
+					}
+				}
+			]
+		} ;
+
+		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
+		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
+		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+
+		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
+		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
+		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+	} ) ;
+	
+	it( "Constraint 'condition' and as a replacement of the older 'when' syntax" , () => {
+		var schema = {
+			extraProperties: true ,
+			properties: {
+				type: { type: 'string' } ,
+				a: { type: 'string' }
+			} ,
+			constraints: [
+				{
+					enforce: 'condition' ,
+					source: 'type' ,
+					if: { eq: 'alt' } ,
+					target: 'b' ,
+					then: { value: 'bobby' } ,
+					resolve: true
+				}
+			]
+		} ;
+
+		expect( doormen( schema , { type: 'std' , a: 'bob' } ) ).to.equal( { type: 'std' , a: 'bob' } ) ;
+		expect( doormen( schema , { type: 'alt' , a: 'bob' } ) ).to.equal( { type: 'alt' , a: 'bob' , b: 'bobby' } ) ;
+		expect( doormen( schema , { type: 'alt' , a: 'bob' , b: 'jack' } ) ).to.equal( { type: 'alt' , a: 'bob' , b: 'bobby' } ) ;
+		expect( doormen( schema , { type: 'alt' , a: 'bob' , b: {} } ) ).to.equal( { type: 'alt' , a: 'bob' , b: 'bobby' } ) ;
+	} ) ;
+	
+	it( "Constraint 'switch' and 'switch-case-otherCases' syntax" , () => {
+		var schema = {
+			extraProperties: true ,
+			properties: {
+				type: { type: 'string' } ,
+				c: { type: 'string' }
+			} ,
+			constraints: [
+				{
+					enforce: 'switch' ,
+					source: 'type' ,
+					case: {
+						alt1: {
+							extraProperties: true ,
+							properties: {
+								a: { type: 'string' }
+							}
+						} ,
+						alt2: {
+							extraProperties: true ,
+							properties: {
+								b: { type: 'string' }
+							}
+						}
+					}
+				}
+			]
 		} ;
 
 		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
@@ -2608,48 +2488,30 @@ describe( "Conditionnal schema. [DEPRECATED] (should be turned into constraints)
 		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
 		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
 		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
-	} ) ;
-} ) ;
 
-
-
-describe( "Complex multiple-children constraints" , () => {
-
-	it( "Constraint 'condition' 'if-then' syntax" , () => {
-		var schema = {
-			constraints: [
-				{
-					enforce: 'condition' ,
-					if: {
-						extraProperties: true ,
-						properties: {
-							type: { eq: 'alt1' }
-						}
-					} ,
-					then: {
-						extraProperties: true ,
-						properties: {
-							a: { type: 'string' }
-						}
-					}
-				} ,
-			] ,
+		// Add a default to the switch-case
+		schema.constraints[0].otherCases = {
 			extraProperties: true ,
 			properties: {
-				type: { type: 'string' } ,
-				c: { type: 'string' }
+				d: { type: 'string' }
 			}
 		} ;
 
 		doormen.not( schema , { type: 'std' , a: 'bob' } ) ;
-		doormen( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'std' , a: 'bob' , c: 'jack' } ) ;
 		doormen.not( schema , { type: 'std' , b: 'bob' } ) ;
-		doormen( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'std' , b: 'bob' , c: 'jack' } ) ;
+		doormen( schema , { type: 'std' , c: 'jack' , d: 'jim' } ) ;
 
 		doormen.not( schema , { type: 'alt1' , a: 'bob' } ) ;
 		doormen( schema , { type: 'alt1' , a: 'bob' , c: 'jack' } ) ;
 		doormen.not( schema , { type: 'alt1' , b: 'bob' } ) ;
 		doormen.not( schema , { type: 'alt1' , b: 'bob' , c: 'jack' } ) ;
+
+		doormen.not( schema , { type: 'alt2' , b: 'bob' } ) ;
+		doormen( schema , { type: 'alt2' , b: 'bob' , c: 'jack' } ) ;
+		doormen.not( schema , { type: 'alt2' , a: 'bob' } ) ;
+		doormen.not( schema , { type: 'alt2' , a: 'bob' , c: 'jack' } ) ;
 	} ) ;
 	
 	it( "Constraint 'unique' syntax" , () => {
@@ -2658,12 +2520,12 @@ describe( "Complex multiple-children constraints" , () => {
 		
 		schema = {
 			type: 'array' ,
-			constraints: [
-				{ enforce: 'unique' }
-			] ,
 			of: {
 				type: 'string'
-			}
+			} ,
+			constraints: [
+				{ enforce: 'unique' }
+			]
 		} ;
 
 		doormen( schema , [ 'bob' , 'bill' , 'jack' ] ) ;
@@ -2679,16 +2541,16 @@ describe( "Complex multiple-children constraints" , () => {
 		// With path and convert
 		schema = {
 			type: 'array' ,
+			of: {
+				type: 'strictObject' ,
+			} ,
 			constraints: [
 				{
 					enforce: 'unique' ,
 					path: 'id' ,
 					convert: 'toString'
 				}
-			] ,
-			of: {
-				type: 'strictObject' ,
-			}
+			]
 		} ;
 		
 		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 'id3' , a: 'bob' } ] ) ;
@@ -2711,8 +2573,104 @@ describe( "Complex multiple-children constraints" , () => {
 		expect( result[ 1 ] ).to.be( o2 ) ;
 		expect( result[ 2 ] ).to.be( o4 ) ;
 	} ) ;
+	
+	it( "Constraint 'compound' syntax" , () => {
+		var schema , o1 , o2 , o3 , o4 , a , result ;
+		// Without path nor convert
+		
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				firstName: { type: 'string' } ,
+				lastName: { type: 'string' } ,
+				domain: { type: 'string' } ,
+				login: { type: 'string' , optional: true }
+			} ,
+			constraints: [
+				{
+					enforce: 'compound' ,
+					sources: [ 'firstName' , 'lastName' , 'domain' ] ,
+					target: 'login' ,
+					format: '%s.%s@%s'
+				}
+			]
+		} ;
 
-	it( "doormen.constraints() should only perform constraints validation/sanitization" , () => {
+		doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		doormen.not( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen.not( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'noone@nowhere.com' } ) ;
+		doormen.not( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: '' } ) ;
+		
+		// Turn ifEmpty on
+		schema.constraints[0].ifEmpty = true ;
+		doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		doormen.not( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'noone@nowhere.com' } ) ;
+		doormen.not( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: '' } ) ;
+		
+		// Turn fixing on, ifEmpty off
+		schema.constraints[0].resolve = true ;
+		schema.constraints[0].ifEmpty = false ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'noone@nowhere.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: '' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+
+		// Turn ifEmpty on
+		schema.constraints[0].ifEmpty = true ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'noone@nowhere.com' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'noone@nowhere.com' } ) ;
+		expect( doormen( schema , { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: '' } ) ).to.equal( { firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' , login: 'joe.doe@gmail.com' } ) ;
+	} ) ;
+	
+	it( "Constraint 'extraction' syntax" , () => {
+		var schema , o1 , o2 , o3 , o4 , a , result ;
+		// Without path nor convert
+		
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				login: { type: 'string' } ,
+				firstName: { type: 'string' , optional: true } ,
+				lastName: { type: 'string' , optional: true } ,
+				domain: { type: 'string' , optional: true }
+			} ,
+			constraints: [
+				{
+					enforce: 'extraction' ,
+					source: 'login' ,
+					targets: [ 'firstName' , 'lastName' , 'domain' ] ,
+					match: /^([^.]+)\.([^@]+)@(.+)$/
+				}
+			]
+		} ;
+
+		doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen.not( schema , { login: 'joe.doe@gmail.com' , firstName: 'jack' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen.not( schema , { login: 'joe.doe@gmail.com' , firstName: '' , domain: 'gmail.com' } ) ;
+		
+		// Turn ifEmpty on
+		schema.constraints[0].ifEmpty = true ;
+		doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'jack' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		doormen.not( schema , { login: 'joe.doe@gmail.com' , firstName: '' , domain: 'gmail.com' } ) ;
+
+		// Turn fixing on, ifEmpty off
+		schema.constraints[0].resolve = true ;
+		schema.constraints[0].ifEmpty = false ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'jack' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: '' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+
+		// Turn ifEmpty on
+		schema.constraints[0].ifEmpty = true ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: 'jack' , lastName: 'doe' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'jack' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+		expect( doormen( schema , { login: 'joe.doe@gmail.com' , firstName: '' , domain: 'gmail.com' } ) ).to.equal( { login: 'joe.doe@gmail.com' , firstName: 'joe' , lastName: 'doe' , domain: 'gmail.com' } ) ;
+	} ) ;
+
+	it( "doormen.checkConstraints() should only perform constraints validation/sanitization" , () => {
 		var schema , o1 , o2 , o3 , o4 , a , result ;
 		// Without path nor convert
 		
@@ -2726,8 +2684,8 @@ describe( "Complex multiple-children constraints" , () => {
 			}
 		} ;
 
-		doormen.constraints( schema , [ 'bob' , 'bill' , 'jack' ] ) ;
-		doormen.constraints.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
+		doormen.checkConstraints( schema , [ 'bob' , 'bill' , 'jack' ] ) ;
+		doormen.checkConstraints.not( schema , [ 'bob' , 'bill' , 'bob' ] ) ;
 		
 		// Turn fixing on
 		schema.constraints[0].resolve = true ;
@@ -2735,7 +2693,7 @@ describe( "Complex multiple-children constraints" , () => {
 		result = doormen( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
 		expect( result ).to.be.like( [ 'bob' , 'bill' , '1' , '2' , '3' , 'jack' , 'jim' , 'joe' ] ) ;
 
-		result = doormen.constraints( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
+		result = doormen.checkConstraints( schema , [ 'bob' , 'bill' , 1 , 2 , 3 , 'bob' , 'jack' , 'jim' , 'jack' , 'joe' ] ) ;
 		expect( result ).to.be.like( [ 'bob' , 'bill' , 1 , 2 , 3 , 'jack' , 'jim' , 'joe' ] ) ;
 	} ) ;
 } ) ;
@@ -2794,8 +2752,6 @@ describe( "Purify" , () => {
 					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
 					o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
 					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
-					q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-					r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } }
 				}
 			} ) ,
 			{
@@ -2819,8 +2775,6 @@ describe( "Purify" , () => {
 					n: { properties: { a: [ { type: 'array' } , { type: 'string' } ] } } ,
 					o: { elements: [ { type: 'array' } , { type: 'string' } ] } ,
 					p: { elements: [ [ { type: 'array' } , { type: 'string' } ] ] } ,
-					q: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } , set: 'bob' } } ,
-					r: { type: 'string' , when: { sibling: 'a' , siblingVerify: { in: [ null , false ] } } }
 				}
 			}
 		) ;
@@ -3703,8 +3657,7 @@ describe( "Misc" , () => {
 	} ) ;
 
 	it( "real world use case" , () => {
-
-		doormen.typeChecker.password = function( data ) {
+		doormen.typeCheckers.password = function( data ) {
 			if ( typeof data !== 'string' ) { return false ; }
 			if ( data.length < 8 ) { return false ; }
 			if ( ! data.match( /[a-z]/ ) || ! data.match( /[A-Z]/ ) || ! data.match( /[0-9.,;!?*%$#+-]/ ) ) { return false ; }
