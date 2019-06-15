@@ -1,4 +1,10 @@
 
+v0.10.2
+-------
+
+Unique constraint now has noNull/noEmpty parameter
+
+
 v0.10.1
 -------
 

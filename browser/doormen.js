@@ -1886,6 +1886,17 @@ constraints.unique = function( data , params , element , clone ) {
 	for ( i = 0 , iMax = data.length ; i < iMax ; i ++ ) {
 		uniqueValue = item = data[ i ] ;
 		if ( params.path ) { uniqueValue = dotPath.get( item , params.path ) ; }
+
+		if ( ( params.noEmpty && ! uniqueValue ) || ( params.noNull && ( uniqueValue === null || uniqueValue === undefined ) ) ) {
+			if ( ! params.resolve ) {
+				this.validatorError( element.displayPath + " does not satisfy the 'unique' constraint (has null/empty value)." , element ) ;
+				return ;
+			}
+
+			if ( ! newData ) { newData = data.slice( 0 , i ) ; }
+			continue ;
+		}
+
 		if ( params.convert ) { uniqueValue = doormen.sanitizers[ params.convert ].call( this , uniqueValue , params , true ) ; }
 
 		if ( existing.has( uniqueValue ) ) {
@@ -1894,10 +1905,7 @@ constraints.unique = function( data , params , element , clone ) {
 				return ;
 			}
 
-			if ( ! newData ) {
-				newData = data.slice( 0 , i ) ;
-			}
-
+			if ( ! newData ) { newData = data.slice( 0 , i ) ; }
 			continue ;
 		}
 
@@ -1962,7 +1970,7 @@ constraints.extraction = function( data , params , element , clone ) {
 
 	for ( i = 0 , iMax = params.targets.length ; i < iMax ; i ++ ) {
 		target = dotPath.get( data , params.targets[ i ] ) ;
-		value = values[ i + 1 ] ;
+		value = values[ i + 1 ] ;	// Because values[ 0 ] is the whole match
 
 		if ( target && params.ifEmpty ) { continue ; }
 		if ( value === target ) { continue ; }

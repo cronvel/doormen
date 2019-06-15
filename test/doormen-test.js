@@ -2516,8 +2516,8 @@ describe( "Complex multiple-children constraints" , () => {
 	
 	it( "Constraint 'unique' syntax" , () => {
 		var schema , o1 , o2 , o3 , o4 , a , result ;
+
 		// Without path nor convert
-		
 		schema = {
 			type: 'array' ,
 			of: {
@@ -2572,6 +2572,54 @@ describe( "Complex multiple-children constraints" , () => {
 		expect( result[ 0 ] ).to.be( o1 ) ;
 		expect( result[ 1 ] ).to.be( o2 ) ;
 		expect( result[ 2 ] ).to.be( o4 ) ;
+	} ) ;
+	
+	it( "Constraint 'unique' with 'noNull' or 'noEmpty' option syntax" , () => {
+		var schema , o1 , o2 , o3 , o4 , a , result ;
+
+		schema = {
+			type: 'array' ,
+			constraints: [
+				{
+					enforce: 'unique' ,
+					path: 'id' ,
+					convert: 'toString' ,
+				}
+			]
+		} ;
+		
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null } , { id: 'id3' , a: 'bob' } ] ) ;
+		
+		// Turn noNull on
+		schema.constraints[0].noNull = true ;
+		schema.constraints[0].noEmpty = false ;
+		
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null } , { id: 'id3' , a: 'bob' } ] ) ;
+
+		// Turn noEmpty on
+		schema.constraints[0].noNull = false ;
+		schema.constraints[0].noEmpty = true ;
+		
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , { id: null , a: 'jimmy' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ;
+		doormen.not( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null } , { id: 'id3' , a: 'bob' } ] ) ;
+		
+		// Turn fixing on
+		schema.constraints[0].resolve = true ;
+		schema.constraints[0].noEmpty = true ;
+		expect( doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null , a: 'jimmy' } , { id: 'id3' , a: 'bob' } ] ) ).to.equal(  [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 'id3' , a: 'bob' } ] ) ;
+		expect( doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null , a: 'jimmy' } , { id: '' , a: 'tony' } , { id: 'id3' , a: 'bob' } ] ) ).to.equal(  [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , { id: 'id3' , a: 'bob' } ] ) ;
+		expect( doormen( schema , [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } , null , {} , { id: null , a: 'jimmy' } , { id: 'id1' , a: 'bob' } ] ) ).to.equal(  [ { id: 'id1' , a: 'bob' } , { id: 'id2' , a: 'bill' } ] ) ;
 	} ) ;
 	
 	it( "Constraint 'compound' syntax" , () => {
