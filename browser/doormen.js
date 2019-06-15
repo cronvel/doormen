@@ -2195,7 +2195,7 @@ function check( schema , data_ , element , isPatch ) {
 
 			// if you want patch reporting
 			if ( this.patch && bkup !== data ) {
-				this.patch[ element.path ] = data ;
+				addToPatch( this.patch , element.path , data ) ;
 			}
 		}
 
@@ -2418,7 +2418,7 @@ function check( schema , data_ , element , isPatch ) {
 
 		// if you want patch reporting
 		if ( this.patch && bkup !== data ) {
-			this.patch[ element.path ] = data ;
+			addToPatch( this.patch , element.path , data ) ;
 		}
 	}
 
@@ -2432,6 +2432,23 @@ const clone_ = require( 'tree-kit/lib/clone.js' ) ;
 function clone( value ) {
 	if ( value && typeof value === 'object' ) { return clone_( value ) ; }
 	return value ;
+}
+
+
+
+// This function is used to add a new patch entry and discard any children entries
+function addToPatch( patch , path , data ) {
+	var innerPath , prefix ;
+
+	patch[ path ] = data ;
+	prefix = path + '.' ;
+
+	for ( innerPath in patch ) {
+		if ( innerPath.startsWith( prefix ) ) {
+			// Found a child entry, delete it
+			delete patch[ innerPath ] ;
+		}
+	}
 }
 
 

@@ -1,4 +1,10 @@
 
+v0.10.3
+-------
+
+Fixing the validation+patch updating process to exclude any children entries in a patch, when a parent entry is added
+
+
 v0.10.2
 -------
 
