@@ -3527,7 +3527,6 @@ describe( "Expect BDD assertion library" , () => {
 describe( "Path in the schema" , () => {
 
 	it( "should find the schema for an object path" , () => {
-
 		var schema = {
 			type: 'strictObject' ,
 			properties: {
@@ -3639,6 +3638,30 @@ describe( "Path in the schema" , () => {
 			doormen.path( schema , 'key4.anything' , true ) ,
 			null
 		) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Forms" , () => {
+
+	it( "zzz form" , () => {
+		var schema = {
+			properties: {
+				id: { type: 'string' , tags: [ 'id' ] } ,
+				firstName: { type: 'string' , tags: [ 'content' ] } ,
+				lastName: { type: 'string' , tags: [ 'content' ] } ,
+			}
+		} ;
+		
+		var data = {
+			id: '489312' ,
+			firstName: 'Joe' ,
+			lastName: 'Doe'
+		} ;
+
+		var form = new doormen.Form( schema , data ) ;
+		console.log( form ) ;
 	} ) ;
 } ) ;
 
@@ -3758,6 +3781,4 @@ describe( "Misc" , () => {
 		} ) ;
 	} ) ;
 } ) ;
-
-
 
