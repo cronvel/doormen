@@ -3662,6 +3662,12 @@ describe( "Forms" , () => {
 
 		var form = new doormen.Form( schema , data ) ;
 		console.log( form ) ;
+		
+		var structure = form.createFlatObjectStructure() ;
+		console.log( structure ) ;
+		structure.firstName.value = {} ;
+		
+		console.log( form.extractPatch() ) ;
 	} ) ;
 } ) ;
 
