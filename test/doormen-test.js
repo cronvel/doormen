@@ -3651,13 +3651,15 @@ describe( "Forms" , () => {
 				id: { type: 'string' , tags: [ 'id' ] } ,
 				firstName: { type: 'string' , tags: [ 'content' ] } ,
 				lastName: { type: 'string' , tags: [ 'content' ] } ,
+				age: { type: 'integer' , tags: [ 'content' ] } ,
 			}
 		} ;
 		
 		var data = {
 			id: '489312' ,
 			firstName: 'Joe' ,
-			lastName: 'Doe'
+			lastName: 'Doe' ,
+			age: 29
 		} ;
 
 		var form = new doormen.Form( schema , data ) ;
@@ -3665,7 +3667,8 @@ describe( "Forms" , () => {
 		
 		var structure = form.createFlatObjectStructure() ;
 		console.log( structure ) ;
-		structure.firstName.value = {} ;
+		//structure.firstName.value = {} ;
+		structure.age.value = '33' ;
 		
 		console.log( form.extractPatch() ) ;
 	} ) ;
