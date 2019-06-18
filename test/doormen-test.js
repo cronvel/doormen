@@ -3646,7 +3646,9 @@ describe( "Path in the schema" , () => {
 describe( "Forms" , () => {
 
 	it( "zzz form" , () => {
-		var schema = {
+		var schema , data , form , structure ;
+		
+		schema = {
 			properties: {
 				id: { type: 'string' , tags: [ 'id' ] } ,
 				firstName: { type: 'string' , tags: [ 'content' ] } ,
@@ -3655,22 +3657,39 @@ describe( "Forms" , () => {
 			}
 		} ;
 		
-		var data = {
+		data = {
 			id: '489312' ,
 			firstName: 'Joe' ,
 			lastName: 'Doe' ,
 			age: 29
 		} ;
 
-		var form = new doormen.Form( schema , data ) ;
+		// Proxy mode
+		
+		form = new doormen.Form( schema , data ) ;
 		console.log( form ) ;
 		
-		var structure = form.createFlatObjectStructure() ;
+		structure = form.createFlatObjectStructure( true ) ;
 		console.log( structure ) ;
 		//structure.firstName.value = {} ;
+		structure.firstName.value = 'Joey' ;
 		structure.age.value = '33' ;
 		
-		console.log( form.extractPatch() ) ;
+		console.log( form.getPatch() ) ;
+
+		// .update() mode
+		
+		form = new doormen.Form( schema , data ) ;
+		console.log( form ) ;
+		
+		structure = form.createFlatObjectStructure() ;
+		console.log( structure ) ;
+		//structure.firstName.value = {} ;
+		structure.firstName.value = 'Joey' ;
+		structure.age.value = '33' ;
+		form.update() ;
+		
+		console.log( form.getPatch() ) ;
 	} ) ;
 } ) ;
 
