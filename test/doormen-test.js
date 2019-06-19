@@ -3643,6 +3643,25 @@ describe( "Path in the schema" , () => {
 
 
 
+describe( "Constraint schema" , () => {
+
+	it( "xxx Constraint schema" , () => {
+		var schema = {
+			type: 'array' ,
+			of: {
+				type: 'string'
+			} ,
+			constraints: [
+				{ enforce: 'unique' }
+			]
+		} ;
+		
+		console.log( doormen.constraintSchema( schema ) ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Forms" , () => {
 
 	it( "zzz form" , () => {
