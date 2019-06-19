@@ -3643,10 +3643,10 @@ describe( "Path in the schema" , () => {
 
 
 
-describe( "Constraint schema" , () => {
+describe( "Extract constraint-only schema" , () => {
 
-	it( "xxx Constraint schema" , () => {
-		var schema = {
+	it( "Extract constraint-only schema from a complete schema" , () => {
+		expect( doormen.constraintSchema( {
 			type: 'array' ,
 			of: {
 				type: 'string'
@@ -3654,9 +3654,56 @@ describe( "Constraint schema" , () => {
 			constraints: [
 				{ enforce: 'unique' }
 			]
-		} ;
-		
-		console.log( doormen.constraintSchema( schema ) ) ;
+		} ) ).to.equal( {
+			constraints: [
+				{ enforce: 'unique' }
+			]
+		} ) ;
+
+		expect( doormen.constraintSchema( {
+			type: 'strictObject' ,
+			properties: {
+				a: { type: 'array' , constraints: [ { enforce: 'unique' } ] } ,
+				b: { type: 'array' , constraints: [ { enforce: 'unique' } ] }
+			}
+		} ) ).to.equal( {
+			properties: {
+				a: { constraints: [ { enforce: 'unique' } ] } ,
+				b: { constraints: [ { enforce: 'unique' } ] }
+			}
+		} ) ;
+
+		expect( doormen.constraintSchema( {
+			type: 'strictObject' ,
+			properties: {
+				a: { type: 'array' , constraints: [ { enforce: 'unique' } ] } ,
+				b: { type: 'array' }
+			}
+		} ) ).to.equal( {
+			extraProperties: true ,
+			properties: {
+				a: { constraints: [ { enforce: 'unique' } ] }
+			}
+		} ) ;
+
+		expect( doormen.constraintSchema( {
+			type: 'strictObject' ,
+			properties: {
+				a: { type: 'array' , constraints: [ { enforce: 'unique' } ] } ,
+				b: { type: 'array' }
+			} ,
+			constraints: [
+				{ enforce: 'something' }
+			]
+		} ) ).to.equal( {
+			extraProperties: true ,
+			properties: {
+				a: { constraints: [ { enforce: 'unique' } ] }
+			} ,
+			constraints: [
+				{ enforce: 'something' }
+			]
+		} ) ;
 	} ) ;
 } ) ;
 
