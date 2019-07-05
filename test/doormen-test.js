@@ -3749,7 +3749,7 @@ describe( "Extract constraint-only schema" , () => {
 
 describe( "Forms" , () => {
 
-	it( "zzz form" , () => {
+	it.skip( "zzz form" , () => {
 		var schema , data , form , structure ;
 		
 		schema = {
