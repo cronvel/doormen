@@ -1,3 +1,423 @@
+Form {
+  schema:
+   { properties:
+      { id: [Object],
+        firstName: [Object],
+        lastName: [Object],
+        age: [Object] } },
+  data: { id: '489312', firstName: 'Joe', lastName: 'Doe', age: 29 },
+  patch: null,
+  inputs:
+   [ Input {
+       form: [Circular],
+       name: 'id',
+       index: 0,
+       type: 'text',
+       dataType: 'string',
+       value: '489312',
+       localValue: '489312',
+       remoteValue: '489312',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'firstName',
+       index: 1,
+       type: 'text',
+       dataType: 'string',
+       value: 'Joe',
+       localValue: 'Joe',
+       remoteValue: 'Joe',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'lastName',
+       index: 2,
+       type: 'text',
+       dataType: 'string',
+       value: 'Doe',
+       localValue: 'Doe',
+       remoteValue: 'Doe',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'age',
+       index: 3,
+       type: 'text',
+       dataType: 'integer',
+       value: 29,
+       localValue: 29,
+       remoteValue: 29,
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] } ],
+  inputIndex: 4,
+  structure: null,
+  error: null }
+{ id:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'id',
+     index: 0,
+     type: 'text',
+     dataType: 'string',
+     value: '489312',
+     localValue: '489312',
+     remoteValue: '489312',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy: [Circular] },
+  firstName:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'firstName',
+     index: 1,
+     type: 'text',
+     dataType: 'string',
+     value: 'Joe',
+     localValue: 'Joe',
+     remoteValue: 'Joe',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy: [Circular] },
+  lastName:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'lastName',
+     index: 2,
+     type: 'text',
+     dataType: 'string',
+     value: 'Doe',
+     localValue: 'Doe',
+     remoteValue: 'Doe',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy: [Circular] },
+  age:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'age',
+     index: 3,
+     type: 'text',
+     dataType: 'integer',
+     value: 29,
+     localValue: 29,
+     remoteValue: 29,
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'integer', tags: [Array], sanitize: [Array] },
+     proxy: [Circular] } }
+{ firstName: 'Joey', age: 33 }
+Form {
+  schema:
+   { properties:
+      { id: [Object],
+        firstName: [Object],
+        lastName: [Object],
+        age: [Object] } },
+  data: { id: '489312', firstName: 'Joe', lastName: 'Doe', age: 29 },
+  patch: null,
+  inputs:
+   [ Input {
+       form: [Circular],
+       name: 'id',
+       index: 0,
+       type: 'text',
+       dataType: 'string',
+       value: '489312',
+       localValue: '489312',
+       remoteValue: '489312',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'firstName',
+       index: 1,
+       type: 'text',
+       dataType: 'string',
+       value: 'Joe',
+       localValue: 'Joe',
+       remoteValue: 'Joe',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'lastName',
+       index: 2,
+       type: 'text',
+       dataType: 'string',
+       value: 'Doe',
+       localValue: 'Doe',
+       remoteValue: 'Doe',
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] },
+     Input {
+       form: [Circular],
+       name: 'age',
+       index: 3,
+       type: 'text',
+       dataType: 'integer',
+       value: 29,
+       localValue: 29,
+       remoteValue: 29,
+       order: 0,
+       title: null,
+       placeholder: null,
+       description: null,
+       error: null,
+       schema: [Object],
+       proxy: [Input] } ],
+  inputIndex: 4,
+  structure: null,
+  error: null }
+{ id:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'id',
+     index: 0,
+     type: 'text',
+     dataType: 'string',
+     value: '489312',
+     localValue: '489312',
+     remoteValue: '489312',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy:
+      Input {
+        form: [Form],
+        name: 'id',
+        index: 0,
+        type: 'text',
+        dataType: 'string',
+        value: '489312',
+        localValue: '489312',
+        remoteValue: '489312',
+        order: 0,
+        title: null,
+        placeholder: null,
+        description: null,
+        error: null,
+        schema: [Object],
+        proxy: [Circular] } },
+  firstName:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'firstName',
+     index: 1,
+     type: 'text',
+     dataType: 'string',
+     value: 'Joe',
+     localValue: 'Joe',
+     remoteValue: 'Joe',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy:
+      Input {
+        form: [Form],
+        name: 'firstName',
+        index: 1,
+        type: 'text',
+        dataType: 'string',
+        value: 'Joe',
+        localValue: 'Joe',
+        remoteValue: 'Joe',
+        order: 0,
+        title: null,
+        placeholder: null,
+        description: null,
+        error: null,
+        schema: [Object],
+        proxy: [Circular] } },
+  lastName:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'lastName',
+     index: 2,
+     type: 'text',
+     dataType: 'string',
+     value: 'Doe',
+     localValue: 'Doe',
+     remoteValue: 'Doe',
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'string', tags: [Array] },
+     proxy:
+      Input {
+        form: [Form],
+        name: 'lastName',
+        index: 2,
+        type: 'text',
+        dataType: 'string',
+        value: 'Doe',
+        localValue: 'Doe',
+        remoteValue: 'Doe',
+        order: 0,
+        title: null,
+        placeholder: null,
+        description: null,
+        error: null,
+        schema: [Object],
+        proxy: [Circular] } },
+  age:
+   Input {
+     form:
+      Form {
+        schema: [Object],
+        data: [Object],
+        patch: null,
+        inputs: [Array],
+        inputIndex: 4,
+        structure: [Circular],
+        error: null },
+     name: 'age',
+     index: 3,
+     type: 'text',
+     dataType: 'integer',
+     value: 29,
+     localValue: 29,
+     remoteValue: 29,
+     order: 0,
+     title: null,
+     placeholder: null,
+     description: null,
+     error: null,
+     schema: { type: 'integer', tags: [Array], sanitize: [Array] },
+     proxy:
+      Input {
+        form: [Form],
+        name: 'age',
+        index: 3,
+        type: 'text',
+        dataType: 'integer',
+        value: 29,
+        localValue: 29,
+        remoteValue: 29,
+        order: 0,
+        title: null,
+        placeholder: null,
+        description: null,
+        error: null,
+        schema: [Object],
+        proxy: [Circular] } } }
+{ firstName: 'Joey', age: 33 }
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -24,6 +444,8 @@
    - [Export mode](#export-mode)
    - [Expect BDD assertion library](#expect-bdd-assertion-library)
    - [Path in the schema](#path-in-the-schema)
+   - [Extract constraint-only schema](#extract-constraint-only-schema)
+   - [Forms](#forms)
    - [MongoDB's ObjectID](#mongodbs-objectid)
    - [Misc](#misc)
 <a name=""></a>
@@ -1692,6 +2114,10 @@ doormen.equals( doormen( { sanitize: 'toBoolean' } , "ON" ) , true ) ;
 doormen.equals( doormen( { sanitize: 'toBoolean' } , "off" ) , false ) ;
 doormen.equals( doormen( { sanitize: 'toBoolean' } , "Off" ) , false ) ;
 doormen.equals( doormen( { sanitize: 'toBoolean' } , "OFF" ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "true" ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "false" ) , false ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "yes" ) , true ) ;
+doormen.equals( doormen( { sanitize: 'toBoolean' } , "no" ) , false ) ;
 doormen.equals( doormen( { sanitize: 'toBoolean' } , '123' ) , true ) ;
 ```
 
@@ -1865,6 +2291,39 @@ doormen.equals( doormen(
 	{ a: ' toto  ' , b: 'text  ' } ) ,
 { a: 'toto' , b: 'text' }
 ) ;
+```
+
+should resize a string accordingly.
+
+```js
+doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'abcde' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'ab' ) , 'ab' ) ;
+
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'a' ) , '--a' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'a' ) , 'a--' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'abcde' ) , 'abcde' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'abcde' ) , 'abcde' ) ;
+
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'a' ) , '--a' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'a' ) , 'a--' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'abcde' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'abcde' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'a' ) , '--a' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'a' ) , 'a--' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abc' ) , 'abc' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcde' ) , 'abcde' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcde' ) , 'abcde' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcdefg' ) , 'abcde' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcdefg' ) , 'abcde' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , minLength: 3 } , 'a' ) , 'a  ' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '----' , length: 3 } , 'a' ) , '--a' ) ;
+doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '----' , length: 3 } , 'a' ) , 'a--' ) ;
 ```
 
 <a name="sanitize--patch-reporting"></a>
@@ -3072,103 +3531,154 @@ should find the schema for an object path.
 
 ```js
 var schema = {
+	type: 'strictObject' ,
+	properties: {
+		key1: {
+			type: 'integer' ,
+			custom: 'field'
+		} ,
+		key2: {
+			type: 'string' ,
+			another: 'custom'
+		} ,
+		key3: {
 			type: 'strictObject' ,
 			properties: {
-				key1: {
+				subkey1: {
 					type: 'integer' ,
-					custom: 'field'
-				} ,
-				key2: {
-					type: 'string' ,
-					another: 'custom'
-				} ,
-				key3: {
-					type: 'strictObject' ,
-					properties: {
-						subkey1: {
-							type: 'integer' ,
-							some: 'data'
-						}
-					}
-				} ,
-				key4: {
-					type: 'strictObject' ,
-					noSubmasking: true ,
-					of: {
-						type: 'string' ,
-						another: 'custom'
-					}
+					some: 'data'
 				}
 			}
-		} ;
-		doormen.equals(
-			doormen.path( schema , '' ) ,
-			schema
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key1' ) ,
-			schema.properties.key1
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key2' ) ,
-			schema.properties.key2
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key3' ) ,
-			schema.properties.key3
-		) ;
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'unexistant' ) ;
-		} ) ;
-		doormen.equals(
-			doormen.path( schema , 'key3.subkey1' ) ,
-			schema.properties.key3.properties.subkey1
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4.anything' ) ,
-			schema.properties.key4.of
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4.anythingelse' ) ,
-			schema.properties.key4.of
-		) ;
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'unexistant.unexistant' ) ;
-		} ) ;
-		doormen.equals(
-			doormen.path( schema , 'key2.unexistant' ) ,
-			{}
-		) ;
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'key3.unexistant' ) ;
-		} ) ;
-		
-		// Test the noSubmasking option
-		doormen.equals(
-			doormen.path( schema , '' , true ) ,
-			schema
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4' , true ) ,
-			schema.properties.key4
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4.anything' , true ) ,
-			null
-		) ;
-		schema.noSubmasking = true ;
-		doormen.equals(
-			doormen.path( schema , '' , true ) ,
-			schema
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4' , true ) ,
-			null
-		) ;
-		doormen.equals(
-			doormen.path( schema , 'key4.anything' , true ) ,
-			null
-		) ;
+		} ,
+		key4: {
+			type: 'strictObject' ,
+			noSubmasking: true ,
+			of: {
+				type: 'string' ,
+				another: 'custom'
+			}
+		}
+	}
+} ;
+doormen.equals(
+	doormen.path( schema , '' ) ,
+	schema
+) ;
+doormen.equals(
+	doormen.path( schema , 'key1' ) ,
+	schema.properties.key1
+) ;
+doormen.equals(
+	doormen.path( schema , 'key2' ) ,
+	schema.properties.key2
+) ;
+doormen.equals(
+	doormen.path( schema , 'key3' ) ,
+	schema.properties.key3
+) ;
+doormen.shouldThrow( () => {
+	doormen.path( schema , 'unexistant' ) ;
+} ) ;
+doormen.equals(
+	doormen.path( schema , 'key3.subkey1' ) ,
+	schema.properties.key3.properties.subkey1
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4.anything' ) ,
+	schema.properties.key4.of
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4.anythingelse' ) ,
+	schema.properties.key4.of
+) ;
+doormen.shouldThrow( () => {
+	doormen.path( schema , 'unexistant.unexistant' ) ;
+} ) ;
+doormen.equals(
+	doormen.path( schema , 'key2.unexistant' ) ,
+	{}
+) ;
+doormen.shouldThrow( () => {
+	doormen.path( schema , 'key3.unexistant' ) ;
+} ) ;
+
+// Test the noSubmasking option
+doormen.equals(
+	doormen.path( schema , '' , true ) ,
+	schema
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4' , true ) ,
+	schema.properties.key4
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4.anything' , true ) ,
+	null
+) ;
+schema.noSubmasking = true ;
+doormen.equals(
+	doormen.path( schema , '' , true ) ,
+	schema
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4' , true ) ,
+	null
+) ;
+doormen.equals(
+	doormen.path( schema , 'key4.anything' , true ) ,
+	null
+) ;
+```
+
+<a name="extract-constraint-only-schema"></a>
+# Extract constraint-only schema
+<a name="forms"></a>
+# Forms
+zzz form.
+
+```js
+var schema , data , form , structure ;
+
+schema = {
+	properties: {
+		id: { type: 'string' , tags: [ 'id' ] } ,
+		firstName: { type: 'string' , tags: [ 'content' ] } ,
+		lastName: { type: 'string' , tags: [ 'content' ] } ,
+		age: { type: 'integer' , tags: [ 'content' ] } ,
+	}
+} ;
+
+data = {
+	id: '489312' ,
+	firstName: 'Joe' ,
+	lastName: 'Doe' ,
+	age: 29
+} ;
+// Proxy mode
+
+form = new doormen.Form( schema , data ) ;
+console.log( form ) ;
+
+structure = form.createFlatObjectStructure( true ) ;
+console.log( structure ) ;
+//structure.firstName.value = {} ;
+structure.firstName.value = 'Joey' ;
+structure.age.value = '33' ;
+
+console.log( form.getPatch() ) ;
+// .update() mode
+
+form = new doormen.Form( schema , data ) ;
+console.log( form ) ;
+
+structure = form.createFlatObjectStructure() ;
+console.log( structure ) ;
+//structure.firstName.value = {} ;
+structure.firstName.value = 'Joey' ;
+structure.age.value = '33' ;
+form.update() ;
+
+console.log( form.getPatch() ) ;
 ```
 
 <a name="mongodbs-objectid"></a>

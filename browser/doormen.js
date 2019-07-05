@@ -82,6 +82,297 @@ AssertionError.prototype.name = 'AssertionError' ;
 
 
 
+const doormen = require( './doormen.js' ) ;
+const Input = require( './Input.js' ) ;
+
+
+
+/*
+	IDEAS:
+		* Proxy on input or form
+		* Proxies would be NextGen Event emitter, with 'change' event
+		* client UI can change any value, triggering validation
+		* code can change any value, emitting event for the client
+*/
+
+function Form( schema , data ) {
+	this.schema = schema ;
+	this.data = data ;
+	this.patch = null ;			// A patch to modify the current data
+	this.inputs = [] ;			// The list of inputs
+	this.inputIndex = 0 ;		// The auto-increment
+	this.structure = null ;		// The form structure to be used by third-party (HTML, Vue, etc), it's a proxy
+
+	this.error = null ;
+
+	this.createInputs() ;
+}
+
+module.exports = Form ;
+
+
+
+Form.prototype.createInputs = function() {
+	this.createInputsRecursive( this.schema , this.data , '' ) ;
+} ;
+
+
+
+Form.prototype.createInputsRecursive = function( schema , data , prefix ) {
+	var key , input ;
+
+	// 0) Arrays are alternatives
+	if ( Array.isArray( schema ) ) { throw new Error( "Schema alternatives are not supported for forms ATM." ) ; }
+
+	// 1) Recursivity
+	if ( schema.properties && typeof schema.properties === 'object' ) {
+		for ( key in schema.properties ) {
+			this.createInputsRecursive( schema.properties[ key ] , data[ key ] , prefix ? prefix + '.' + key : key ) ;
+		}
+
+		return ;
+	}
+
+	input = new Input( {
+		form: this ,
+		name: prefix ,
+		index: this.inputIndex ++ ,
+		type: schema.input && schema.input.type ,
+		dataType: schema.type ,
+		value: data ,
+		startingValue: data ,
+		order: schema.input && schema.input.order ,
+		title: schema.input && schema.input.title ,
+		placeholder: schema.input && schema.input.placeholder ,
+		description: schema.input && schema.input.description ,
+		schema: schema
+	} ) ;
+
+	this.inputs.push( input ) ;
+} ;
+
+
+
+// if ofProxies:true then the structure contains proxies of inputs, else it contains inputs
+Form.prototype.createFlatObjectStructure = function( ofProxies ) {
+	var input ;
+
+	this.structure = {} ;
+
+	for ( input of this.inputs ) {
+		this.structure[ input.name ] = ofProxies ? input.proxy : input ;
+	}
+
+	return this.structure ;
+} ;
+
+
+
+Form.prototype.update = function() {
+	for ( let input of this.inputs ) {
+		input.update() ;
+	}
+} ;
+
+
+
+Form.prototype.getPatch = function() {
+	var count = 0 , patch = null , input ;
+
+	for ( input of this.inputs ) {
+		if ( input.localValue !== input.remoteValue ) {
+			if ( ! patch ) { patch = {} ; }
+			patch[ input.name ] = input.localValue ;
+		}
+	}
+
+	return patch ;
+} ;
+
+
+
+// Mark all local values as remote values
+Form.prototype.commit = function() {
+	for ( let input of this.inputs ) {
+		input.remoteValue = input.localValue ;
+	}
+} ;
+
+
+},{"./Input.js":3,"./doormen.js":9}],3:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2019 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+const doormen = require( './doormen.js' ) ;
+const clone = require( 'tree-kit/lib/clone.js' ) ;
+
+
+
+function Input( options = {} ) {
+	this.form = options.form ;
+	this.name = options.name ;
+	this.index = options.index || 0 ;	// Index in the parent form
+	this.type = options.type || null ;	// The type of the input field
+	this.dataType = options.dataType ;	// The type of the data
+	this.value = options.value ;		// Current value of the UI input element
+	this.localValue = options.localValue || options.value ;		// The real behind-the-scene value
+	this.remoteValue = options.remoteValue || options.value ;	// Value at creation, useful for creating a patch for the data
+	this.order = options.order || 0 ;	// Custom order, ordering should be done by order first, and index as a tie-breaker
+	this.title = options.title || null ;	// A title for this field
+	this.placeholder = options.placeholder || null ;	// Something to display inside the input before user's entry
+	this.description = options.description || null ;	// A description for this field
+	this.error = null ;					// An error message for this field, if it does not validate
+	this.schema = clone( options.schema ) ;	// The schema for this input
+
+	this.proxy = null ;
+
+	this.init() ;
+}
+
+module.exports = Input ;
+
+
+
+Input.prototype.init = function() {
+	if ( ! this.type ) { this.type = Input.guessType( this.dataType ) ; }
+
+	// Force a sanitizer for the input, since most of input returns string
+	var sanitizer = Input.guessSanitizer( this.dataType ) ;
+
+	if ( sanitizer ) {
+		if ( ! this.schema.sanitize ) { this.schema.sanitize = [] ; }
+		else if ( typeof this.schema.sanitize === 'string' ) { this.schema.sanitize = [ this.schema.sanitize ] ; }
+
+		if ( this.schema.sanitize[ 0 ] !== sanitizer ) { this.schema.sanitize.unshift( sanitizer ) ; }
+	}
+
+	this.proxy = this.createProxy() ;
+} ;
+
+
+
+const DATA_TYPE_TO_TYPE = {
+	string: 'text' ,
+	number: 'text' ,
+	integer: 'text'
+} ;
+
+
+
+const DATA_TYPE_TO_SANITIZER = {
+	number: 'toNumber' ,
+	integer: 'toInteger'
+} ;
+
+
+
+Input.guessType = function( dataType ) {
+	if ( DATA_TYPE_TO_TYPE[ dataType ] ) {
+		return DATA_TYPE_TO_TYPE[ dataType ] ;
+	}
+
+	return 'text' ;
+} ;
+
+
+
+Input.guessSanitizer = function( dataType ) {
+	if ( DATA_TYPE_TO_SANITIZER[ dataType ] ) {
+		return DATA_TYPE_TO_SANITIZER[ dataType ] ;
+	}
+
+	return ;
+} ;
+
+
+
+Input.prototype.createProxy = function() {
+	return new Proxy( this , {
+		set: function( target , property , value , receiver ) {
+			if ( property !== 'value' ) { return false ; }
+			target.value = value ;
+			target.update() ;
+			return true ;
+		}
+	} ) ;
+} ;
+
+
+
+Input.prototype.update = function() {
+	try {
+		this.localValue = doormen( this.schema , this.value ) ;
+	}
+	catch ( error ) {
+		//console.log( error ) ;
+		this.error = error.message ;
+		return ;
+	}
+
+	this.error = null ;
+
+	// Check global errors
+} ;
+
+
+},{"./doormen.js":9,"tree-kit/lib/clone.js":27}],4:[function(require,module,exports){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2019 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
 function SchemaError( message ) {
 	this.message = message ;
 
@@ -96,7 +387,7 @@ SchemaError.prototype.constructor = SchemaError ;
 SchemaError.prototype.name = 'SchemaError' ;
 
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*
 	Doormen
 
@@ -143,7 +434,7 @@ ValidatorError.prototype.constructor = ValidatorError ;
 ValidatorError.prototype.name = 'ValidatorError' ;
 
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1712,7 +2003,7 @@ assert.fail.inspect = true ;
 assert.fail.none = true ;
 
 
-},{"./AssertionError.js":1,"./isEqual.js":10,"./typeCheckers.js":14,"string-kit/lib/inspect.js":21}],5:[function(require,module,exports){
+},{"./AssertionError.js":1,"./isEqual.js":12,"./typeCheckers.js":16,"string-kit/lib/inspect.js":23}],7:[function(require,module,exports){
 /*
 	Doormen
 
@@ -1747,7 +2038,7 @@ assert.fail.none = true ;
 module.exports = require( './doormen.js' ) ;
 module.exports.isBrowser = true ;
 
-},{"./doormen.js":7}],6:[function(require,module,exports){
+},{"./doormen.js":9}],8:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -1988,7 +2279,7 @@ constraints.extraction = function( data , params , element , clone ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":7,"string-kit/lib/format.js":20,"tree-kit/lib/dotPath.js":26}],7:[function(require,module,exports){
+},{"./doormen.js":9,"string-kit/lib/format.js":22,"tree-kit/lib/dotPath.js":28}],9:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -2107,6 +2398,7 @@ doormen.isEqual = require( './isEqual.js' ) ;
 doormen.assert = require( './assert.js' ) ;
 doormen.expect = require( './expect.js' ) ;
 doormen.schemaSchema = require( './schemaSchema.js' ) ;
+doormen.Form = require( './Form.js' ) ;
 
 doormen.validateSchema = function( schema ) { return doormen( doormen.schemaSchema , schema ) ; } ;
 doormen.purifySchema = function( schema ) { return doormen.export( doormen.schemaSchema , schema ) ; } ;
@@ -2269,7 +2561,7 @@ function check( schema , data_ , element , isPatch ) {
 				if ( newKey !== key ) { delete data[ key ] ; }
 			}
 		}
-	}	// End of not-constraint-block
+	}	// End of non-constraint-block
 
 
 	// of
@@ -2485,9 +2777,7 @@ function schemaPath_( schema , path , index , noSubmasking ) {
 
 
 	// 0) Arrays are alternatives
-	if ( Array.isArray( schema ) ) {
-		throw new Error( "Schema alternatives are not supported for path matching ATM." ) ;
-	}
+	if ( Array.isArray( schema ) ) { throw new Error( "Schema alternatives are not supported for path matching ATM." ) ; }
 
 	// 1) Recursivity
 	if ( schema.properties !== undefined ) {
@@ -2518,6 +2808,286 @@ function schemaPath_( schema , path , index , noSubmasking ) {
 
 	// Sub-schema not found, it should be open to anything, so return {}
 	return {} ;
+}
+
+
+
+// Manage recursivity when dealing with schemas and data
+// ----------------------------------------------------------------------------------------------------------- TODO ----------------------------------------------------
+// The main check() function should use it
+/*
+doormen.dataWalker = function( ctx , fn ) {
+	var key , ret , count , deleted , alternativeErrors ,
+		schema = ctx.schema ;
+
+	/*
+	if ( Array.isArray( schema ) ) {
+		alternativeErrors = [] ;
+		count = deleted = 0 ;
+
+		for ( key = 0 ; key < schema.length ; key ++ ) {
+			count ++ ;
+
+			try {
+			ret = doormen.dataWalker( {
+				schema: ctx.schema[ key ] ,
+				schemaPath: ctx.schemaPath.concat( key ) ,
+				alternative: true ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Array.from( ctx.schema ) ; }
+
+				schema[ key ] = ret ;
+				if ( ret === undefined ) { deleted ++ ; }
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { schema = undefined ; }
+		return schema ;
+	}
+	*//*
+
+	if ( ctx.schema.properties && typeof ctx.schema.properties === 'object' ) {
+		count = deleted = 0 ;
+
+		for ( key in ctx.schema.properties ) {
+			count ++ ;
+			ret = fn( {
+				schema: ctx.schema.properties[ key ] ,
+				schemaPath: ctx.schemaPath.concat( 'properties' , key ) ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema.properties[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+				if ( schema.properties === ctx.schema.properties ) { schema.properties = Object.assign( {} , ctx.schema.properties ) ; }
+
+				if ( ret === undefined ) {
+					delete schema.properties[ key ] ;
+					deleted ++ ;
+					if ( ctx.options && ctx.options.extraProperties ) { schema.extraProperties = true ; }
+				}
+				else {
+					schema.properties[ key ] = ret ;
+				}
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { delete schema.properties ; }
+		if ( deleted && ctx.options && ctx.options.extraProperties ) { schema.extraProperties = true ; }
+	}
+
+	if ( schema.of !== undefined && ( data && ( typeof data === 'object' || typeof data === 'function' ) ) ) {
+		if ( ! schema.of || typeof schema.of !== 'object' ) {
+			throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), 'of' should contain a schema object." ) ;
+		}
+
+		if ( Array.isArray( data ) ) {
+			if ( this.export && data === data_ ) { data = [] ; src = data_ ; }
+			else { src = data ; }
+
+			for ( i = 0 ; i < src.length ; i ++ ) {
+				addToPath = '[' + i + ']' ;
+				data[ i ] = this.check( schema.of , src[ i ] , {
+					path: element.path + addToPath ,
+					displayPath: element.displayPath + addToPath ,
+					key: i
+				} , isPatch ) ;
+			}
+		}
+		else {
+			if ( this.export && data === data_ ) { data = {} ; src = data_ ; }
+			else { src = data ; }
+
+			for ( key in src ) {
+				addToPath = '.' + key ;
+				data[ key ] = this.check( schema.of , src[ key ] , {
+					path: element.path ? element.path + addToPath : key ,
+					displayPath: element.displayPath + addToPath ,
+					key: key
+				} , isPatch ) ;
+			}
+		}
+
+		// ----------------------------------------------------------------------------------------------------------
+
+		ret = fn( {
+			schema: ctx.schema.of ,
+			schemaPath: ctx.schemaPath.concat( 'of' ) ,
+			options: ctx.options
+		} ) ;
+
+		if ( ret !== ctx.schema.of ) {
+			if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+
+			if ( ret === undefined ) { delete schema.of ; }
+			else { schema.of = ret ; }
+		}
+	}
+
+	if ( schema.elements && Array.isArray( schema.elements ) ) {
+		count = deleted = 0 ;
+
+		for ( key = 0 ; key < schema.elements.length ; key ++ ) {
+			count ++ ;
+			ret = fn( {
+				schema: ctx.schema.elements[ key ] ,
+				schemaPath: ctx.schemaPath.concat( 'elements' , key ) ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema.elements[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+				if ( schema.elements === ctx.schema.elements ) { schema.elements = Array.from( ctx.schema.elements ) ; }
+
+				schema.elements[ key ] = ret ;
+				if ( ret === undefined ) { deleted ++ ; }
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { delete schema.elements ; }
+	}
+
+	return schema ;
+} ;
+*/
+
+
+
+// Manage recursivity when dealing with schemas
+doormen.schemaWalker = function( ctx , fn ) {
+	var key , ret , count , deleted ,
+		schema = ctx.schema ;
+
+	if ( Array.isArray( schema ) ) {
+		count = deleted = 0 ;
+
+		for ( key = 0 ; key < schema.length ; key ++ ) {
+			count ++ ;
+			ret = doormen.schemaWalker( {
+				schema: ctx.schema[ key ] ,
+				schemaPath: ctx.schemaPath.concat( key ) ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Array.from( ctx.schema ) ; }
+
+				schema[ key ] = ret ;
+				if ( ret === undefined ) { deleted ++ ; }
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { schema = undefined ; }
+		return schema ;
+	}
+
+	if ( ctx.schema.properties && typeof ctx.schema.properties === 'object' ) {
+		count = deleted = 0 ;
+
+		for ( key in ctx.schema.properties ) {
+			count ++ ;
+			ret = fn( {
+				schema: ctx.schema.properties[ key ] ,
+				schemaPath: ctx.schemaPath.concat( 'properties' , key ) ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema.properties[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+				if ( schema.properties === ctx.schema.properties ) { schema.properties = Object.assign( {} , ctx.schema.properties ) ; }
+
+				if ( ret === undefined ) {
+					delete schema.properties[ key ] ;
+					deleted ++ ;
+					if ( ctx.options && ctx.options.extraProperties ) { schema.extraProperties = true ; }
+				}
+				else {
+					schema.properties[ key ] = ret ;
+				}
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { delete schema.properties ; }
+		if ( deleted && ctx.options && ctx.options.extraProperties ) { schema.extraProperties = true ; }
+	}
+
+	if ( schema.of && typeof schema.of === 'object' ) {
+		ret = fn( {
+			schema: ctx.schema.of ,
+			schemaPath: ctx.schemaPath.concat( 'of' ) ,
+			options: ctx.options
+		} ) ;
+
+		if ( ret !== ctx.schema.of ) {
+			if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+
+			if ( ret === undefined ) { delete schema.of ; }
+			else { schema.of = ret ; }
+		}
+	}
+
+	if ( schema.elements && Array.isArray( schema.elements ) ) {
+		count = deleted = 0 ;
+
+		for ( key = 0 ; key < schema.elements.length ; key ++ ) {
+			count ++ ;
+			ret = fn( {
+				schema: ctx.schema.elements[ key ] ,
+				schemaPath: ctx.schemaPath.concat( 'elements' , key ) ,
+				options: ctx.options
+			} ) ;
+
+			if ( ret !== ctx.schema.elements[ key ] ) {
+				if ( schema === ctx.schema ) { schema = Object.assign( {} , ctx.schema ) ; }
+				if ( schema.elements === ctx.schema.elements ) { schema.elements = Array.from( ctx.schema.elements ) ; }
+
+				schema.elements[ key ] = ret ;
+				if ( ret === undefined ) { deleted ++ ; }
+			}
+		}
+
+		// Because deleted is true, schema is already a clone
+		if ( deleted && count === deleted ) { delete schema.elements ; }
+	}
+
+	return schema ;
+} ;
+
+
+
+doormen.constraintSchema = function( schema ) {
+	return constraintSchema_( {
+		schema: schema ,
+		schemaPath: [] ,
+		options: { extraProperties: true }
+	} ) ;
+} ;
+
+
+
+function constraintSchema_( ctx ) {
+	var schema = doormen.schemaWalker( ctx , constraintSchema_ ) ;
+
+	if ( Array.isArray( schema ) ) { return schema ; }
+
+	if ( schema === ctx.schema ) {
+		if ( ! schema.constraints ) { return ; }
+		schema = Object.assign( {} , ctx.schema ) ;
+	}
+
+	delete schema.type ;
+	delete schema.sanitize ;
+	delete schema.filter ;
+
+	return schema ;
 }
 
 
@@ -2965,7 +3535,7 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./SchemaError.js":2,"./ValidatorError.js":3,"./assert.js":4,"./constraints.js":6,"./expect.js":8,"./filters.js":9,"./isEqual.js":10,"./mask.js":11,"./sanitizers.js":12,"./schemaSchema.js":13,"./typeCheckers.js":14,"tree-kit/lib/clone.js":25,"tree-kit/lib/dotPath.js":26}],8:[function(require,module,exports){
+},{"./AssertionError.js":1,"./Form.js":2,"./SchemaError.js":4,"./ValidatorError.js":5,"./assert.js":6,"./constraints.js":8,"./expect.js":10,"./filters.js":11,"./isEqual.js":12,"./mask.js":13,"./sanitizers.js":14,"./schemaSchema.js":15,"./typeCheckers.js":16,"tree-kit/lib/clone.js":27,"tree-kit/lib/dotPath.js":28}],10:[function(require,module,exports){
 /*
 	Doormen
 
@@ -3184,7 +3754,7 @@ var handler = {
 } ;
 
 
-},{"./assert.js":4}],9:[function(require,module,exports){
+},{"./assert.js":6}],11:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -3317,7 +3887,7 @@ filters.length = function( data , params , element ) {
 		if ( ! ( data.length === params ) ) { throw true ; }
 	}
 	catch ( error ) {
-		this.validatorError( element.path + " has not a length greater than or equal to " + params + "." , element ) ;
+		this.validatorError( element.path + " has not a length equal to " + params + "." , element ) ;
 	}
 } ;
 
@@ -3406,7 +3976,7 @@ filters.notIn = function( data , params , element ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":7}],10:[function(require,module,exports){
+},{"./doormen.js":9}],12:[function(require,module,exports){
 (function (Buffer){
 /*
 	Doormen
@@ -3566,7 +4136,7 @@ module.exports = isEqual ;
 
 
 }).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
-},{"../node_modules/is-buffer/index.js":16}],11:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":18}],13:[function(require,module,exports){
 /*
 	Doormen
 
@@ -3824,7 +4394,7 @@ exports.getAllSchemaTags = function( schema , tags = new Set() , depthLimit = 10
 } ;
 
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -3913,6 +4483,9 @@ sanitizers.toBoolean = function( data ) {
 		case 'true' :
 		case 'True' :
 		case 'TRUE' :
+		case 'yes' :
+		case 'Yes' :
+		case 'YES' :
 			return true ;
 		case 0 :
 		case '0' :
@@ -3922,6 +4495,9 @@ sanitizers.toBoolean = function( data ) {
 		case 'false' :
 		case 'False' :
 		case 'FALSE' :
+		case 'no' :
+		case 'No' :
+		case 'NO' :
 			return false ;
 		default :
 			return !! data ;
@@ -4075,6 +4651,50 @@ sanitizers.dashToCamelCase = function( data ) {
 
 
 
+/* Filter compliance sanitizers */
+
+
+
+function padding( data , schema , count ) {
+	if ( schema.leftPadding ) {
+		return schema.leftPadding[ 0 ].repeat( count ) + data ;
+	}
+
+	if ( schema.rightPadding ) {
+		return data + schema.rightPadding[ 0 ].repeat( count ) ;
+	}
+
+	// Else, pad with space to the right...
+	return data + ' '.repeat( count ) ;
+}
+
+
+
+// Resize a string (later: various other data, like array and Buffer?)
+// It is used to comply to filters: length, maxLength and minLength.
+// To enlarge, it used the subSchema.padding property, or a space if not found.
+sanitizers.resize = function( data , schema ) {
+	if ( typeof data !== 'string' ) { return data ; }
+
+	if ( schema.length ) {
+		if ( data.length > schema.length ) { return data.slice( 0 , schema.length ) ; }
+		if ( data.length < schema.length ) { return padding( data , schema , schema.length - data.length ) ; }
+		return data ;
+	}
+
+	if ( schema.maxLength && data.length > schema.maxLength ) {
+		return data.slice( 0 , schema.maxLength ) ;
+	}
+
+	if ( schema.minLength && data.length < schema.minLength ) {
+		return padding( data , schema , schema.minLength - data.length ) ;
+	}
+
+	return data ;
+} ;
+
+
+
 /* Misc sanitizers */
 
 
@@ -4095,7 +4715,7 @@ sanitizers.mongoId = function( data ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":7,"mongodb":15,"string-kit/lib/latinize.js":23,"string-kit/lib/toTitleCase.js":24}],13:[function(require,module,exports){
+},{"./doormen.js":9,"mongodb":17,"string-kit/lib/latinize.js":25,"string-kit/lib/toTitleCase.js":26}],15:[function(require,module,exports){
 /*
 	Doormen
 
@@ -4219,7 +4839,7 @@ singleSchema.properties.elements = {
 module.exports = schemaSchema ;
 
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (global,Buffer){
 /*
 	Doormen
@@ -4513,9 +5133,9 @@ typeCheckers.mongoId = data => {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"./doormen":7,"buffer":15}],15:[function(require,module,exports){
+},{"./doormen":9,"buffer":17}],17:[function(require,module,exports){
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -4538,7 +5158,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4724,7 +5344,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /*
 	String Kit
 
@@ -4806,7 +5426,7 @@ module.exports = {
 } ;
 
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
 	String Kit
 
@@ -4921,7 +5541,7 @@ exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
 } ;
 
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function (Buffer){
 /*
 	String Kit
@@ -4972,9 +5592,11 @@ var ansi = require( './ansi.js' ) ;
 	%S		string, interpret ^ formatting
 	%r		raw string: without sanitizer
 	%f		float
+	%e		for scientific notation
 	%d	%i	integer
 	%u		unsigned integer
 	%U		unsigned positive integer (>0)
+	%k		metric system
 	%h		hexadecimal
 	%x		hexadecimal, force pair of symbols (e.g. 'f' -> '0f')
 	%o		octal
@@ -4994,7 +5616,6 @@ var ansi = require( './ansi.js' ) ;
 	%c		for char? (can receive a string or an integer translated into an UTF8 chars)
 	%C		for currency formating?
 	%B		for Buffer objects?
-	%e		for scientific notation?
 */
 
 exports.formatMethod = function format( ... args ) {
@@ -5192,27 +5813,93 @@ modes.S.noSanitize = true ;
 
 
 
+const NUMBER_FORMAT_REGEX = /([a-zA-Z]?)(.[^a-zA-Z]*)/g ;
+
+
+
 // float
 modes.f = ( arg , modeArg ) => {
-	var n ;
+	var match , k , v , lv , n ,
+		step = 0 , toFixed , toFixedIfDecimal , padding ;
 
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { return '0' ; }
-	if ( modeArg !== undefined ) {
-		// Use jQuery number format?
-		switch ( modeArg[ 0 ] ) {
-			case 'p' :
-				n = parseInt( modeArg.slice( 1 ) , 10 ) ;
-				if ( n >= 1 ) { arg = arg.toPrecision( n ) ; }
-				break ;
-			case 'f' :
-				n = parseInt( modeArg.slice( 1 ) , 10 ) ;
-				arg = arg.toFixed( n ) ;
-				break ;
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	if ( modeArg ) {
+		NUMBER_FORMAT_REGEX.index = 0 ;
+
+		while ( ( match = NUMBER_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
+
+			if ( k === 'p' ) {
+				padding = + v ;
+			}
+			else if ( v[ 0 ] === '.' ) {
+				lv = v[ v.length - 1 ] ;
+
+				if ( lv === '!' ) {
+					n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+					step = 10 ** ( -n ) ;
+					toFixed = n ;
+				}
+				else if ( lv === '?' ) {
+					n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+					step = 10 ** ( -n ) ;
+					toFixed = n ;
+					toFixedIfDecimal = true ;
+				}
+				else {
+					n = parseInt( v.slice( 1 ) , 10 ) ;
+					step = 10 ** ( -n ) ;
+				}
+			}
+			else if ( v[ v.length - 1 ] === '.' ) {
+				n = parseInt( v.slice( 0 , -1 ) , 10 ) ;
+				step = 10 ** n ;
+			}
+			else {
+				n = parseInt( v , 10 ) ;
+				step = 10 ** ( Math.ceil( Math.log10( arg + Number.EPSILON ) + Number.EPSILON ) - n ) ;
+			}
 		}
 	}
-	return '' + arg ;
+
+	if ( step ) { arg = round( arg , step ) ; }
+
+	if ( toFixed !== undefined && ( ! toFixedIfDecimal || arg !== Math.trunc( arg ) ) ) {
+		arg = arg.toFixed( toFixed ) ;
+	}
+	else {
+		arg = '' + arg ;
+	}
+
+	if ( padding ) {
+		n = arg.indexOf( '.' ) ;
+		if ( n === -1 ) { n = arg.length ; }
+		if ( n < padding ) { arg = '0'.repeat( padding - n ) + arg ; }
+	}
+
+	return arg ;
 } ;
+
+modes.f.noSanitize = true ;
+
+
+
+// integer
+modes.e = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	if ( modeArg ) {
+		return '' + arg.toExponential( parseInt( modeArg , 10 ) - 1 ) ;
+	}
+
+	return '' + arg.toExponential() ;
+
+} ;
+
+modes.e.noSanitize = true ;
 
 
 
@@ -5223,14 +5910,7 @@ modes.d = modes.i = arg => {
 	return '0' ;
 } ;
 
-
-
-// metric system
-modes.k = arg => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { return '0' ; }
-	return metricPrefix( arg ) ;
-} ;
+modes.i.noSanitize = true ;
 
 
 
@@ -5241,6 +5921,8 @@ modes.u = arg => {
 	return '0' ;
 } ;
 
+modes.u.noSanitize = true ;
+
 
 
 // unsigned positive integer
@@ -5249,6 +5931,30 @@ modes.U = arg => {
 	if ( typeof arg === 'number' ) { return '' + Math.max( Math.floor( arg ) , 1 ) ; }
 	return '1' ;
 } ;
+
+modes.U.noSanitize = true ;
+
+
+
+// metric system
+modes.k = arg => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { return '0' ; }
+	return metricPrefix( arg ) ;
+} ;
+
+modes.k.noSanitize = true ;
+
+
+
+// unsigned hexadecimal
+modes.h = arg => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg === 'number' ) { return '' + Math.max( Math.floor( arg ) , 0 ).toString( 16 ) ; }
+	return '0' ;
+} ;
+
+modes.h.noSanitize = true ;
 
 
 
@@ -5263,14 +5969,7 @@ modes.x = arg => {
 	return value ;
 } ;
 
-
-
-// unsigned hexadecimal
-modes.h = arg => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg === 'number' ) { return '' + Math.max( Math.floor( arg ) , 0 ).toString( 16 ) ; }
-	return '0' ;
-} ;
+modes.x.noSanitize = true ;
 
 
 
@@ -5281,6 +5980,8 @@ modes.o = arg => {
 	return '0' ;
 } ;
 
+modes.o.noSanitize = true ;
+
 
 
 // unsigned binary
@@ -5289,6 +5990,8 @@ modes.b = arg => {
 	if ( typeof arg === 'number' ) { return '' + Math.max( Math.floor( arg ) , 0 ).toString( 2 ) ; }
 	return '0' ;
 } ;
+
+modes.b.noSanitize = true ;
 
 
 
@@ -5353,6 +6056,7 @@ modes.J = arg => arg === undefined ? 'null' : JSON.stringify( arg ) ;
 
 // drop
 modes.D = () => '' ;
+modes.D.noSanitize = true ;
 
 
 
@@ -5547,10 +6251,28 @@ exports.format.hasFormatting = function hasFormatting( str ) {
 
 
 
+// From math-kit module
+const EPSILON = 0.0000000001 ;
+const INVERSE_EPSILON = Math.round( 1 / EPSILON ) ;
+
+function epsilonRound( v ) {
+	return Math.round( v * INVERSE_EPSILON ) / INVERSE_EPSILON ;
+}
+
+// Round with precision
+function round( v , step ) {
+	// use: v * ( 1 / step )
+	// not: v / step
+	// reason: epsilon rounding errors
+	return epsilonRound( step * Math.round( v * ( 1 / step ) ) ) ;
+}
+
+
+
 // Metric prefix
-var mulPrefix = [ '' , 'k' , 'M' , 'G' , 'T' , 'P' , 'E' , 'Z' , 'Y' ] ;
-var subMulPrefix = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
-var roundStep = [ 100 , 10 , 1 ] ;
+const MUL_PREFIX = [ '' , 'k' , 'M' , 'G' , 'T' , 'P' , 'E' , 'Z' , 'Y' ] ;
+const SUB_MUL_PREFIX = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
+const IROUND_STEP = [ 100 , 10 , 1 ] ;
 
 
 
@@ -5564,16 +6286,16 @@ function metricPrefix( n ) {
 		log = Math.floor( Math.log10( n ) ) ;
 		logDiv3 = Math.floor( log / 3 ) ;
 		logMod = log % 3 ;
-		base = round( n / ( Math.pow( 1000 , logDiv3 ) ) , roundStep[ logMod ] ) ;
-		prefix = mulPrefix[ logDiv3 ] ;
+		base = iround( n / ( Math.pow( 1000 , logDiv3 ) ) , IROUND_STEP[ logMod ] ) ;
+		prefix = MUL_PREFIX[ logDiv3 ] ;
 	}
 	else {
 		log = Math.floor( Math.log10( n ) ) ;
 		logDiv3 = Math.floor( log / 3 ) ;
 		logMod = log % 3 ;
 		if ( logMod < 0 ) { logMod += 3 ; }
-		base = round( n / ( Math.pow( 1000 , logDiv3 ) ) , roundStep[ logMod ] ) ;
-		prefix = subMulPrefix[ -logDiv3 ] ;
+		base = iround( n / ( Math.pow( 1000 , logDiv3 ) ) , IROUND_STEP[ logMod ] ) ;
+		prefix = SUB_MUL_PREFIX[ -logDiv3 ] ;
 	}
 
 	return '' + base + prefix ;
@@ -5581,13 +6303,13 @@ function metricPrefix( n ) {
 
 
 
-function round( v , step ) {
-	return Math.round( ( v + Number.EPSILON ) * step ) / step ;
+function iround( v , istep ) {
+	return Math.round( ( v + Number.EPSILON ) * istep ) / istep ;
 }
 
 
 }).call(this,require("buffer").Buffer)
-},{"./ansi.js":18,"./escape.js":19,"./inspect.js":21,"buffer":15}],21:[function(require,module,exports){
+},{"./ansi.js":20,"./escape.js":21,"./inspect.js":23,"buffer":17}],23:[function(require,module,exports){
 (function (Buffer,process){
 /*
 	String Kit
@@ -6276,9 +6998,9 @@ inspectStyle.html = Object.assign( {} , inspectStyle.none , {
 
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
-},{"../../is-buffer/index.js":16,"./ansi.js":18,"./escape.js":19,"_process":17}],22:[function(require,module,exports){
+},{"../../is-buffer/index.js":18,"./ansi.js":20,"./escape.js":21,"_process":19}],24:[function(require,module,exports){
 module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /*
 	String Kit
 
@@ -6317,7 +7039,7 @@ module.exports = function( str ) {
 
 
 
-},{"./latinize-map.json":22}],24:[function(require,module,exports){
+},{"./latinize-map.json":24}],26:[function(require,module,exports){
 /*
 	String Kit
 
@@ -6371,7 +7093,7 @@ module.exports = function toTitleCase( str , options ) {
 
 
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*
 	Tree Kit
 
@@ -6458,7 +7180,7 @@ module.exports = function clone( originalObject , circular ) {
 	return cloneObject ;
 } ;
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /*
 	Tree Kit
 
@@ -6760,5 +7482,5 @@ dotPath.prepend = function( object , path , value ) {
 } ;
 
 
-},{}]},{},[5])(5)
+},{}]},{},[7])(7)
 });

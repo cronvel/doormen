@@ -1,4 +1,10 @@
 
+v0.10.4
+-------
+
+New sanitizer: 'resize' -- resize a string to comply with length, minLength and maxLength filters
+
+
 v0.10.3
 -------
 

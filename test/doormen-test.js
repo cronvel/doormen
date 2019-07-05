@@ -1750,6 +1750,10 @@ describe( "Sanitize" , () => {
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , "off" ) , false ) ;
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , "Off" ) , false ) ;
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , "OFF" ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "true" ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "false" ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "yes" ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'toBoolean' } , "no" ) , false ) ;
 
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , '123' ) , true ) ;
 	} ) ;
@@ -1907,6 +1911,40 @@ describe( "Sanitize" , () => {
 		{ a: 'toto' , b: 'text' }
 		) ;
 	} ) ;
+
+	it( "should resize a string accordingly" , () => {
+		doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'abcde' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , maxLength: 3 } , 'ab' ) , 'ab' ) ;
+		
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'a' ) , '--a' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'a' ) , 'a--' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 } , 'abcde' ) , 'abcde' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 } , 'abcde' ) , 'abcde' ) ;
+		
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'a' ) , '--a' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'a' ) , 'a--' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , length: 3 } , 'abcde' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , length: 3 } , 'abcde' ) , 'abc' ) ;
+
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'a' ) , '--a' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'a' ) , 'a--' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abc' ) , 'abc' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcde' ) , 'abcde' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcde' ) , 'abcde' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcdefg' ) , 'abcde' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '-' , minLength: 3 , maxLength: 5 } , 'abcdefg' ) , 'abcde' ) ;
+
+		doormen.equals( doormen( { sanitize: 'resize' , minLength: 3 } , 'a' ) , 'a  ' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '----' , length: 3 } , 'a' ) , '--a' ) ;
+		doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '----' , length: 3 } , 'a' ) , 'a--' ) ;
+	} ) ;
+
 } ) ;
 
 
