@@ -370,6 +370,31 @@ describe( "Optional, default and forced data" , () => {
 		doormen( { properties: { a: { optional: true , type: 'string' } } } , { a: undefined } ) ;
 	} ) ;
 
+	it( "if 'nullIsValue' and 'optional' flags are set, null values should validate instead being considerate a non-value" , () => {
+		doormen.not( { nullIsValue: true , type: 'string' } , null ) ;
+		doormen.not( { nullIsValue: true , optional: true , type: 'string' } , null ) ;
+		doormen.not( { nullIsValue: true , type: 'string' } , undefined ) ;
+		doormen( { nullIsValue: true , optional: true , type: 'string' } , undefined ) ;
+
+		doormen.not( { properties: { a: { nullIsValue: true , type: 'string' } } } , {} ) ;
+		doormen( { properties: { a: { nullIsValue: true , optional: true , type: 'string' } } } , {} ) ;
+		doormen.not( { properties: { a: { nullIsValue: true , optional: true , type: 'string' } } } , { a: null } ) ;
+		doormen( { properties: { a: { nullIsValue: true , optional: true , type: 'string' } } } , { a: undefined } ) ;
+	} ) ;
+
+	it( "if 'nullIsUndefined' is set null values are turned to 'undefined' before applying anything else" , () => {
+		doormen.equals( doormen( { nullIsUndefined: false } , null ) , null ) ;
+		doormen.equals( doormen( { nullIsUndefined: true } , null ) , undefined ) ;
+		
+		doormen.not( { nullIsUndefined: true , type: 'string' } , null ) ;
+		doormen( { nullIsUndefined: true , optional: true , type: 'string' } , null ) ;
+		doormen.not( { nullIsUndefined: true , type: 'string' } , undefined ) ;
+		doormen( { nullIsUndefined: true , optional: true , type: 'string' } , undefined ) ;
+
+		doormen.equals( doormen( { properties: { a: { nullIsUndefined: true , optional: true , type: 'string' } } } , { a: null } ) , { a: undefined } ) ;
+		doormen.equals( doormen( { properties: { a: { nullIsUndefined: true , optional: true , type: 'string' } } } , { a: null } ) , {} ) ;
+	} ) ;
+
 	it( "missing optional properties should not be created (i.e. with undefined)." , () => {
 		var result ;
 
@@ -483,6 +508,36 @@ describe( "Optional, default and forced data" , () => {
 				{ properties: { a: { type: 'string' , "default": 'default!' } , b: { type: 'object' , "default": { c: 5 } } } } ,
 				{} ) ,
 			{ a: 'default!' , b: { c: 5 } }
+		) ;
+	} ) ;
+
+	it( "if 'nullIsValue' is set and a 'default' value is set, null values are not replaced by the default value" , () => {
+		doormen.not( { type: 'string' , nullIsValue: true , "default": 'default!' } , null ) ;
+		doormen.equals( doormen( { nullIsValue: true , "default": 'default!' } , null ) , null ) ;
+		doormen.equals( doormen( { nullIsValue: true , "default": 'default!' } , undefined ) , 'default!' ) ;
+		
+		doormen.not(
+			{ properties: { a: { type: 'string' , nullIsValue: true , "default": 'default!' } } } ,
+			{ a: null } ) ,
+		{ a: null }
+		doormen.equals(
+			doormen(
+				{ properties: { a: { nullIsValue: true , "default": 'default!' } } } ,
+				{ a: null } ) ,
+			{ a: null }
+		) ;
+		doormen.equals(
+			doormen(
+				{ properties: { a: { nullIsValue: true , "default": 'default!' } } } ,
+				{ a: undefined } ) ,
+			{ a: 'default!' }
+		) ;
+
+		doormen.equals(
+			doormen(
+				{ properties: { a: { nullIsValue: true , "default": 'default!' } , b: { type: 'object' , nullIsValue: true , "default": { c: 5 } } } } ,
+				{ a: null , b: undefined } ) ,
+			{ a: null , b: { c: 5 } }
 		) ;
 	} ) ;
 

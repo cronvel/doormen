@@ -1,4 +1,10 @@
 
+v0.10.6
+-------
+
+New: 'nullIsValue' and 'nullIsUndefined' flags
+
+
 v0.10.5
 -------
 

@@ -2464,7 +2464,17 @@ function check( schema , data_ , element , isPatch ) {
 		// 1) Forced value, default value or optional value
 		if ( schema.value !== undefined ) { return schema.value ; }
 
-		if ( data === null || data === undefined ) {
+		if ( data === null ) {
+			if ( schema.nullIsUndefined ) {
+				data = undefined ;
+			}
+			else if ( ! schema.nullIsValue ) {
+				if ( 'default' in schema ) { return clone( schema.default ) ; }
+				if ( schema.optional ) { return data ; }
+			}
+		}
+
+		if ( data === undefined ) {
 			// if the data has default value or is optional and its value is null or undefined, it's ok!
 			if ( 'default' in schema ) { return clone( schema.default ) ; }
 			if ( schema.optional ) { return data ; }
@@ -4448,7 +4458,7 @@ const doormen = require( './doormen.js' ) ;
 
 
 
-sanitizers.toString = function( data ) {
+sanitizers.toString = data => {
 	if ( typeof data === 'string' ) { return data ; }
 
 	// Calling .toString() may throw an error
@@ -4462,7 +4472,7 @@ sanitizers.toString = function( data ) {
 
 
 
-sanitizers.toNumber = function( data ) {
+sanitizers.toNumber = data => {
 	if ( typeof data === 'number' ) { return data ; }
 	else if ( ! data ) { return NaN ; }
 	else if ( typeof data === 'string' ) { return parseFloat( data ) ; }
@@ -4471,7 +4481,7 @@ sanitizers.toNumber = function( data ) {
 
 
 
-sanitizers.toBoolean = function( data ) {
+sanitizers.toBoolean = data => {
 	if ( typeof data === 'boolean' ) { return data ; }
 
 	switch ( data ) {
@@ -4506,7 +4516,7 @@ sanitizers.toBoolean = function( data ) {
 
 
 
-sanitizers.toInteger = function( data ) {
+sanitizers.toInteger = data => {
 	if ( typeof data === 'number' ) { return Math.round( data ) ; }
 	else if ( ! data ) { return NaN ; }
 	else if ( typeof data === 'string' ) { return Math.round( parseFloat( data ) ) ; }	// parseInt() is more capricious
@@ -4515,7 +4525,7 @@ sanitizers.toInteger = function( data ) {
 
 
 
-sanitizers.toArray = function( data ) {
+sanitizers.toArray = data => {
 	if ( Array.isArray( data ) ) { return data ; }
 
 	if ( data === undefined ) { return [] ; }
@@ -4529,7 +4539,7 @@ sanitizers.toArray = function( data ) {
 
 
 
-sanitizers.toDate = function( data ) {
+sanitizers.toDate = data => {
 	var parsed ;
 
 	if ( data instanceof Date ) { return data ; }
@@ -4548,7 +4558,7 @@ sanitizers.toDate = function( data ) {
 
 
 
-sanitizers.removeExtraProperties = function( data , schema , clone ) {
+sanitizers.removeExtraProperties = ( data , schema , clone ) => {
 	var i , key , newData ;
 
 	if (
@@ -4588,7 +4598,6 @@ sanitizers.removeExtraProperties = function( data , schema , clone ) {
 	}
 
 	return data ;
-
 } ;
 
 
@@ -4597,57 +4606,21 @@ sanitizers.removeExtraProperties = function( data , schema , clone ) {
 
 
 
-sanitizers.trim = function( data ) {
-	if ( typeof data === 'string' ) { return data.trim() ; }
-	return data ;
-} ;
+sanitizers.trim = data => typeof data === 'string' ? data.trim() : data ;
 
+sanitizers.toUpperCase = data => typeof data === 'string' ? data.toUpperCase() : data ;
 
+sanitizers.toLowerCase = data => typeof data === 'string' ? data.toLowerCase() : data ;
 
-sanitizers.toUpperCase = function( data ) {
-	if ( typeof data === 'string' ) { return data.toUpperCase() ; }
-	return data ;
-} ;
-
-
-
-sanitizers.toLowerCase = function( data ) {
-	if ( typeof data === 'string' ) { return data.toLowerCase() ; }
-	return data ;
-} ;
-
-
-
-sanitizers.capitalize = function( data ) {
-	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizers.capitalize.toTitleCaseOptions ) ; }
-	return data ;
-} ;
-
+sanitizers.capitalize = data => typeof data === 'string' ? toTitleCase( data , sanitizers.capitalize.toTitleCaseOptions ) : data ;
 sanitizers.capitalize.toTitleCaseOptions = {} ;
 
-
-
-sanitizers.titleCase = function( data ) {
-	if ( typeof data === 'string' ) { return toTitleCase( data , sanitizers.titleCase.toTitleCaseOptions ) ; }
-	return data ;
-} ;
-
+sanitizers.titleCase = data => typeof data === 'string' ? toTitleCase( data , sanitizers.titleCase.toTitleCaseOptions ) : data ;
 sanitizers.titleCase.toTitleCaseOptions = { zealous: 1 , preserveAllCaps: true } ;
 
+sanitizers.latinize = data => typeof data === 'string' ? latinize( data ) : data ;
 
-
-sanitizers.latinize = function( data ) {
-	if ( typeof data === 'string' ) { return latinize( data ) ; }
-	return data ;
-} ;
-
-
-
-sanitizers.dashToCamelCase = function( data ) {
-	if ( typeof data !== 'string' ) { return data ; }
-
-	return data.replace( /-(.)/g , ( match , letter ) => letter.toUpperCase() ) ;
-} ;
+sanitizers.dashToCamelCase = data => typeof data === 'string' ? data.replace( /-(.)/g , ( match , letter ) => letter.toUpperCase() ) : data ;
 
 
 
@@ -4673,7 +4646,7 @@ function padding( data , schema , count ) {
 // Resize a string (later: various other data, like array and Buffer?)
 // It is used to comply to filters: length, maxLength and minLength.
 // To enlarge, it used the subSchema.padding property, or a space if not found.
-sanitizers.resize = function( data , schema ) {
+sanitizers.resize = ( data , schema ) => {
 	if ( typeof data !== 'string' ) { return data ; }
 
 	if ( schema.length ) {
@@ -4699,8 +4672,12 @@ sanitizers.resize = function( data , schema ) {
 
 
 
+sanitizers.nullToUndefined = data => data === null ? undefined : data ;
+
+
+
 // Convert a string to a MongoDB ObjectID
-sanitizers.mongoId = function( data ) {
+sanitizers.mongoId = data => {
 	if ( typeof data !== 'string' ) { return data ; }
 	if ( doormen.isBrowser ) { return data ; }
 
