@@ -1,4 +1,10 @@
 
+v0.10.7
+-------
+
+type-checkers now receive the sub-schema as argument #2
+
+
 v0.10.6
 -------
 

@@ -2508,7 +2508,7 @@ function check( schema , data_ , element , isPatch ) {
 					throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant type '" + schema.type + "'." ) ;
 				}
 			}
-			else if ( ! doormen.typeCheckers[ schema.type ].call( this , data ) ) {
+			else if ( ! doormen.typeCheckers[ schema.type ].call( this , data , schema ) ) {
 				this.validatorError( element.displayPath + " is not a " + schema.type + "." , element ) ;
 			}
 		}
@@ -4932,12 +4932,12 @@ typeCheckers.hex = data => typeof data === 'string' && /^[0-9a-fA-F]+$/.test( da
 
 
 // IP
-typeCheckers.ip = data => typeCheckers.ipv4( data ) || typeCheckers.ipv6( data ) ;
+typeCheckers.ip = ( data , schema ) => typeCheckers.ipv4( data , schema ) || typeCheckers.ipv6( data , schema ) ;
 
 
 
 // IPv4
-typeCheckers.ipv4 = ( data , skipRegExp ) => {
+typeCheckers.ipv4 = ( data , schema , skipRegExp ) => {
 	var i , parts , tmp ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -4963,7 +4963,7 @@ typeCheckers.ipv4 = ( data , skipRegExp ) => {
 
 
 // IPv6
-typeCheckers.ipv6 = ( data , skipRegExp ) => {
+typeCheckers.ipv6 = ( data , schema , skipRegExp ) => {
 	var i , parts , hasDoubleColon = false , startWithDoubleColon = false , endWithDoubleColon = false ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -5007,7 +5007,7 @@ typeCheckers.ipv6 = ( data , skipRegExp ) => {
 
 
 
-typeCheckers.hostname = ( data , skipRegExp ) => {
+typeCheckers.hostname = ( data , schema , skipRegExp ) => {
 	var i , parts ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -5030,12 +5030,12 @@ typeCheckers.hostname = ( data , skipRegExp ) => {
 
 
 // hostname or ip
-typeCheckers.host = data => typeCheckers.ip( data ) || typeCheckers.hostname( data ) ;
+typeCheckers.host = ( data , schema ) => typeCheckers.ip( data , schema ) || typeCheckers.hostname( data , schema ) ;
 
 
 
 // URLs
-typeCheckers.url = ( data , restrictToWebUrl ) => {
+typeCheckers.url = ( data , schema , restrictToWebUrl ) => {
 	if ( typeof data !== 'string' ) { return false ; }
 
 	var matches = data.match( /^([a-z+.-]+):\/\/((?:([^\s@/:]+)(?::([^\s@/:]+))?@)?(([0-9.]+)|([0-9a-f:]+)|([^\s/$?#@:]+))(:[0-9]+)?)?(\/[^\s]*)?$/ ) ;
@@ -5048,26 +5048,26 @@ typeCheckers.url = ( data , restrictToWebUrl ) => {
 	if ( ! matches[ 2 ] && matches[ 1 ] !== 'file' ) { return false ; }
 
 	if ( matches[ 6 ] ) {
-		if ( ! typeCheckers.ipv4( matches[ 6 ] , true ) ) { return false ; }
+		if ( ! typeCheckers.ipv4( matches[ 6 ] , schema , true ) ) { return false ; }
 	}
 
 	if ( matches[ 7 ] ) {
-		if ( ! typeCheckers.ipv6( matches[ 7 ] , true ) ) { return false ; }
+		if ( ! typeCheckers.ipv6( matches[ 7 ] , schema , true ) ) { return false ; }
 	}
 
 	if ( matches[ 8 ] ) {
-		if ( ! typeCheckers.hostname( matches[ 8 ] , true ) ) { return false ; }
+		if ( ! typeCheckers.hostname( matches[ 8 ] , schema , true ) ) { return false ; }
 	}
 
 	return true ;
 } ;
 
-typeCheckers.weburl = data => typeCheckers.url( data , true ) ;
+typeCheckers.weburl = ( data , schema ) => typeCheckers.url( data , schema , true ) ;
 
 
 
 // Emails
-typeCheckers.email = data => {
+typeCheckers.email = ( data , schema ) => {
 	var matches , i , parts ;
 
 	if ( typeof data !== 'string' ) { return false ; }
@@ -5092,7 +5092,7 @@ typeCheckers.email = data => {
 		if ( ! parts[ i ].length ) { return false ; }
 	}
 
-	if ( ! typeCheckers.hostname( matches[ 2 ] , true ) ) { return false ; }
+	if ( ! typeCheckers.hostname( matches[ 2 ] , schema , true ) ) { return false ; }
 
 	return true ;
 } ;
