@@ -82,50 +82,50 @@ Equality of simple type.
 
 ```js
 doormen.equals( undefined , undefined ) ;
-		doormen.equals( null , null ) ;
-		doormen.equals( true , true ) ;
-		doormen.equals( false , false ) ;
-		doormen.not.equals( undefined , null ) ;
-		doormen.not.equals( true , false ) ;
-		doormen.not.equals( null , false ) ;
-		doormen.not.equals( undefined , false ) ;
-		doormen.equals( NaN , NaN ) ;
-		doormen.not.equals( NaN , null ) ;
-		doormen.not.equals( NaN , undefined ) ;
-		doormen.equals( Infinity , Infinity ) ;
-		doormen.equals( -Infinity , -Infinity ) ;
-		doormen.not.equals( Infinity , -Infinity ) ;
-		doormen.equals( 0 , 0 ) ;
-		doormen.equals( 123 , 123 ) ;
-		doormen.equals( 0.123 , 0.123 ) ;
-		doormen.equals( "" , "" ) ;
-		doormen.equals( "abc" , "abc" ) ;
-		doormen.equals( "   abc" , "   abc" ) ;
-		doormen.equals( "abc  " , "abc  " ) ;
-		doormen.equals( "     abc  " , "     abc  " ) ;
-		doormen.not.equals( 0 , "" ) ;
-		doormen.not.equals( false , "" ) ;
+doormen.equals( null , null ) ;
+doormen.equals( true , true ) ;
+doormen.equals( false , false ) ;
+doormen.not.equals( undefined , null ) ;
+doormen.not.equals( true , false ) ;
+doormen.not.equals( null , false ) ;
+doormen.not.equals( undefined , false ) ;
+doormen.equals( NaN , NaN ) ;
+doormen.not.equals( NaN , null ) ;
+doormen.not.equals( NaN , undefined ) ;
+doormen.equals( Infinity , Infinity ) ;
+doormen.equals( -Infinity , -Infinity ) ;
+doormen.not.equals( Infinity , -Infinity ) ;
+doormen.equals( 0 , 0 ) ;
+doormen.equals( 123 , 123 ) ;
+doormen.equals( 0.123 , 0.123 ) ;
+doormen.equals( "" , "" ) ;
+doormen.equals( "abc" , "abc" ) ;
+doormen.equals( "   abc" , "   abc" ) ;
+doormen.equals( "abc  " , "abc  " ) ;
+doormen.equals( "     abc  " , "     abc  " ) ;
+doormen.not.equals( 0 , "" ) ;
+doormen.not.equals( false , "" ) ;
 ```
 
 Equality of objects.
 
 ```js
 var o = {} ;
-		doormen.equals( {} , {} ) ;
-		doormen.equals( o , o ) ;
-		doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 } ) ;
-		doormen.not.equals( { a: 2 , b: 6 } , { a: 2 , b: 5 } ) ;
-		doormen.equals( { b: 5 , a: 2 } , { a: 2 , b: 5 } ) ;
-		doormen.not.equals( { a: 2 , b: 5 , c: null } , { a: 2 , b: 5 } ) ;
-		doormen.not.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: null } ) ;
-		doormen.not.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 } ) ;
-		doormen.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 , c: {} } ) ;
-		doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' } } ) ;
-		doormen.not.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'toto' } } ) ;
-		doormen.equals(
-			{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } } ,
-			{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } }
-		) ;
+doormen.equals( {} , {} ) ;
+doormen.equals( o , o ) ;
+doormen.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 } ) ;
+doormen.not.equals( { a: 2 , b: 6 } , { a: 2 , b: 5 } ) ;
+doormen.equals( { b: 5 , a: 2 } , { a: 2 , b: 5 } ) ;
+doormen.not.equals( { a: 2 , b: 5 , c: null } , { a: 2 , b: 5 } ) ;
+doormen.not.equals( { a: 2 , b: 5 } , { a: 2 , b: 5 , c: null } ) ;
+doormen.not.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 } ) ;
+doormen.equals( { a: 2 , b: 5 , c: {} } , { a: 2 , b: 5 , c: {} } ) ;
+doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' } } ) ;
+doormen.not.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'toto' } } ) ;
+doormen.equals(
+	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } } ,
+	{ a: 2 , b: 5 , c: { d: 'titi' , e: { f: 'f' , g: 7 } } }
+) ;
 ```
 
 when a property is undefined in the left-side and non-existant in the right-side, they should be equals.
@@ -157,49 +157,60 @@ Equality of arrays.
 
 ```js
 var o = [] ;
-		doormen.equals( [] , [] ) ;
-		doormen.equals( o , o ) ;
-		doormen.equals( [ 1 ] , [ 1 ] ) ;
-		doormen.not.equals( [ 1 , undefined ] , [ 1 ] ) ;
-		doormen.not.equals( [ 1 ] , [ 1 , undefined ] ) ;
-		doormen.not.equals( [ 1 ] , [ 2 ] ) ;
-		doormen.equals( [ 1 , 2 , 3 ] , [ 1 , 2 , 3 ] ) ;
-		doormen.equals( [ 1 , [] , 3 ] , [ 1 , [] , 3 ] ) ;
-		doormen.equals( [ 1 , [ 2 ] , 3 ] , [ 1 , [ 2 ] , 3 ] ) ;
-		doormen.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'a' ] , 3 ] ) ;
-		doormen.not.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'b' ] , 3 ] ) ;
-		doormen.equals( [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
-		doormen.not.equals( [ 1 , [ 2 , [ undefined ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+doormen.equals( [] , [] ) ;
+doormen.equals( o , o ) ;
+doormen.equals( [ 1 ] , [ 1 ] ) ;
+doormen.not.equals( [ 1 , undefined ] , [ 1 ] ) ;
+doormen.not.equals( [ 1 ] , [ 1 , undefined ] ) ;
+doormen.not.equals( [ 1 ] , [ 2 ] ) ;
+doormen.equals( [ 1 , 2 , 3 ] , [ 1 , 2 , 3 ] ) ;
+doormen.equals( [ 1 , [] , 3 ] , [ 1 , [] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 ] , 3 ] , [ 1 , [ 2 ] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'a' ] , 3 ] ) ;
+doormen.not.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'b' ] , 3 ] ) ;
+doormen.equals( [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+doormen.not.equals( [ 1 , [ 2 , [ undefined ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
 ```
 
 Equality of nested and mixed objects and arrays.
 
 ```js
 doormen.not.equals( {} , [] ) ;
-		doormen.equals(
-			{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] } ,
-			{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] }
-		) ;
-		doormen.equals(
-			[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ] ,
-			[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ]
-		) ;
+doormen.equals(
+	{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] } ,
+	{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] }
+) ;
+doormen.equals(
+	[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ] ,
+	[ 'a' , 'b' , { c: 'titi' , d: [ 'f' , 7 ] } ]
+) ;
 ```
 
 Circular references: stop searching when both part have reached circular references.
 
 ```js
 var a , b ;
-		a = { a: 1 , b: 2 } ;
-		a.c = a ;
-		b = { a: 1 , b: 2 } ;
-		b.c = b ;
-		doormen.equals( a , b ) ;
-		a = { a: 1 , b: 2 , c: { a: 1 , b: 2 } } ;
-		a.c.c = a ;
-		b = { a: 1 , b: 2 } ;
-		b.c = b ;
-		doormen.equals( a , b ) ;
+a = { a: 1 , b: 2 } ;
+a.c = a ;
+b = { a: 1 , b: 2 } ;
+b.c = b ;
+doormen.equals( a , b ) ;
+a = { a: 1 , b: 2 , c: { a: 1 , b: 2 } } ;
+a.c.c = a ;
+b = { a: 1 , b: 2 } ;
+b.c = b ;
+doormen.equals( a , b ) ;
+```
+
+Date.
+
+```js
+var date1 = new Date( '2019-06-18' ) ,
+	date2 = new Date( '2019-08-21' ) ,
+	date3 = new Date( '2019-08-21' ) ;
+
+doormen.not.equals( date1 , date2 ) ;
+doormen.equals( date2 , date3 ) ;
 ```
 
 Buffers.
@@ -1809,7 +1820,7 @@ should sanitize to 'toDate' accordingly.
 ```js
 var date = new Date() ;
 var timestamp = date.getTime() ;
-var dateString = date.toString() ;
+var dateString = date.toISOString() ;	// .toString() doesn't work: it strips millisecond
 doormen.equals( doormen( { sanitize: 'toDate' } , date ) , date ) ;
 doormen.equals( doormen( { sanitize: 'toDate' } , timestamp ) , date ) ;
 doormen.equals( doormen( { sanitize: 'toDate' } , dateString ) , date ) ;

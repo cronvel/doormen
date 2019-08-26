@@ -103,7 +103,6 @@ describe( "Assertion utilities" , () => {
 describe( "Equality checker" , () => {
 
 	it( "Equality of simple type" , () => {
-
 		doormen.equals( undefined , undefined ) ;
 		doormen.equals( null , null ) ;
 		doormen.equals( true , true ) ;
@@ -136,7 +135,6 @@ describe( "Equality checker" , () => {
 	} ) ;
 
 	it( "Equality of objects" , () => {
-
 		var o = {} ;
 
 		doormen.equals( {} , {} ) ;
@@ -182,7 +180,6 @@ describe( "Equality checker" , () => {
 	it( "should test equality of objects with different prototype" ) ;
 
 	it( "Equality of arrays" , () => {
-
 		var o = [] ;
 
 		doormen.equals( [] , [] ) ;
@@ -201,7 +198,6 @@ describe( "Equality checker" , () => {
 	} ) ;
 
 	it( "Equality of nested and mixed objects and arrays" , () => {
-
 		doormen.not.equals( {} , [] ) ;
 		doormen.equals(
 			{ a: 2 , b: 5 , c: [ 'titi' , { f: 'f' , g: 7 } ] } ,
@@ -214,7 +210,6 @@ describe( "Equality checker" , () => {
 	} ) ;
 
 	it( "Circular references: stop searching when both part have reached circular references" , () => {
-
 		var a , b ;
 
 		a = { a: 1 , b: 2 } ;
@@ -232,6 +227,15 @@ describe( "Equality checker" , () => {
 		b.c = b ;
 
 		doormen.equals( a , b ) ;
+	} ) ;
+
+	it( "Date" , () => {
+		var date1 = new Date( '2019-06-18' ) ,
+			date2 = new Date( '2019-08-21' ) ,
+			date3 = new Date( '2019-08-21' ) ;
+		
+		doormen.not.equals( date1 , date2 ) ;
+		doormen.equals( date2 , date3 ) ;
 	} ) ;
 
 	it( "Buffers" , () => {
@@ -1855,7 +1859,7 @@ describe( "Sanitize" , () => {
 	it( "should sanitize to 'toDate' accordingly" , () => {
 		var date = new Date() ;
 		var timestamp = date.getTime() ;
-		var dateString = date.toString() ;
+		var dateString = date.toISOString() ;	// .toString() doesn't work: it strips millisecond
 		doormen.equals( doormen( { sanitize: 'toDate' } , date ) , date ) ;
 		doormen.equals( doormen( { sanitize: 'toDate' } , timestamp ) , date ) ;
 		doormen.equals( doormen( { sanitize: 'toDate' } , dateString ) , date ) ;

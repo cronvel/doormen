@@ -1,4 +1,10 @@
 
+v0.10.8
+-------
+
+Fix the Date equality-check bug: isEqual() can rely on .valueOf() for compatible object comparison
+
+
 v0.10.7
 -------
 

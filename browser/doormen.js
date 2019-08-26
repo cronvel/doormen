@@ -4020,7 +4020,7 @@ filters.notIn = function( data , params , element ) {
 
 /*
 	Should be FAST! Some critical application part are depending on it.
-	When a reporter will be coded, it should be plugged in a way that does not slow down it.
+	When a reporter will be coded, it should be plugged in a way that does not slow it down.
 
 	Options:
 		like: if true, the prototype of object are not compared
@@ -4042,7 +4042,8 @@ function isEqual( left , right , like , oneWay ) {
 
 
 function isEqual_( runtime , left , right ) {
-	var index , indexMax , keys , key , leftIndexOf , rightIndexOf , recursiveTest ;
+	var index , indexMax , keys , key , leftIndexOf , rightIndexOf , recursiveTest ,
+		valueOfLeft , valueOfRight , leftProto , rightProto , leftConstructor , rightConstructor ;
 
 	// If it's strictly equals, then early exit now.
 	if ( left === right ) { return true ; }
@@ -4057,7 +4058,7 @@ function isEqual_( runtime , left , right ) {
 	// Below, left and rights have the same type
 
 	// NaN check
-	if ( typeof left === 'number' && isNaN( left ) && isNaN( right ) ) { return true ; }
+	if ( typeof left === 'number' && Number.isNaN( left ) && Number.isNaN( right ) ) { return true ; }
 
 	// Should come after the NaN check
 	if ( ! left ) { return false ; }
@@ -4084,13 +4085,11 @@ function isEqual_( runtime , left , right ) {
 
 				runtime.leftStack.push( left ) ;
 				runtime.rightStack.push( right ) ;
-
 				recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] ) ;
-
-				if ( ! recursiveTest ) { return false ; }
-
+				//if ( ! recursiveTest ) { return false ; }
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
+				return recursiveTest ;
 			}
 		}
 		else if ( Buffer.isBuffer( left ) ) {
@@ -4099,6 +4098,35 @@ function isEqual_( runtime , left , right ) {
 		else {
 			// Objects
 			if ( Array.isArray( right ) ) { return false ; }
+
+			if ( typeof left.valueOf === 'function' && typeof right.valueOf === 'function' ) {
+				valueOfLeft = left.valueOf() ;
+				valueOfRight = right.valueOf() ;
+
+				if ( valueOfLeft !== left && valueOfRight !== right ) {
+					leftProto = Object.getPrototypeOf( left ) ;
+					leftConstructor = leftProto && leftProto.constructor ;
+					rightProto = Object.getPrototypeOf( right ) ;
+					rightConstructor = rightProto && rightProto.constructor ;
+
+					// We only compare .valueOf() if the prototype are compatible
+					if (
+						leftConstructor && rightConstructor &&
+						( leftConstructor === rightConstructor || ( left instanceof rightConstructor ) || ( right instanceof leftConstructor ) )
+					) {
+						// .valueOf() must return a primitive value, so we wouldn't have to call recursively,
+						// but there are NaN check to be performed, and nothing prevent userland from returning an object...
+
+						runtime.leftStack.push( left ) ;
+						runtime.rightStack.push( right ) ;
+						recursiveTest = isEqual_( runtime , valueOfLeft , valueOfRight ) ;
+						//if ( ! recursiveTest ) { return false ; }
+						runtime.leftStack.pop() ;
+						runtime.rightStack.pop() ;
+						return recursiveTest ;
+					}
+				}
+			}
 
 			keys = Object.keys( left ) ;
 
@@ -4111,13 +4139,11 @@ function isEqual_( runtime , left , right ) {
 
 				runtime.leftStack.push( left ) ;
 				runtime.rightStack.push( right ) ;
-
 				recursiveTest = isEqual_( runtime , left[ key ] , right[ key ] ) ;
-
-				if ( ! recursiveTest ) { return false ; }
-
+				//if ( ! recursiveTest ) { return false ; }
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
+				if ( ! recursiveTest ) { return false ; }
 			}
 
 			if ( ! runtime.oneWay ) {
@@ -4139,10 +4165,7 @@ function isEqual_( runtime , left , right ) {
 	return false ;
 }
 
-
-
 module.exports = isEqual ;
-
 
 
 }).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
