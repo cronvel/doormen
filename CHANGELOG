@@ -1,4 +1,10 @@
 
+v0.10.10
+--------
+
+Revert v0.10.9 which was a breaking change, for function generating default values, use 'defaultFn' instead
+
+
 v0.10.9
 -------
 
