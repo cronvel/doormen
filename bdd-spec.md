@@ -495,6 +495,29 @@ doormen.equals(
 ) ;
 ```
 
+when the schema's default value is a function, that function is executed and its return-value is used as the default.
+
+```js
+var date , count = 0 ;
+doormen.equals( doormen( { type: 'date' , "default": () => date = new Date() } , null ) , date ) ;
+doormen.equals(
+	doormen(
+		{ properties: { a: { type: 'date' , "default": () => date = new Date() } } } ,
+		{ a: null } ) ,
+	{ a: date }
+) ;
+doormen.equals( doormen( { type: 'integer' , "default": () => ++ count } , null ) , 1 ) ;
+doormen.equals(
+	doormen(
+		{ properties: {
+			a: { type: 'integer' , "default": () => ++ count } ,
+			b: { type: 'integer' , "default": () => ++ count }
+		} } ,
+		{ a: null } ) ,
+	{ a: 2 , b: 3 }
+) ;
+```
+
 if 'nullIsValue' is set and a 'default' value is set, null values are not replaced by the default value.
 
 ```js

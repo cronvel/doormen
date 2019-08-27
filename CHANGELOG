@@ -1,4 +1,10 @@
 
+v0.10.9
+-------
+
+New: when schema.default is a function, that function is executed and its return-value is used as the default
+
+
 v0.10.8
 -------
 
