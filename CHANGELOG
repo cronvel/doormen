@@ -1,4 +1,12 @@
 
+v0.10.11
+--------
+
+Add fulfill* expectation
+to.reject()/to.fulfill() now accepts both functions and promises
+expect() don't lose stack trace when dealing with promise anymore
+
+
 v0.10.10
 --------
 

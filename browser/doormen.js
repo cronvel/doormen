@@ -40,8 +40,9 @@ function AssertionError( message , from , options = {} ) {
 	this.expectationType = options.expectationType ;
 	this.showDiff = !! options.showDiff ;
 
-	if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
-	else { Object.defineProperty( this , 'stack' , { value: Error().stack , enumerable: true , configurable: true } ) ; }
+	if ( from instanceof Error ) { this.stack = from.stack ; }
+	else if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
+	else { this.stack = Error().stack ; }
 }
 
 module.exports = AssertionError ;
@@ -1095,7 +1096,7 @@ assert.shallowCloneOf = ( from , actual , expected ) => {
 
 		// The .hasOwnProperty() check is mandatory, or we have to iterate over actualKeys too
 		expectedKeys.forEach( key => {
-			if ( ! actual.hasOwnProperty( key ) || actual[ key ] !== expected[ key ] ) {
+			if ( ! Object.prototype.hasOwnProperty.call( actual , key ) || actual[ key ] !== expected[ key ] ) {
 				throw assertionError( from , actual , 'to be a shallow clone of' , expected ) ;
 			}
 		} ) ;
@@ -1564,7 +1565,7 @@ assert.ownKeys = ( from , actual , ... keys ) => {
 	}
 
 	keys.forEach( key => {
-		if ( ! actual.hasOwnProperty( key ) ) {
+		if ( ! Object.prototype.hasOwnProperty.call( actual , key ) ) {
 			throw assertionError( from , actual , 'to have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
@@ -1589,7 +1590,7 @@ assert.onlyOwnKeys = ( from , actual , ... keys ) => {
 
 	// Then, each expected keys should be present
 	keys.forEach( key => {
-		if ( ! actual.hasOwnProperty( key ) ) {
+		if ( ! Object.prototype.hasOwnProperty.call( actual , key ) ) {
 			throw assertionError( from , actual , 'to only have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
@@ -1610,7 +1611,7 @@ assert.notOwnKeys = ( from , actual , ... keys ) => {
 	}
 
 	keys.forEach( key => {
-		if ( actual.hasOwnProperty( key ) ) {
+		if ( Object.prototype.hasOwnProperty.call( actual , key ) ) {
 			throw assertionError( from , actual , 'not to have own key' + ( keys.length > 1 ? 's' : '' ) , ... keys ) ;
 		}
 	} ) ;
@@ -1661,7 +1662,7 @@ assert['to have not own property'] = assert['to not have own property'] = assert
 assert['to have no own property'] =
 assert.notOwnProperty = function( from , actual , key , value ) {
 	if ( arguments.length >= 4 ) {
-		if ( actual.hasOwnProperty( key ) ) {
+		if ( Object.prototype.hasOwnProperty.call( actual , key ) ) {
 			assert.notEqual( from , actual[ key ] , value ) ;
 		}
 	}
@@ -1750,9 +1751,14 @@ assert['to reject'] =
 assert['to reject with'] =
 assert['to reject with a'] =
 assert['to reject with an'] =
+assert['to not fulfill'] = assert['not to fulfill'] =
+assert['to fulfill not with'] = assert['to not fulfill with'] = assert['not to fulfill with'] =
+assert['to fulfill not with a'] = assert['to not fulfill with a'] = assert['not to fulfill with a'] =
+assert['to fulfill not with an'] = assert['to not fulfill with an'] = assert['not to fulfill with an'] =
+assert.notFulfill =
 assert.reject = async ( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
-		throw assertionError( from , fn , 'to be a function' ) ;
+		return assert.rejected( from , fn , expectedErrorInstance , expectedPartialError ) ;
 	}
 
 	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
@@ -1788,9 +1794,14 @@ assert['to not reject'] = assert['not to reject'] =
 assert['to reject not with'] = assert['to not reject with'] = assert['not to reject with'] =
 assert['to reject not with a'] = assert['to not reject with a'] = assert['not to reject with a'] =
 assert['to reject not with an'] = assert['to not reject with an'] = assert['not to reject with an'] =
-assert.notReject = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) => {
+assert['to fulfill'] =
+assert['to fulfill with'] =
+assert['to fulfill with a'] =
+assert['to fulfill with an'] =
+assert.notReject =
+assert.fulfill = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
-		throw assertionError( from , fn , 'to be a function' ) ;
+		return assert.fulfilled( from , fn , notExpectedErrorInstance , notExpectedPartialError ) ;
 	}
 
 	if ( ! Array.isArray( fnThisAndArgs ) ) { fnThisAndArgs = [] ; }
@@ -1816,11 +1827,11 @@ assert.notReject = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance 
 		throw assertionError( from , call , 'not to reject' ) ;
 	}
 } ;
-assert.notThrow.promise = assert.notReject ;
-assert.notReject.fnParams = true ;
-assert.notReject.async = true ;
-assert.notReject.inspect = true ;
-assert.notReject.glue = ' having ' ;
+assert.notThrow.promise = assert.fulfill ;
+assert.fulfill.fnParams = true ;
+assert.fulfill.async = true ;
+assert.fulfill.inspect = true ;
+assert.fulfill.glue = ' having ' ;
 
 
 
@@ -1833,6 +1844,11 @@ assert['to be rejected'] =
 assert['to be rejected with'] =
 assert['to be rejected with a'] =
 assert['to be rejected with an'] =
+assert['not to be fulfilled'] = assert['to not be fulfilled'] = assert['to be not fulfilled'] =
+assert['not to be fulfilled with'] = assert['to not be fulfilled with'] = assert['to be not fulfilled with'] =
+assert['not to be fulfilled with a'] = assert['to not be fulfilled with a'] = assert['to be not fulfilled with a'] =
+assert['not to be fulfilled with an'] = assert['to not be fulfilled with an'] = assert['to be not fulfilled with an'] =
+assert.notFulfilled =
 assert.rejected = async ( from , promise , expectedErrorInstance , expectedPartialError ) => {
 	var error , hasThrown = false ;
 
@@ -1870,6 +1886,11 @@ assert['not to be rejected'] = assert['to not be rejected'] = assert['to be not 
 assert['not to be rejected with'] = assert['to not be rejected with'] = assert['to be not rejected with'] =
 assert['not to be rejected with a'] = assert['to not be rejected with a'] = assert['to be not rejected with a'] =
 assert['not to be rejected with an'] = assert['to not be rejected with an'] = assert['to be not rejected with an'] =
+assert['to be fulfilled'] =
+assert['to be fulfilled with'] =
+assert['to be fulfilled with a'] =
+assert['to be fulfilled with an'] =
+assert.fulfilled =
 assert.notRejected = async ( from , promise , notExpectedErrorInstance , notExpectedPartialError ) => {
 	var error , hasThrown = false ;
 
@@ -1899,9 +1920,9 @@ assert.notRejected = async ( from , promise , notExpectedErrorInstance , notExpe
 		throw assertionError( from , promise , 'not to be rejected' ) ;
 	}
 } ;
-assert.notRejected.promise = true ;
-assert.notRejected.async = true ;
-assert.notRejected.inspect = true ;
+assert.fulfilled.promise = true ;
+assert.fulfilled.async = true ;
+assert.fulfilled.inspect = true ;
 
 
 
@@ -3660,8 +3681,6 @@ expectation['method of'] = ( expect , object ) => {
 
 var handler = {
 	get: ( target , property ) => {
-		//console.error( "Getting:" , property ) ;
-
 		// First, check special flags
 		if ( property === 'eventually' ) {
 			target.isPromise = true ;
@@ -3687,7 +3706,7 @@ var handler = {
 		return target[ property ] ;
 	} ,
 	apply: ( target , thisArg , args ) => {
-		var fn , promise ;
+		var fn , promise , traceError ;
 
 		fn = expectation[ target.expectationType ] ;
 
@@ -3707,6 +3726,11 @@ var handler = {
 		if ( target.isPromise ) {
 			if ( ! fn.promise ) {
 				// If it's a promise, resolve it and then call the proxy again
+
+				// First keep the stack trace
+				traceError = new Error() ;
+				if ( Error.captureStackTrace ) { Error.captureStackTrace( traceError , handler.apply ) ; }
+
 				return Promise.resolve( target.value )
 					.then(
 						value => {
@@ -3717,7 +3741,7 @@ var handler = {
 						() => {
 							target.expectFn.stats.fail ++ ;
 							if ( target.expectFn.hooks.fail ) { target.expectFn.hooks.fail() ; }
-							throw assert.__assertionError__( handler.apply , target.value , "to resolve" ) ;
+							throw assert.__assertionError__( traceError , target.value , "to resolve" ) ;
 						}
 					) ;
 			}
@@ -3726,11 +3750,15 @@ var handler = {
 		}
 
 		if ( fn.async ) {
+			// First keep the stack trace
+			traceError = new Error() ;
+			if ( Error.captureStackTrace ) { Error.captureStackTrace( traceError , handler.apply ) ; }
+
 			if ( fn.fnParams ) {
-				promise = fn( handler.apply , target.value , target.fnArgs , ... args ) ;
+				promise = fn( traceError , target.value , target.fnArgs , ... args ) ;
 			}
 			else {
-				promise = fn( handler.apply , target.value , ... args ) ;
+				promise = fn( traceError , target.value , ... args ) ;
 			}
 
 			return promise.then(
