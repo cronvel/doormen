@@ -3640,14 +3640,47 @@ describe( "Expect BDD assertion library" , () => {
 	it( "Promise-returning functions" , async () => {
 		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.eventually.throw() ;
 		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
-		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.reject() ) ;
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.fulfill() ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.eventually.throw() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).not.to.fulfill() ) ;
 
 		await doormen.expect( () => resolveTimeout() ).not.to.eventually.throw() ;
 		await doormen.expect( () => resolveTimeout() ).not.to.reject() ;
-		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.expect( () => resolveTimeout() ).to.fulfill() ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.eventually.throw() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
 	} ) ;
+	
+	it( "'to reject'/'to fulfill' assertion should support both promises and functions returning a promise" , async () => {
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
+		await doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.fulfill() ;
+		await doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).not.to.fulfill() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( resolveTimeout() ).to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => resolveTimeout() ).not.to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( resolveTimeout() ).not.to.fulfill() ) ;
+
+		await doormen.expect( () => resolveTimeout() ).not.to.reject() ;
+		await doormen.expect( resolveTimeout() ).not.to.reject() ;
+		await doormen.expect( () => resolveTimeout() ).to.fulfill() ;
+		await doormen.expect( resolveTimeout() ).to.fulfill() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
+	} ) ;
+
+	/*
+	it( "test stack traces" , async () => {
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.reject() ;
+		
+		// This should generate the correct sstack trace
+		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ;
+	} ) ;
+	*/
 } ) ;
 
 
