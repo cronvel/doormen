@@ -4119,7 +4119,7 @@ function isEqual_( runtime , left , right ) {
 				//if ( ! recursiveTest ) { return false ; }
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
-				return recursiveTest ;
+				if ( ! recursiveTest ) { return false ; }
 			}
 		}
 		else if ( Buffer.isBuffer( left ) ) {
@@ -4153,7 +4153,7 @@ function isEqual_( runtime , left , right ) {
 						//if ( ! recursiveTest ) { return false ; }
 						runtime.leftStack.pop() ;
 						runtime.rightStack.pop() ;
-						return recursiveTest ;
+						if ( ! recursiveTest ) { return false ; }
 					}
 				}
 			}

@@ -195,6 +195,9 @@ describe( "Equality checker" , () => {
 		doormen.not.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'b' ] , 3 ] ) ;
 		doormen.equals( [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
 		doormen.not.equals( [ 1 , [ 2 , [ undefined ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+		
+		doormen.equals( [ [ 'one' ] , [ 'two' ] ] , [ [ 'one' ] , [ 'two' ] ] ) ;
+		doormen.not.equals( [ [ 'one' ] , [ 'two' ] ] , [ [ 'one' ] , [ 'twoa' ] ] ) ;
 	} ) ;
 
 	it( "Equality of nested and mixed objects and arrays" , () => {
@@ -3680,7 +3683,7 @@ describe( "Expect BDD assertion library" , () => {
 		// This should generate the correct sstack trace
 		await doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ;
 	} ) ;
-	*/
+	//*/
 } ) ;
 
 

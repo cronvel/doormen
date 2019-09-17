@@ -170,6 +170,9 @@ doormen.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'a' ] , 3 ] ) ;
 doormen.not.equals( [ 1 , [ 2 , 'a' ] , 3 ] , [ 1 , [ 2 , 'b' ] , 3 ] ) ;
 doormen.equals( [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
 doormen.not.equals( [ 1 , [ 2 , [ undefined ] , 'a' ] , 3 ] , [ 1 , [ 2 , [ null ] , 'a' ] , 3 ] ) ;
+
+doormen.equals( [ [ 'one' ] , [ 'two' ] ] , [ [ 'one' ] , [ 'two' ] ] ) ;
+doormen.not.equals( [ [ 'one' ] , [ 'two' ] ] , [ [ 'one' ] , [ 'twoa' ] ] ) ;
 ```
 
 Equality of nested and mixed objects and arrays.

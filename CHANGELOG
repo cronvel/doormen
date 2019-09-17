@@ -1,4 +1,10 @@
 
+v0.10.12
+--------
+
+Important regression of .isEqual() fixed for nested arrays
+
+
 v0.10.11
 --------
 
