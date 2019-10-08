@@ -840,6 +840,10 @@ describe( "Top-level filters" , () => {
 		doormen( { minLength: 3 } , "abcde" ) ;
 		doormen.not( { minLength: 3 } , "ab" ) ;
 		doormen.not( { minLength: 3 } , "" ) ;
+		
+		doormen( { minLength: 3 } , [ 1,2,3 ] ) ;
+		doormen( { minLength: 3 } , [ 1,2,3,4 ] ) ;
+		doormen.not( { minLength: 3 } , [ 1,2 ] ) ;
 
 		doormen.not( { minLength: 3 } , 1 ) ;
 		doormen.not( { minLength: 0 } , 1 ) ;
@@ -853,6 +857,10 @@ describe( "Top-level filters" , () => {
 		doormen.not( { maxLength: 3 } , "abcde" ) ;
 		doormen( { maxLength: 3 } , "ab" ) ;
 		doormen( { maxLength: 3 } , "" ) ;
+
+		doormen( { maxLength: 3 } , [ 1,2,3 ] ) ;
+		doormen.not( { maxLength: 3 } , [ 1,2,3,4 ] ) ;
+		doormen( { maxLength: 3 } , [ 1,2 ] ) ;
 
 		doormen.not( { maxLength: 3 } , 1 ) ;
 		doormen.not( { maxLength: 0 } , 1 ) ;
