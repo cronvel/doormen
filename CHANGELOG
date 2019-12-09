@@ -1,4 +1,10 @@
 
+v0.10.13
+--------
+
+New -- opaque object: you cannot patch inside it
+
+
 v0.10.12
 --------
 

@@ -2246,6 +2246,28 @@ describe( "Patch validation" , () => {
 		doormen.equals( doormen.patch( schema , { c: 'three' , d: 'four' } ) , { c: 'three' , d: 'four' } ) ;
 	} ) ;
 
+	it( "opaque object: forbidden path in a patch should throw" , () => {
+		var schema ;
+
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				a: {
+					type: 'strictObject',
+					of: { type: 'string' }
+				} ,
+				b: {
+					type: 'strictObject' ,
+					of: { type: 'string' } ,
+					opaque: true
+				}
+			}
+		} ;
+
+		doormen.patch( schema , { "a.a": 'val' } ) ;
+		doormen.patch.not( schema , { "b.a": 'val' } ) ;
+	} ) ;
+
 	it( "non-object patch should not validate" , () => {
 		var schema ;
 

@@ -2778,7 +2778,7 @@ function addToPatch( patch , path , data ) {
 
 
 
-doormen.path = function( schema , path , noSubmasking = false ) {
+doormen.path = function( schema , path , noSubmasking = false , noOpaque = false ) {
 	var index = 0 ;
 
 	if ( ! Array.isArray( path ) ) {
@@ -2793,16 +2793,20 @@ doormen.path = function( schema , path , noSubmasking = false ) {
 	// Skip empty path
 	while ( index < path.length && ! path[ index ] ) { index ++ ; }
 
-	return schemaPath_( schema , path , index , noSubmasking ) ;
+	return schemaPath_( schema , path , index , noSubmasking , noOpaque ) ;
 } ;
 
 
 
-function schemaPath_( schema , path , index , noSubmasking ) {
+function schemaPath_( schema , path , index , noSubmasking , noOpaque ) {
 	var key ;
 
 	// Found it! return now!
 	if ( index >= path.length ) { return schema ; }
+
+	if ( noOpaque && schema.opaque ) {
+		throw new doormen.ValidatorError( "Path leading inside an opaque object." ) ;
+	}
 
 	if ( noSubmasking && schema.noSubmasking ) { return null ; }
 
@@ -2820,7 +2824,7 @@ function schemaPath_( schema , path , index , noSubmasking ) {
 
 		if ( schema.properties[ key ] ) {
 			//path.shift() ;
-			return schemaPath_( schema.properties[ key ] , path , index + 1 , noSubmasking ) ;
+			return schemaPath_( schema.properties[ key ] , path , index + 1 , noSubmasking , noOpaque ) ;
 		}
 		else if ( ! schema.extraProperties ) {
 			throw new doormen.SchemaError( "Bad path (at " + path + "), property '" + key + "' not found and the schema does not allow extra properties." ) ;
@@ -2833,7 +2837,7 @@ function schemaPath_( schema , path , index , noSubmasking ) {
 		}
 
 		//path.shift() ;
-		return schemaPath_( schema.of , path , index + 1 , noSubmasking ) ;
+		return schemaPath_( schema.of , path , index + 1 , noSubmasking , noOpaque ) ;
 	}
 
 	// "element" is not supported ATM
@@ -3255,10 +3259,10 @@ doormen.patch = function( ... args ) {
 			}
 
 			if ( patchCommands[ patchCommandName ].applyToChildren ) {
-				subSchema = doormen.path( schema , path ).of || {} ;
+				subSchema = doormen.path( schema , path , undefined , true ).of || {} ;
 			}
 			else {
-				subSchema = doormen.path( schema , path ) ;
+				subSchema = doormen.path( schema , path , undefined , true ) ;
 			}
 
 			if ( patchCommands[ patchCommandName ].sanitize ) {
@@ -3278,7 +3282,7 @@ doormen.patch = function( ... args ) {
 			}
 		}
 		else {
-			subSchema = doormen.path( schema , path ) ;
+			subSchema = doormen.path( schema , path , undefined , true ) ;
 
 			//sanitized[ path ] = doormen( options , subSchema , value ) ;
 			sanitized[ path ] = context.check( subSchema , value , {
@@ -5495,35 +5499,19 @@ module.exports = {
 
 // From Mozilla Developper Network
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-exports.regExp = exports.regExpPattern = function escapeRegExpPattern( str ) {
-	return str.replace( /([.*+?^${}()|[\]/\\])/g , '\\$1' ) ;
-} ;
+exports.regExp = exports.regExpPattern = str => str.replace( /([.*+?^${}()|[\]/\\])/g , '\\$1' ) ;
 
-exports.regExpReplacement = function escapeRegExpReplacement( str ) {
-	return str.replace( /\$/g , '$$$$' ) ;	// This replace any single $ by a double $$
-} ;
+// This replace any single $ by a double $$
+exports.regExpReplacement = str => str.replace( /\$/g , '$$$$' ) ;
 
+// Escape for string.format()
+// This replace any single % by a double %%
+exports.format = str => str.replace( /%/g , '%%' ) ;
 
+exports.jsSingleQuote = str => exports.control( str ).replace( /'/g , "\\'" ) ;
+exports.jsDoubleQuote = str => exports.control( str ).replace( /"/g , '\\"' ) ;
 
-exports.format = function escapeFormat( str ) {
-	return str.replace( /%/g , '%%' ) ;	// This replace any single % by a double %%
-} ;
-
-
-
-exports.jsSingleQuote = function escapeJsSingleQuote( str ) {
-	return exports.control( str ).replace( /'/g , "\\'" ) ;
-} ;
-
-exports.jsDoubleQuote = function escapeJsDoubleQuote( str ) {
-	return exports.control( str ).replace( /"/g , '\\"' ) ;
-} ;
-
-
-
-exports.shellArg = function escapeShellArg( str ) {
-	return '\'' + str.replace( /'/g , "'\\''" ) + '\'' ;
-} ;
+exports.shellArg = str => '\'' + str.replace( /'/g , "'\\''" ) + '\'' ;
 
 
 
@@ -5535,15 +5523,13 @@ var escapeControlMap = {
 } ;
 
 // Escape \r \n \t so they become readable again, escape all ASCII control character as well, using \x syntaxe
-exports.control = function escapeControl( str , keepNewLineAndTab = false ) {
-	return str.replace( /[\x00-\x1f\x7f]/g , ( match ) => {
-		if ( keepNewLineAndTab && ( match === '\n' || match === '\t' ) ) { return match ; }
-		if ( escapeControlMap[ match ] !== undefined ) { return escapeControlMap[ match ] ; }
-		var hex = match.charCodeAt( 0 ).toString( 16 ) ;
-		if ( hex.length % 2 ) { hex = '0' + hex ; }
-		return '\\x' + hex ;
-	} ) ;
-} ;
+exports.control = ( str , keepNewLineAndTab = false ) => str.replace( /[\x00-\x1f\x7f]/g , match => {
+	if ( keepNewLineAndTab && ( match === '\n' || match === '\t' ) ) { return match ; }
+	if ( escapeControlMap[ match ] !== undefined ) { return escapeControlMap[ match ] ; }
+	var hex = match.charCodeAt( 0 ).toString( 16 ) ;
+	if ( hex.length % 2 ) { hex = '0' + hex ; }
+	return '\\x' + hex ;
+} ) ;
 
 
 
@@ -5556,19 +5542,27 @@ var escapeHtmlMap = {
 } ;
 
 // Only escape & < > so this is suited for content outside tags
-exports.html = function escapeHtml( str ) {
-	return str.replace( /[&<>]/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
-} ;
+exports.html = str => str.replace( /[&<>]/g , match => escapeHtmlMap[ match ] ) ;
 
 // Escape & < > " so this is suited for content inside a double-quoted attribute
-exports.htmlAttr = function escapeHtmlAttr( str ) {
-	return str.replace( /[&<>"]/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
-} ;
+exports.htmlAttr = str => str.replace( /[&<>"]/g , match => escapeHtmlMap[ match ] ) ;
 
 // Escape all html special characters & < > " '
-exports.htmlSpecialChars = function escapeHtmlSpecialChars( str ) {
-	return str.replace( /[&<>"']/g , ( match ) => { return escapeHtmlMap[ match ] ; } ) ;
-} ;
+exports.htmlSpecialChars = str => str.replace( /[&<>"']/g , match => escapeHtmlMap[ match ] ) ;
+
+// Percent-encode all control chars and codepoint greater than 255 using percent encoding
+exports.unicodePercentEncode = str => str.replace( /[\x00-\x1f\u0100-\uffff\x7f%]/g , match => {
+	try {
+		return encodeURI( match ) ;
+	}
+	catch ( error ) {
+		// encodeURI can throw on bad surrogate pairs, but we just strip those characters
+		return '' ;
+	}
+} ) ;
+
+// Encode HTTP header value
+exports.httpHeaderValue = str => exports.unicodePercentEncode( str ) ;
 
 
 },{}],22:[function(require,module,exports){
@@ -5627,6 +5621,7 @@ var ansi = require( './ansi.js' ) ;
 	%u		unsigned integer
 	%U		unsigned positive integer (>0)
 	%k		metric system
+	%t		time duration, convert ms into H:min:s
 	%h		hexadecimal
 	%x		hexadecimal, force pair of symbols (e.g. 'f' -> '0f')
 	%o		octal
@@ -5975,6 +5970,37 @@ modes.k = arg => {
 
 modes.k.noSanitize = true ;
 
+
+
+// time duration, transform ms into H:min:s
+// Later it should format Date as well: number=duration, date object=date
+// Note that it would not replace moment.js, but it could uses it.
+modes.t = arg => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { return '(NaN)' ; }
+
+	var s = Math.floor( arg / 1000 ) ;
+	if ( s < 60 ) { return s + 's' ; }
+
+	var min = Math.floor( s / 60 ) ;
+	s = s % 60 ;
+	if ( min < 60 ) { return min + 'min' + zeroPadding( s ) + 's' ; }
+
+	var h = Math.floor( min / 60 ) ;
+	min = min % 60 ;
+	//if ( h < 24 ) { return h + 'h' + zeroPadding( min ) +'min' + zeroPadding( s ) + 's' ; }
+
+	return h + 'h' + zeroPadding( min ) + 'min' + zeroPadding( s ) + 's' ;
+} ;
+
+modes.t.noSanitize = true ;
+
+// Transform a number to a string, pad zero to the left if necessary
+function zeroPadding( n , width = 2 ) {
+	n = '' + n ;
+	if ( n.length < width ) { n = '0'.repeat( width - n.length ) + n ; }
+	return n ;
+}
 
 
 // unsigned hexadecimal
@@ -7127,7 +7153,7 @@ module.exports = function toTitleCase( str , options ) {
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7158,18 +7184,25 @@ module.exports = function toTitleCase( str , options ) {
 	Stand-alone fork of extend.js, without options.
 */
 
-module.exports = function clone( originalObject , circular ) {
+function clone( originalObject , circular ) {
 	// First create an empty object with
 	// same prototype of our original source
 
-	var propertyIndex , descriptor , keys , current , nextSource , indexOf ,
+	var originalProto = Object.getPrototypeOf( originalObject ) ;
+
+	// Opaque objects, like Date
+	if ( clone.opaque.has( originalProto ) ) { return clone.opaque.get( originalProto )( originalObject ) ; }
+
+	var propertyIndex , descriptor , keys , current , nextSource , proto ,
 		copies = [ {
 			source: originalObject ,
-			target: Array.isArray( originalObject ) ? [] : Object.create( Object.getPrototypeOf( originalObject ) )
+			target: Array.isArray( originalObject ) ? [] : Object.create( originalProto )
 		} ] ,
 		cloneObject = copies[ 0 ].target ,
-		sourceReferences = [ originalObject ] ,
-		targetReferences = [ cloneObject ] ;
+		refMap = new Map() ;
+
+	refMap.set( originalObject , cloneObject ) ;
+
 
 	// First in, first out
 	while ( ( current = copies.shift() ) ) {
@@ -7179,42 +7212,57 @@ module.exports = function clone( originalObject , circular ) {
 			// Save the source's descriptor
 			descriptor = Object.getOwnPropertyDescriptor( current.source , keys[ propertyIndex ] ) ;
 
+
 			if ( ! descriptor.value || typeof descriptor.value !== 'object' ) {
 				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 				continue ;
 			}
 
 			nextSource = descriptor.value ;
-			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( Object.getPrototypeOf( nextSource ) ) ;
 
 			if ( circular ) {
-				indexOf = sourceReferences.indexOf( nextSource ) ;
-
-				if ( indexOf !== -1 ) {
+				if ( refMap.has( nextSource ) ) {
 					// The source is already referenced, just assign reference
-					descriptor.value = targetReferences[ indexOf ] ;
+					descriptor.value = refMap.get( nextSource ) ;
 					Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 					continue ;
 				}
-
-				sourceReferences.push( nextSource ) ;
-				targetReferences.push( descriptor.value ) ;
 			}
 
-			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+			proto = Object.getPrototypeOf( descriptor.value ) ;
 
+			// Opaque objects, like Date, not recursivity for them
+			if ( clone.opaque.has( proto ) ) {
+				descriptor.value = clone.opaque.get( proto )( descriptor.value ) ;
+				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+				continue ;
+			}
+
+			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( proto ) ;
+
+			if ( circular ) { refMap.set( nextSource , descriptor.value ) ; }
+
+			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 			copies.push( { source: nextSource , target: descriptor.value } ) ;
 		}
 	}
 
 	return cloneObject ;
-} ;
+}
+
+module.exports = clone ;
+
+
+
+clone.opaque = new Map() ;
+clone.opaque.set( Date.prototype , src => new Date( src ) ) ;
+
 
 },{}],28:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
