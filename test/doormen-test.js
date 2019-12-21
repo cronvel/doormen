@@ -527,22 +527,32 @@ describe( "Optional, default and forced data" , () => {
 		) ;
 	} ) ;
 
-	it( "when the 'defaultFn' is specified in the schema and is a function, that function is executed and its return-value is used as the default" , () => {
-		var date , count = 0 ;
-		doormen.equals( doormen( { type: 'date' , "defaultFn": () => date = new Date() } , null ) , date ) ;
+	it( "when the 'defaultFn' is specified in the schema and is a string, that builtin default function is executed and its return-value is used as the default" , () => {
+		//doormen.equals( doormen( { type: 'date' , defaultFn: 'now' } , null ) , new Date() ) ;
 		doormen.equals(
 			doormen(
-				{ properties: { a: { type: 'date' , "defaultFn": () => date = new Date() } } } ,
+				{ properties: { a: { type: 'date' , defaultFn: 'now' } } } ,
+				{ a: null } ) ,
+			{ a: new Date() }
+		) ;
+	} ) ;
+
+	it( "when the 'defaultFn' is specified in the schema and is a function, that function is executed and its return-value is used as the default" , () => {
+		var date , count = 0 ;
+		doormen.equals( doormen( { type: 'date' , defaultFn: () => date = new Date() } , null ) , date ) ;
+		doormen.equals(
+			doormen(
+				{ properties: { a: { type: 'date' , defaultFn: () => date = new Date() } } } ,
 				{ a: null } ) ,
 			{ a: date }
 		) ;
 
-		doormen.equals( doormen( { type: 'integer' , "defaultFn": () => ++ count } , null ) , 1 ) ;
+		doormen.equals( doormen( { type: 'integer' , defaultFn: () => ++ count } , null ) , 1 ) ;
 		doormen.equals(
 			doormen(
 				{ properties: {
-					a: { type: 'integer' , "defaultFn": () => ++ count } ,
-					b: { type: 'integer' , "defaultFn": () => ++ count }
+					a: { type: 'integer' , defaultFn: () => ++ count } ,
+					b: { type: 'integer' , defaultFn: () => ++ count }
 				} } ,
 				{ a: null } ) ,
 			{ a: 2 , b: 3 }

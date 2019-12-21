@@ -200,7 +200,7 @@ Form.prototype.commit = function() {
 } ;
 
 
-},{"./Input.js":3,"./doormen.js":9}],3:[function(require,module,exports){
+},{"./Input.js":3,"./doormen.js":10}],3:[function(require,module,exports){
 /*
 	Doormen
 
@@ -343,7 +343,7 @@ Input.prototype.update = function() {
 } ;
 
 
-},{"./doormen.js":9,"tree-kit/lib/clone.js":27}],4:[function(require,module,exports){
+},{"./doormen.js":10,"tree-kit/lib/clone.js":29}],4:[function(require,module,exports){
 /*
 	Doormen
 
@@ -2024,7 +2024,7 @@ assert.fail.inspect = true ;
 assert.fail.none = true ;
 
 
-},{"./AssertionError.js":1,"./isEqual.js":12,"./typeCheckers.js":16,"string-kit/lib/inspect.js":23}],7:[function(require,module,exports){
+},{"./AssertionError.js":1,"./isEqual.js":13,"./typeCheckers.js":17,"string-kit/lib/inspect.js":24}],7:[function(require,module,exports){
 /*
 	Doormen
 
@@ -2059,7 +2059,7 @@ assert.fail.none = true ;
 module.exports = require( './doormen.js' ) ;
 module.exports.isBrowser = true ;
 
-},{"./doormen.js":9}],8:[function(require,module,exports){
+},{"./doormen.js":10}],8:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -2300,7 +2300,52 @@ constraints.extraction = function( data , params , element , clone ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":9,"string-kit/lib/format.js":22,"tree-kit/lib/dotPath.js":28}],9:[function(require,module,exports){
+},{"./doormen.js":10,"string-kit/lib/format.js":23,"tree-kit/lib/dotPath.js":30}],9:[function(require,module,exports){
+(function (global){
+/*
+	Doormen
+
+	Copyright (c) 2015 - 2019 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+// For browsers...
+if ( ! global ) { global = window ; }	// eslint-disable-line no-global-assign
+
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS ) { global.DOORMEN_GLOBAL_EXTENSIONS = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions ) { global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions = {} ; }
+
+const defaultFunctions = Object.create( global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions ) ;
+module.exports = defaultFunctions ;
+
+defaultFunctions.now = () => new Date() ;
+
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],10:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -2435,11 +2480,13 @@ if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.typeCheckers ) { global.DOORMEN_GLOBAL_E
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.sanitizers ) { global.DOORMEN_GLOBAL_EXTENSIONS.sanitizers = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.filters ) { global.DOORMEN_GLOBAL_EXTENSIONS.filters = {} ; }
 if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.constraints ) { global.DOORMEN_GLOBAL_EXTENSIONS.constraints = {} ; }
+if ( ! global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions ) { global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions = {} ; }
 
 doormen.typeCheckers = require( './typeCheckers.js' ) ;
 doormen.sanitizers = require( './sanitizers.js' ) ;
 doormen.filters = require( './filters.js' ) ;
 doormen.constraints = require( './constraints.js' ) ;
+doormen.defaultFunctions = require( './defaultFunctions.js' ) ;
 
 
 
@@ -2490,7 +2537,12 @@ function check( schema , data_ , element , isPatch ) {
 				data = undefined ;
 			}
 			else if ( ! schema.nullIsValue ) {
-				if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
+				if ( schema.defaultFn ) {
+					if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
+
+					if ( doormen.defaultFunctions[ schema.defaultFn ] ) { return doormen.defaultFunctions[ schema.defaultFn ]( schema ) ; }
+					else if ( ! doormen.clientMode ) { throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant default function '" + schema.defaultFn + "'." ) ; }
+				}
 				if ( 'default' in schema ) { return clone( schema.default ) ; }
 				if ( schema.optional ) { return data ; }
 			}
@@ -2498,7 +2550,12 @@ function check( schema , data_ , element , isPatch ) {
 
 		if ( data === undefined ) {
 			// if the data has default value or is optional and its value is null or undefined, it's ok!
-			if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
+			if ( schema.defaultFn ) {
+				if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
+
+				if ( doormen.defaultFunctions[ schema.defaultFn ] ) { return doormen.defaultFunctions[ schema.defaultFn ]( schema ) ; }
+				else if ( ! doormen.clientMode ) { throw new doormen.SchemaError( "Bad schema (at " + element.displayPath + "), unexistant default function '" + schema.defaultFn + "'." ) ; }
+			}
 			if ( 'default' in schema ) { return clone( schema.default ) ; }
 			if ( schema.optional ) { return data ; }
 		}
@@ -3406,6 +3463,7 @@ doormen.extendTypeCheckers = function( extension , overwrite ) { extend( global.
 doormen.extendSanitizers = function( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.sanitizers , extension , overwrite ) ; } ;
 doormen.extendFilters = function( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.filters , extension , overwrite ) ; } ;
 doormen.extendConstraints = function( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.constraints , extension , overwrite ) ; } ;
+doormen.extendDefaultFunctions = function( extension , overwrite ) { extend( global.DOORMEN_GLOBAL_EXTENSIONS.defaultFunctions , extension , overwrite ) ; } ;
 
 // Client mode does not throw when type checker, a sanitizer or a filter is not found
 doormen.clientMode = false ;
@@ -3572,7 +3630,7 @@ doormen.not.alike = function notAlike( left , right ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./Form.js":2,"./SchemaError.js":4,"./ValidatorError.js":5,"./assert.js":6,"./constraints.js":8,"./expect.js":10,"./filters.js":11,"./isEqual.js":12,"./mask.js":13,"./sanitizers.js":14,"./schemaSchema.js":15,"./typeCheckers.js":16,"tree-kit/lib/clone.js":27,"tree-kit/lib/dotPath.js":28}],10:[function(require,module,exports){
+},{"./AssertionError.js":1,"./Form.js":2,"./SchemaError.js":4,"./ValidatorError.js":5,"./assert.js":6,"./constraints.js":8,"./defaultFunctions.js":9,"./expect.js":11,"./filters.js":12,"./isEqual.js":13,"./mask.js":14,"./sanitizers.js":15,"./schemaSchema.js":16,"./typeCheckers.js":17,"tree-kit/lib/clone.js":29,"tree-kit/lib/dotPath.js":30}],11:[function(require,module,exports){
 /*
 	Doormen
 
@@ -3798,7 +3856,7 @@ var handler = {
 } ;
 
 
-},{"./assert.js":6}],11:[function(require,module,exports){
+},{"./assert.js":6}],12:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -4020,7 +4078,7 @@ filters.notIn = function( data , params , element ) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":9}],12:[function(require,module,exports){
+},{"./doormen.js":10}],13:[function(require,module,exports){
 (function (Buffer){
 /*
 	Doormen
@@ -4203,7 +4261,7 @@ module.exports = isEqual ;
 
 
 }).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
-},{"../node_modules/is-buffer/index.js":18}],13:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":19}],14:[function(require,module,exports){
 /*
 	Doormen
 
@@ -4461,7 +4519,7 @@ exports.getAllSchemaTags = function( schema , tags = new Set() , depthLimit = 10
 } ;
 
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function (global){
 /*
 	Doormen
@@ -4749,7 +4807,7 @@ sanitizers.mongoId = data => {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./doormen.js":9,"mongodb":17,"string-kit/lib/latinize.js":25,"string-kit/lib/toTitleCase.js":26}],15:[function(require,module,exports){
+},{"./doormen.js":10,"mongodb":18,"string-kit/lib/latinize.js":26,"string-kit/lib/toTitleCase.js":27}],16:[function(require,module,exports){
 /*
 	Doormen
 
@@ -4873,7 +4931,7 @@ singleSchema.properties.elements = {
 module.exports = schemaSchema ;
 
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function (global,Buffer){
 /*
 	Doormen
@@ -5167,9 +5225,9 @@ typeCheckers.mongoId = data => {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"./doormen":9,"buffer":17}],17:[function(require,module,exports){
+},{"./doormen":10,"buffer":18}],18:[function(require,module,exports){
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -5192,7 +5250,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -5378,7 +5436,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
 	String Kit
 
@@ -5460,7 +5518,7 @@ module.exports = {
 } ;
 
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*
 	String Kit
 
@@ -5565,7 +5623,7 @@ exports.unicodePercentEncode = str => str.replace( /[\x00-\x1f\u0100-\uffff\x7f%
 exports.httpHeaderValue = str => exports.unicodePercentEncode( str ) ;
 
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 (function (Buffer){
 /*
 	String Kit
@@ -5603,10 +5661,11 @@ exports.httpHeaderValue = str => exports.unicodePercentEncode( str ) ;
 
 
 
-var inspect = require( './inspect.js' ).inspect ;
-var inspectError = require( './inspect.js' ).inspectError ;
-var escape = require( './escape.js' ) ;
-var ansi = require( './ansi.js' ) ;
+const inspect = require( './inspect.js' ).inspect ;
+const inspectError = require( './inspect.js' ).inspectError ;
+const escape = require( './escape.js' ) ;
+const ansi = require( './ansi.js' ) ;
+const unicode = require( './unicode.js' ) ;
 
 
 
@@ -5615,12 +5674,14 @@ var ansi = require( './ansi.js' ) ;
 	%s		string
 	%S		string, interpret ^ formatting
 	%r		raw string: without sanitizer
+	%n		natural: output the most natural representation for this type
+	%N		even more natural: avoid type hinting marks like bracket for array
 	%f		float
 	%e		for scientific notation
 	%d	%i	integer
 	%u		unsigned integer
 	%U		unsigned positive integer (>0)
-	%k		metric system
+	%k		number with metric system prefixes
 	%t		time duration, convert ms into H:min:s
 	%h		hexadecimal
 	%x		hexadecimal, force pair of symbols (e.g. 'f' -> '0f')
@@ -5628,6 +5689,7 @@ var ansi = require( './ansi.js' ) ;
 	%b		binary
 	%z		base64
 	%Z		base64url
+	%O		object (like inspect, but with ultra minimal options)
 	%I		call string-kit's inspect()
 	%Y		call string-kit's inspect(), but do not inspect non-enumerable
 	%E		call string-kit's inspectError()
@@ -5637,13 +5699,13 @@ var ansi = require( './ansi.js' ) ;
 	%a		argument for a function
 
 	Candidate format:
-	%A		for automatic type?
+	%A		for automatic type? probably not good: it's like %n Natural
 	%c		for char? (can receive a string or an integer translated into an UTF8 chars)
 	%C		for currency formating?
 	%B		for Buffer objects?
 */
 
-exports.formatMethod = function format( ... args ) {
+exports.formatMethod = function( ... args ) {
 	var str = args[ 0 ] ;
 
 	if ( typeof str !== 'string' ) {
@@ -5739,6 +5801,7 @@ exports.formatMethod = function format( ... args ) {
 			if ( modes[ mode ] ) {
 				replacement = modes[ mode ]( arg , modeArg , this ) ;
 				if ( this.argumentSanitizer && ! modes[ mode ].noSanitize ) { replacement = this.argumentSanitizer( replacement ) ; }
+				if ( modeArg && ! modes[ mode ].noCommonModeArg ) { replacement = commonModeArg( replacement , modeArg ) ; }
 				return replacement ;
 			}
 
@@ -5804,7 +5867,10 @@ exports.formatMethod = function format( ... args ) {
 } ;
 
 
-var modes = {} ;
+
+// --- MODES ---
+
+const modes = {} ;
 
 
 
@@ -5835,56 +5901,105 @@ modes.S = ( arg , modeArg , options ) => {
 } ;
 
 modes.S.noSanitize = true ;
+modes.S.noCommonModeArg = true ;
 
 
 
-const NUMBER_FORMAT_REGEX = /([a-zA-Z]?)(.[^a-zA-Z]*)/g ;
+// natural (WIP)
+modes.N = ( arg , isSubCall ) => {
+	if ( typeof arg === 'string' ) { return arg ; }
+
+	if ( arg === null || arg === undefined || arg === true || arg === false || typeof arg === 'number' ) {
+		return '' + arg ;
+	}
+
+	if ( Array.isArray( arg ) ) {
+		arg = arg.map( e => modes.N( e , true ) ) ;
+
+		if ( isSubCall ) {
+			return '[' + arg.join( ',' ) + ']' ;
+		}
+
+		return arg.join( ', ' ) ;
+	}
+
+	if ( Buffer.isBuffer( arg ) ) {
+		arg = [ ... arg ].map( e => {
+			e = e.toString( 16 ) ;
+			if ( e.length === 1 ) { e = '0' + e ; }
+			return e ;
+		} ) ;
+		return '<' + arg.join( ' ' ) + '>' ;
+	}
+
+	var proto = Object.getPrototypeOf( arg ) ;
+
+	if ( proto === null || proto === Object.prototype ) {
+		// Plain objects
+		arg = Object.entries( arg ).map( e => e[ 0 ] + ': ' + modes.N( e[ 1 ] , true ) ) ;
+
+		if ( isSubCall ) {
+			return '{' + arg.join( ', ' ) + '}' ;
+		}
+
+		return arg.join( ', ' ) ;
+	}
+
+	if ( typeof arg.inspect === 'function' ) { return arg.inspect() ; }
+	if ( typeof arg.toString === 'function' ) { return arg.toString() ; }
+
+	return '(' + arg + ')' ;
+} ;
+
+modes.n = arg => modes.N( arg , true ) ;
 
 
 
 // float
 modes.f = ( arg , modeArg ) => {
-	var match , k , v , lv , n ,
-		step = 0 , toFixed , toFixedIfDecimal , padding ;
+	var match , k , v , lv , n , step = 0 ,
+		toFixed , toFixedIfDecimal , padding ;
 
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
 	if ( modeArg ) {
-		NUMBER_FORMAT_REGEX.index = 0 ;
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
 
-		while ( ( match = NUMBER_FORMAT_REGEX.exec( modeArg ) ) ) {
+		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
 			[ , k , v ] = match ;
 
-			if ( k === 'p' ) {
+			if ( k === 'z' ) {
 				padding = + v ;
 			}
-			else if ( v[ 0 ] === '.' ) {
-				lv = v[ v.length - 1 ] ;
+			else if ( ! k ) {
+				if ( v[ 0 ] === '.' ) {
+					lv = v[ v.length - 1 ] ;
 
-				if ( lv === '!' ) {
-					n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
-					step = 10 ** ( -n ) ;
-					toFixed = n ;
+					if ( lv === '!' ) {
+						n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
+						toFixed = n ;
+					}
+					else if ( lv === '?' ) {
+						n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
+						toFixed = n ;
+						toFixedIfDecimal = true ;
+					}
+					else {
+						n = parseInt( v.slice( 1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
+					}
 				}
-				else if ( lv === '?' ) {
-					n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
-					step = 10 ** ( -n ) ;
-					toFixed = n ;
-					toFixedIfDecimal = true ;
+				else if ( v[ v.length - 1 ] === '.' ) {
+					n = parseInt( v.slice( 0 , -1 ) , 10 ) ;
+					step = 10 ** n ;
 				}
 				else {
-					n = parseInt( v.slice( 1 ) , 10 ) ;
-					step = 10 ** ( -n ) ;
+					n = parseInt( v , 10 ) ;
+					step = 10 ** ( Math.ceil( Math.log10( arg + Number.EPSILON ) + Number.EPSILON ) - n ) ;
 				}
-			}
-			else if ( v[ v.length - 1 ] === '.' ) {
-				n = parseInt( v.slice( 0 , -1 ) , 10 ) ;
-				step = 10 ** n ;
-			}
-			else {
-				n = parseInt( v , 10 ) ;
-				step = 10 ** ( Math.ceil( Math.log10( arg + Number.EPSILON ) + Number.EPSILON ) - n ) ;
 			}
 		}
 	}
@@ -5901,7 +6016,14 @@ modes.f = ( arg , modeArg ) => {
 	if ( padding ) {
 		n = arg.indexOf( '.' ) ;
 		if ( n === -1 ) { n = arg.length ; }
-		if ( n < padding ) { arg = '0'.repeat( padding - n ) + arg ; }
+		if ( arg[ 0 ] === '-' ) {
+			if ( n - 1 < padding ) {
+				arg = '-' + '0'.repeat( 1 + padding - n ) + arg.slice( 1 ) ;
+			}
+		}
+		else if ( n < padding ) {
+			arg = '0'.repeat( padding - n ) + arg ;
+		}
 	}
 
 	return arg ;
@@ -5911,13 +6033,23 @@ modes.f.noSanitize = true ;
 
 
 
-// integer
+// scientific notation
 modes.e = ( arg , modeArg ) => {
+	var match , k , v ;
+
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
 	if ( modeArg ) {
-		return '' + arg.toExponential( parseInt( modeArg , 10 ) - 1 ) ;
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+
+		if ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
+
+			if ( ! k ) {
+				return '' + arg.toExponential( parseInt( v , 10 ) - 1 ) ;
+			}
+		}
 	}
 
 	return '' + arg.toExponential() ;
@@ -5972,6 +6104,35 @@ modes.k.noSanitize = true ;
 
 
 
+// Degree, minutes and seconds.
+// Unlike %t which receive ms, here the input is in degree.
+modes.m = arg => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { return '(NaN)' ; }
+
+	var minus = '' ;
+	if ( arg < 0 ) { minus = '-' ; arg = -arg ; }
+
+	var degrees = epsilonFloor( arg ) ,
+		frac = arg - degrees ;
+
+	if ( ! frac ) { return minus + degrees + '°' ; }
+
+	var minutes = epsilonFloor( frac * 60 ) ,
+		seconds = epsilonFloor( frac * 3600 - minutes * 60 ) ;
+
+	if ( seconds ) {
+		return minus + degrees + '°' + ( '' + minutes ).padStart( 2 , '0' ) + '′' + ( '' + seconds ).padStart( 2 , '0' ) + '″' ;
+	}
+
+	return minus + degrees + '°' + ( '' + minutes ).padStart( 2 , '0' ) + '′' ;
+
+} ;
+
+modes.m.noSanitize = true ;
+
+
+
 // time duration, transform ms into H:min:s
 // Later it should format Date as well: number=duration, date object=date
 // Note that it would not replace moment.js, but it could uses it.
@@ -5984,23 +6145,17 @@ modes.t = arg => {
 
 	var min = Math.floor( s / 60 ) ;
 	s = s % 60 ;
-	if ( min < 60 ) { return min + 'min' + zeroPadding( s ) + 's' ; }
+	if ( min < 60 ) { return min + 'min' + ( '' + s ).padStart( 2 , '0' ) + 's' ; }
 
 	var h = Math.floor( min / 60 ) ;
 	min = min % 60 ;
 	//if ( h < 24 ) { return h + 'h' + zeroPadding( min ) +'min' + zeroPadding( s ) + 's' ; }
 
-	return h + 'h' + zeroPadding( min ) + 'min' + zeroPadding( s ) + 's' ;
+	return h + 'h' + ( '' + min ).padStart( 2 , '0' ) + 'min' + ( '' + s ).padStart( 2 , '0' ) + 's' ;
 } ;
 
 modes.t.noSanitize = true ;
 
-// Transform a number to a string, pad zero to the left if necessary
-function zeroPadding( n , width = 2 ) {
-	n = '' + n ;
-	if ( n.length < width ) { n = '0'.repeat( width - n.length ) + n ; }
-	return n ;
-}
 
 
 // unsigned hexadecimal
@@ -6017,7 +6172,7 @@ modes.h.noSanitize = true ;
 // unsigned hexadecimal, force pair of symboles
 modes.x = arg => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { return '0' ; }
+	if ( typeof arg !== 'number' ) { return '00' ; }
 
 	var value = '' + Math.max( Math.floor( arg ) , 0 ).toString( 16 ) ;
 
@@ -6071,44 +6226,43 @@ modes.Z = arg => {
 
 
 
-// inspect
-modes.I = ( arg , modeArg , options ) => {
-	var depth = 3 ;
-	if ( modeArg !== undefined ) { depth = parseInt( modeArg , 10 ) ; }
-	return inspect( {
-		depth: depth ,
-		style: ( options && options.color ? 'color' : 'none' )
-	} , arg ) ;
-} ;
-
+// Inspect
+const I_OPTIONS = {} ;
+modes.I = ( arg , modeArg , options ) => genericInspectMode( arg , modeArg , options , I_OPTIONS ) ;
 modes.I.noSanitize = true ;
 
 
 
-// more minimalist inspect
-modes.Y = ( arg , modeArg , options ) => {
-	var depth = 3 ;
-	if ( modeArg !== undefined ) { depth = parseInt( modeArg , 10 ) ; }
-	return inspect( {
-		depth: depth ,
-		style: ( options && options.color ? 'color' : 'none' ) ,
-		noFunc: true ,
-		enumOnly: true ,
-		noDescriptor: true ,
-		useInspect: true
-	} , arg ) ;
+// More minimalist inspect
+const Y_OPTIONS = {
+	noFunc: true ,
+	enumOnly: true ,
+	noDescriptor: true ,
+	useInspect: true
 } ;
-
+modes.Y = ( arg , modeArg , options ) => genericInspectMode( arg , modeArg , options , Y_OPTIONS ) ;
 modes.Y.noSanitize = true ;
 
 
 
-// inspect error
-modes.E = ( arg , modeArg , options ) => inspectError( { style: ( options && options.color ? 'color' : 'none' ) } , arg ) ;
+// Even more minimalist inspect
+const O_OPTIONS = { minimal: true , noIndex: true } ;
+modes.O = ( arg , modeArg , options ) => genericInspectMode( arg , modeArg , options , O_OPTIONS ) ;
+modes.O.noSanitize = true ;
+
+
+
+// Inspect error
+const E_OPTIONS = {} ;
+modes.E = ( arg , modeArg , options ) => genericInspectMode( arg , modeArg , options , E_OPTIONS , true ) ;
 modes.E.noSanitize = true ;
 
-// json
+
+
+// JSON
 modes.J = arg => arg === undefined ? 'null' : JSON.stringify( arg ) ;
+
+
 
 // drop
 modes.D = () => '' ;
@@ -6185,7 +6339,7 @@ exports.format.default = defaultFormatter ;
 
 
 
-exports.markupMethod = function markup_( str ) {
+exports.markupMethod = function( str ) {
 	if ( typeof str !== 'string' ) {
 		if ( ! str ) { str = '' ; }
 		else if ( typeof str.toString === 'function' ) { str = str.toString() ; }
@@ -6263,7 +6417,7 @@ exports.markup = exports.markupMethod.bind( defaultFormatter ) ;
 
 
 // Count the number of parameters needed for this string
-exports.format.count = function formatCount( str ) {
+exports.format.count = function( str ) {
 	var match , index , relative , autoIndex = 1 , maxIndex = 0 ;
 
 	if ( typeof str !== 'string' ) { return 0 ; }
@@ -6300,10 +6454,91 @@ exports.format.count = function formatCount( str ) {
 
 
 // Tell if this string contains formatter chars
-exports.format.hasFormatting = function hasFormatting( str ) {
+exports.format.hasFormatting = function( str ) {
 	if ( str.search( /\^(.?)|(%%)|%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-Z])/ ) !== -1 ) { return true ; }
 	return false ;
 } ;
+
+
+
+// ModeArg formats
+
+// The format for commonModeArg
+const COMMON_MODE_ARG_FORMAT_REGEX = /([a-zA-Z])(.[^a-zA-Z]*)/g ;
+
+// The format for specific mode arg
+const MODE_ARG_FORMAT_REGEX = /([a-zA-Z]|^)(.[^a-zA-Z]*)/g ;
+
+
+
+// Called when there is a modeArg and the mode allow common mode arg
+// CONVENTION: reserve upper-cased letters for common mode arg
+function commonModeArg( str , modeArg ) {
+	var match , k , v ;
+
+	COMMON_MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+
+	while ( ( match = COMMON_MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+		[ , k , v ] = match ;
+
+		if ( k === 'L' ) {
+			let width = unicode.width( str ) ;
+			v = + v || 1 ;
+
+			if ( width > v ) {
+				str = unicode.truncateWidth( str , v - 1 ).trim() + '…' ;
+				width = unicode.width( str ) ;
+			}
+
+			if ( width < v ) { str = ' '.repeat( v - width ) + str ; }
+		}
+		else if ( k === 'R' ) {
+			let width = unicode.width( str ) ;
+			v = + v || 1 ;
+
+			if ( width > v ) {
+				str = unicode.truncateWidth( str , v - 1 ).trim() + '…' ;
+				width = unicode.width( str ) ;
+			}
+
+			if ( width < v ) { str = str + ' '.repeat( v - width ) ; }
+		}
+	}
+
+	return str ;
+}
+
+
+
+// Generic inspect
+function genericInspectMode( arg , modeArg , options , modeOptions , isInspectError = false ) {
+	var match , k , v ,
+		depth = 3 ,
+		style = options && options.color ? 'color' : 'none' ;
+
+	if ( modeArg ) {
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+
+		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
+
+			if ( k === 'c' ) {
+				if ( v === '+' ) { style = 'color' ; }
+				else if ( v === '-' ) { style = 'none' ; }
+			}
+			else if ( ! k ) {
+				depth = parseInt( v , 10 ) || 1 ;
+			}
+		}
+	}
+
+	if ( isInspectError ) {
+		return inspectError( Object.assign( { depth , style } , modeOptions ) , arg ) ;
+	}
+
+	return inspect( Object.assign( { depth , style } , modeOptions ) , arg ) ;
+
+}
 
 
 
@@ -6313,6 +6548,10 @@ const INVERSE_EPSILON = Math.round( 1 / EPSILON ) ;
 
 function epsilonRound( v ) {
 	return Math.round( v * INVERSE_EPSILON ) / INVERSE_EPSILON ;
+}
+
+function epsilonFloor( v ) {
+	return Math.floor( v + EPSILON ) ;
 }
 
 // Round with precision
@@ -6365,7 +6604,7 @@ function iround( v , istep ) {
 
 
 }).call(this,require("buffer").Buffer)
-},{"./ansi.js":20,"./escape.js":21,"./inspect.js":23,"buffer":17}],23:[function(require,module,exports){
+},{"./ansi.js":21,"./escape.js":22,"./inspect.js":24,"./unicode.js":28,"buffer":18}],24:[function(require,module,exports){
 (function (Buffer,process){
 /*
 	String Kit
@@ -6426,12 +6665,13 @@ const EMPTY = {} ;
 		* noFunc: do not display functions
 		* noDescriptor: do not display descriptor information
 		* noArrayProperty: do not display array properties
+		* noIndex: do not display array indexes
 		* noType: do not display type and constructor
 		* enumOnly: only display enumerable properties
 		* funcDetails: display function's details
 		* proto: display object's prototype
 		* sort: sort the keys
-		* minimal: imply noFunc: true, noDescriptor: true, noType: true, enumOnly: true, proto: false and funcDetails: false.
+		* minimal: imply noFunc: true, noDescriptor: true, noType: true, noArrayProperty: true, enumOnly: true, proto: false and funcDetails: false.
 		  Display a minimal JSON-like output
 		* protoBlackList: `Set` of blacklisted object prototype (will not recurse inside it)
 		* propertyBlackList: `Set` of blacklisted property names (will not even display it)
@@ -6462,8 +6702,8 @@ function inspect( options , variable ) {
 		options.noType = true ;
 		options.noArrayProperty = true ;
 		options.enumOnly = true ;
-		options.funcDetails = false ;
 		options.proto = false ;
+		options.funcDetails = false ;
 	}
 
 	var str = inspect_( runtime , options , variable ) ;
@@ -6514,7 +6754,7 @@ function inspect_( runtime , options , variable ) {
 				key = options.style.key( runtime.key ) + ': ' ;
 			}
 		}
-		else {
+		else if ( ! options.noIndex ) {
 			key = options.style.index( runtime.key ) ;
 		}
 
@@ -6863,7 +7103,7 @@ function inspectError( options , error ) {
 	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
 
 	if ( ! ( error instanceof Error ) ) {
-		return 'inspectError: not an error -- regular variable inspection: ' + inspect( options , error ) ;
+		return "inspectError(): it's not an error, using regular variable inspection: " + inspect( options , error ) ;
 	}
 
 	if ( ! options.style ) { options.style = inspectStyle.none ; }
@@ -7054,9 +7294,9 @@ inspectStyle.html = Object.assign( {} , inspectStyle.none , {
 
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
-},{"../../is-buffer/index.js":18,"./ansi.js":20,"./escape.js":21,"_process":19}],24:[function(require,module,exports){
+},{"../../is-buffer/index.js":19,"./ansi.js":21,"./escape.js":22,"_process":20}],25:[function(require,module,exports){
 module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*
 	String Kit
 
@@ -7095,7 +7335,7 @@ module.exports = function( str ) {
 
 
 
-},{"./latinize-map.json":24}],26:[function(require,module,exports){
+},{"./latinize-map.json":25}],27:[function(require,module,exports){
 /*
 	String Kit
 
@@ -7149,11 +7389,412 @@ module.exports = function toTitleCase( str , options ) {
 
 
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
+/*
+	String Kit
+
+	Copyright (c) 2014 - 2019 Cédric Ronvel
+
+	The MIT License (MIT)
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+/*
+	Javascript does not use UTF-8 but UCS-2.
+	The purpose of this module is to process correctly strings containing UTF-8 characters that take more than 2 bytes.
+
+	Since the punycode module is deprecated in Node.js v8.x, this is an adaptation of punycode.ucs2.x
+	as found on Aug 16th 2017 at: https://github.com/bestiejs/punycode.js/blob/master/punycode.js.
+*/
+
+
+
+// Create the module and export it
+const unicode = {} ;
+module.exports = unicode ;
+
+
+
+unicode.encode = array => String.fromCodePoint( ... array ) ;
+
+
+
+// Decode a string into an array of unicode codepoints
+unicode.decode = str => {
+	var value , extra , counter = 0 , output = [] ,
+		length = str.length ;
+
+	while ( counter < length ) {
+		value = str.charCodeAt( counter ++ ) ;
+
+		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
+			// It's a high surrogate, and there is a next character.
+			extra = str.charCodeAt( counter ++ ) ;
+
+			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+				output.push( ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ) ;
+			}
+			else {
+				// It's an unmatched surrogate; only append this code unit, in case the
+				// next code unit is the high surrogate of a surrogate pair.
+				output.push( value ) ;
+				counter -- ;
+			}
+		}
+		else {
+			output.push( value ) ;
+		}
+	}
+
+	return output ;
+} ;
+
+
+
+// Decode only the first char
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.firstCodePoint = str => {
+	var extra ,
+		value = str.charCodeAt( 0 ) ;
+
+	if ( value >= 0xD800 && value <= 0xDBFF && str.length >= 2 ) {
+		// It's a high surrogate, and there is a next character.
+		extra = str.charCodeAt( 1 ) ;
+
+		if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+			return ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
+		}
+	}
+
+	return value ;
+} ;
+
+
+
+// Extract only the first char
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.firstChar = str => {
+	var extra ,
+		value = str.charCodeAt( 0 ) ;
+
+	if ( value >= 0xD800 && value <= 0xDBFF && str.length >= 2 ) {
+		// It's a high surrogate, and there is a next character.
+		extra = str.charCodeAt( 1 ) ;
+
+		if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+			return str.slice( 0 , 2 ) ;
+		}
+	}
+
+	return str[ 0 ] ;
+} ;
+
+
+
+// Decode a string into an array of unicode characters
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.toArray = str => {
+	var value , extra , counter = 0 , output = [] ,
+		length = str.length ;
+
+	while ( counter < length ) {
+		value = str.charCodeAt( counter ++ ) ;
+
+		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
+			// It's a high surrogate, and there is a next character.
+			extra = str.charCodeAt( counter ++ ) ;
+
+			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+				output.push( str.slice( counter - 2 , counter ) ) ;
+			}
+			else {
+				// It's an unmatched surrogate; only append this code unit, in case the
+				// next code unit is the high surrogate of a surrogate pair.
+				output.push( str[ counter - 2 ] ) ;
+				counter -- ;
+			}
+		}
+		else {
+			output.push( str[ counter - 1 ] ) ;
+		}
+	}
+
+	return output ;
+} ;
+
+
+
+// Decode a string into an array of unicode characters
+// Wide chars have an additionnal filler cell, so position is correct
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.toCells = ( Cell , str , tabWidth = 4 , linePosition = 0 , ... extraCellArgs ) => {
+	var value , extra , counter = 0 , output = [] ,
+		fillSize ,
+		length = str.length ;
+
+	while ( counter < length ) {
+		value = str.charCodeAt( counter ++ ) ;
+
+		if ( value === 0x0a ) {	// New line
+			linePosition = 0 ;
+		}
+		else if ( value === 0x09 ) {	// Tab
+			// Depends upon the next tab-stop
+			fillSize = tabWidth - ( linePosition % tabWidth ) - 1 ;
+			output.push( new Cell( '\t' , ... extraCellArgs ) ) ;
+			linePosition += 1 + fillSize ;
+			while ( fillSize -- ) { output.push( new Cell( null , ... extraCellArgs ) ) ; }
+		}
+		else if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
+			// It's a high surrogate, and there is a next character.
+			extra = str.charCodeAt( counter ++ ) ;
+
+			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+				value = ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
+				output.push(  new Cell( str.slice( counter - 2 , counter ) , ... extraCellArgs )  ) ;
+				linePosition ++ ;
+
+				if ( unicode.codePointWidth( value ) === 2 ) {
+					linePosition ++ ;
+					output.push( new Cell( null , ... extraCellArgs ) ) ;
+				}
+			}
+			else {
+				// It's an unmatched surrogate, remove it.
+				// Preserve current char in case the next code unit is the high surrogate of a surrogate pair.
+				counter -- ;
+			}
+		}
+		else {
+			output.push(  new Cell( str[ counter - 1 ] , ... extraCellArgs )  ) ;
+			linePosition ++ ;
+
+			if ( unicode.codePointWidth( value ) === 2 ) {
+				output.push( new Cell( null , ... extraCellArgs ) ) ;
+				linePosition ++ ;
+			}
+		}
+	}
+
+	return output ;
+} ;
+
+
+
+unicode.fromCells = ( cells ) => {
+	return cells.map( cell => cell.filler ? '' : cell.char ).join( '' ) ;
+} ;
+
+
+
+// Get the length of an unicode string
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.length = str => {
+	var value , extra , counter = 0 , uLength = 0 ,
+		length = str.length ;
+
+	while ( counter < length ) {
+		value = str.charCodeAt( counter ++ ) ;
+
+		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
+			// It's a high surrogate, and there is a next character.
+			extra = str.charCodeAt( counter ++ ) ;
+
+			if ( ( extra & 0xFC00 ) !== 0xDC00 ) {
+				// It's an unmatched surrogate; only append this code unit, in case the
+				// next code unit is the high surrogate of a surrogate pair.
+				counter -- ;
+			}
+		}
+
+		uLength ++ ;
+	}
+
+	return uLength ;
+} ;
+
+
+
+// Return the width of a string in a terminal/monospace font
+unicode.width = str => {
+	var count = 0 ;
+	unicode.decode( str ).forEach( code => count += unicode.codePointWidth( code ) ) ;
+	return count ;
+} ;
+
+
+
+// Return the width of an array of string in a terminal/monospace font
+unicode.arrayWidth = ( array , limit ) => {
+	var index , count = 0 ;
+
+	if ( limit === undefined ) { limit = array.length ; }
+
+	for ( index = 0 ; index < limit ; index ++ ) {
+		count += unicode.isFullWidth( array[ index ] ) ? 2 : 1 ;
+	}
+
+	return count ;
+} ;
+
+
+
+// Return a string that does not exceed the limit
+// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+unicode.widthLimit =	// DEPRECATED
+unicode.truncateWidth = ( str , limit ) => {
+	var value , extra , counter = 0 , lastCounter = 0 , width = 0 ,
+		length = str.length ;
+
+	while ( counter < length ) {
+		value = str.charCodeAt( counter ++ ) ;
+
+		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
+			// It's a high surrogate, and there is a next character.
+			extra = str.charCodeAt( counter ++ ) ;
+
+			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
+				value = ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
+			}
+			else {
+				// It's an unmatched surrogate; only append this code unit, in case the
+				// next code unit is the high surrogate of a surrogate pair.
+				counter -- ;
+			}
+		}
+
+		width += unicode.codePointWidth( value ) ;
+
+		if ( width > limit ) {
+			return str.slice( 0 , lastCounter ) ;
+		}
+
+		lastCounter = counter ;
+	}
+
+	// The string remains unchanged
+	return str ;
+} ;
+
+
+
+/*
+	Returns:
+		0: single char
+		1: leading surrogate
+		-1: trailing surrogate
+
+	Note: it does not check input, to gain perfs.
+*/
+unicode.surrogatePair = char => {
+	var code = char.charCodeAt( 0 ) ;
+
+	if ( code < 0xd800 || code >= 0xe000 ) { return 0 ; }
+	else if ( code < 0xdc00 ) { return 1 ; }
+	return -1 ;
+} ;
+
+
+
+/*
+	Check if a character is a full-width char or not.
+*/
+unicode.isFullWidth = char => {
+	if ( char.length <= 1 ) { return unicode.isFullWidthCodePoint( char.codePointAt( 0 ) ) ; }
+	return unicode.isFullWidthCodePoint( unicode.firstCodePoint( char ) ) ;
+} ;
+
+
+// Return the width of a char, leaner than .width() for one char
+unicode.charWidth = char => {
+	if ( char.length <= 1 ) { return unicode.codePointWidth( char.codePointAt( 0 ) ) ; }
+	return unicode.codePointWidth( unicode.firstCodePoint( char ) ) ;
+} ;
+
+
+
+/*
+	Check if a codepoint represent a full-width char or not.
+
+	Borrowed from Node.js source, from readline.js.
+*/
+unicode.codePointWidth = code => {
+	// Code points are derived from:
+	// http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
+	if ( code >= 0x1100 && (
+		code <= 0x115f ||	// Hangul Jamo
+			0x2329 === code || // LEFT-POINTING ANGLE BRACKET
+			0x232a === code || // RIGHT-POINTING ANGLE BRACKET
+			// CJK Radicals Supplement .. Enclosed CJK Letters and Months
+			( 0x2e80 <= code && code <= 0x3247 && code !== 0x303f ) ||
+			// Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
+			0x3250 <= code && code <= 0x4dbf ||
+			// CJK Unified Ideographs .. Yi Radicals
+			0x4e00 <= code && code <= 0xa4c6 ||
+			// Hangul Jamo Extended-A
+			0xa960 <= code && code <= 0xa97c ||
+			// Hangul Syllables
+			0xac00 <= code && code <= 0xd7a3 ||
+			// CJK Compatibility Ideographs
+			0xf900 <= code && code <= 0xfaff ||
+			// Vertical Forms
+			0xfe10 <= code && code <= 0xfe19 ||
+			// CJK Compatibility Forms .. Small Form Variants
+			0xfe30 <= code && code <= 0xfe6b ||
+			// Halfwidth and Fullwidth Forms
+			0xff01 <= code && code <= 0xff60 ||
+			0xffe0 <= code && code <= 0xffe6 ||
+			// Kana Supplement
+			0x1b000 <= code && code <= 0x1b001 ||
+			// Enclosed Ideographic Supplement
+			0x1f200 <= code && code <= 0x1f251 ||
+			// CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
+			0x20000 <= code && code <= 0x3fffd ) ) {
+		return 2 ;
+	}
+
+	return 1 ;
+} ;
+
+// For a true/false type of result
+unicode.isFullWidthCodePoint = code => unicode.codePointWidth( code ) === 2 ;
+
+
+
+// Convert normal ASCII chars to their full-width counterpart
+unicode.toFullWidth = str => {
+	return String.fromCodePoint( ... unicode.decode( str ).map( code =>
+		code >= 33 && code <= 126  ?  0xff00 + code - 0x20  :  code
+	) ) ;
+} ;
+
+
+},{}],29:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2019 Cédric Ronvel
+	Copyright (c) 2014 - 2018 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7184,25 +7825,18 @@ module.exports = function toTitleCase( str , options ) {
 	Stand-alone fork of extend.js, without options.
 */
 
-function clone( originalObject , circular ) {
+module.exports = function clone( originalObject , circular ) {
 	// First create an empty object with
 	// same prototype of our original source
 
-	var originalProto = Object.getPrototypeOf( originalObject ) ;
-
-	// Opaque objects, like Date
-	if ( clone.opaque.has( originalProto ) ) { return clone.opaque.get( originalProto )( originalObject ) ; }
-
-	var propertyIndex , descriptor , keys , current , nextSource , proto ,
+	var propertyIndex , descriptor , keys , current , nextSource , indexOf ,
 		copies = [ {
 			source: originalObject ,
-			target: Array.isArray( originalObject ) ? [] : Object.create( originalProto )
+			target: Array.isArray( originalObject ) ? [] : Object.create( Object.getPrototypeOf( originalObject ) )
 		} ] ,
 		cloneObject = copies[ 0 ].target ,
-		refMap = new Map() ;
-
-	refMap.set( originalObject , cloneObject ) ;
-
+		sourceReferences = [ originalObject ] ,
+		targetReferences = [ cloneObject ] ;
 
 	// First in, first out
 	while ( ( current = copies.shift() ) ) {
@@ -7212,57 +7846,42 @@ function clone( originalObject , circular ) {
 			// Save the source's descriptor
 			descriptor = Object.getOwnPropertyDescriptor( current.source , keys[ propertyIndex ] ) ;
 
-
 			if ( ! descriptor.value || typeof descriptor.value !== 'object' ) {
 				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 				continue ;
 			}
 
 			nextSource = descriptor.value ;
+			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( Object.getPrototypeOf( nextSource ) ) ;
 
 			if ( circular ) {
-				if ( refMap.has( nextSource ) ) {
+				indexOf = sourceReferences.indexOf( nextSource ) ;
+
+				if ( indexOf !== -1 ) {
 					// The source is already referenced, just assign reference
-					descriptor.value = refMap.get( nextSource ) ;
+					descriptor.value = targetReferences[ indexOf ] ;
 					Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 					continue ;
 				}
+
+				sourceReferences.push( nextSource ) ;
+				targetReferences.push( descriptor.value ) ;
 			}
-
-			proto = Object.getPrototypeOf( descriptor.value ) ;
-
-			// Opaque objects, like Date, not recursivity for them
-			if ( clone.opaque.has( proto ) ) {
-				descriptor.value = clone.opaque.get( proto )( descriptor.value ) ;
-				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
-				continue ;
-			}
-
-			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( proto ) ;
-
-			if ( circular ) { refMap.set( nextSource , descriptor.value ) ; }
 
 			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+
 			copies.push( { source: nextSource , target: descriptor.value } ) ;
 		}
 	}
 
 	return cloneObject ;
-}
+} ;
 
-module.exports = clone ;
-
-
-
-clone.opaque = new Map() ;
-clone.opaque.set( Date.prototype , src => new Date( src ) ) ;
-
-
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2019 Cédric Ronvel
+	Copyright (c) 2014 - 2018 Cédric Ronvel
 
 	The MIT License (MIT)
 

@@ -1,4 +1,10 @@
 
+v0.10.15
+--------
+
+New: defaultFn can be a string to a builtin 'default functions'
+
+
 v0.10.14
 --------
 
