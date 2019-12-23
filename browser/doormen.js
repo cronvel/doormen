@@ -40,6 +40,8 @@ function AssertionError( message , from , options = {} ) {
 	this.expectationType = options.expectationType ;
 	this.showDiff = !! options.showDiff ;
 
+	this.from = options.fromError ;
+
 	if ( from instanceof Error ) { this.stack = from.stack ; }
 	else if ( Error.captureStackTrace ) { Error.captureStackTrace( this , from ) ; }
 	else { this.stack = Error().stack ; }
@@ -574,7 +576,7 @@ function inspectVar( variable , extraExpectations ) {
 
 
 
-var vowel = {
+const VOWEL = {
 	a: true ,
 	e: true ,
 	i: true ,
@@ -647,6 +649,13 @@ function assertionError( from , actual , expectationType , ... expectations ) {
 	if ( expectations.length === 1 ) {
 		outOpt.expected = expectations[ 0 ] ;
 		outOpt.showDiff = inOpt.showDiff ;
+	}
+
+	if ( actual instanceof Error ) {
+		outOpt.fromError = actual ;
+	}
+	else if ( actual instanceof FunctionCall && actual.hasThrown ) {
+		outOpt.fromError = actual.error ;
 	}
 
 	return new AssertionError( message , from , outOpt ) ;
@@ -1691,12 +1700,12 @@ assert.throw = ( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPar
 
 	if ( expectedErrorInstance ) {
 		if ( ! call.hasThrown || ! ( call.error instanceof expectedErrorInstance ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , call , 'to throw ' + article , expectedErrorInstance ) ;
 		}
 
 		if ( expectedPartialError && ! isEqual( expectedPartialError , call.error , true , true ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , call , 'to throw ' + article , expectedErrorInstance , expectedPartialError ) ;
 		}
 	}
@@ -1726,12 +1735,12 @@ assert.notThrow = ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notEx
 		if ( call.hasThrown && call.error instanceof notExpectedErrorInstance ) {
 			if ( notExpectedPartialError ) {
 				if ( isEqual( notExpectedPartialError , call.error , true , true ) ) {
-					let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+					let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 					throw assertionError( from , call , 'not to throw ' + article , notExpectedErrorInstance , notExpectedPartialError ) ;
 				}
 			}
 			else {
-				let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+				let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 				throw assertionError( from , call , 'not to throw ' + article , notExpectedErrorInstance ) ;
 			}
 		}
@@ -1752,9 +1761,9 @@ assert['to reject with'] =
 assert['to reject with a'] =
 assert['to reject with an'] =
 assert['to not fulfill'] = assert['not to fulfill'] =
-assert['to fulfill not with'] = assert['to not fulfill with'] = assert['not to fulfill with'] =
-assert['to fulfill not with a'] = assert['to not fulfill with a'] = assert['not to fulfill with a'] =
-assert['to fulfill not with an'] = assert['to not fulfill with an'] = assert['not to fulfill with an'] =
+//assert['to fulfill not with'] = assert['to not fulfill with'] = assert['not to fulfill with'] =
+//assert['to fulfill not with a'] = assert['to not fulfill with a'] = assert['not to fulfill with a'] =
+//assert['to fulfill not with an'] = assert['to not fulfill with an'] = assert['not to fulfill with an'] =
 assert.notFulfill =
 assert.reject = async ( from , fn , fnThisAndArgs , expectedErrorInstance , expectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
@@ -1768,12 +1777,12 @@ assert.reject = async ( from , fn , fnThisAndArgs , expectedErrorInstance , expe
 
 	if ( expectedErrorInstance ) {
 		if ( ! call.hasThrown || ! ( call.error instanceof expectedErrorInstance ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , call , 'to reject with ' + article , expectedErrorInstance ) ;
 		}
 
 		if ( expectedPartialError && ! isEqual( expectedPartialError , call.error , true , true ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , call , 'to reject with ' + article , expectedErrorInstance , expectedPartialError ) ;
 		}
 	}
@@ -1795,9 +1804,9 @@ assert['to reject not with'] = assert['to not reject with'] = assert['not to rej
 assert['to reject not with a'] = assert['to not reject with a'] = assert['not to reject with a'] =
 assert['to reject not with an'] = assert['to not reject with an'] = assert['not to reject with an'] =
 assert['to fulfill'] =
-assert['to fulfill with'] =
-assert['to fulfill with a'] =
-assert['to fulfill with an'] =
+//assert['to fulfill with'] =
+//assert['to fulfill with a'] =
+//assert['to fulfill with an'] =
 assert.notReject =
 assert.fulfill = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance , notExpectedPartialError ) => {
 	if ( typeof fn !== 'function' ) {
@@ -1813,12 +1822,12 @@ assert.fulfill = async ( from , fn , fnThisAndArgs , notExpectedErrorInstance , 
 		if ( call.hasThrown && call.error instanceof notExpectedErrorInstance ) {
 			if ( notExpectedPartialError ) {
 				if ( isEqual( notExpectedPartialError , call.error , true , true ) ) {
-					let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+					let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 					throw assertionError( from , call , 'not to reject with ' + article , notExpectedErrorInstance , notExpectedPartialError ) ;
 				}
 			}
 			else {
-				let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+				let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 				throw assertionError( from , call , 'not to reject with ' + article , notExpectedErrorInstance ) ;
 			}
 		}
@@ -1845,9 +1854,9 @@ assert['to be rejected with'] =
 assert['to be rejected with a'] =
 assert['to be rejected with an'] =
 assert['not to be fulfilled'] = assert['to not be fulfilled'] = assert['to be not fulfilled'] =
-assert['not to be fulfilled with'] = assert['to not be fulfilled with'] = assert['to be not fulfilled with'] =
-assert['not to be fulfilled with a'] = assert['to not be fulfilled with a'] = assert['to be not fulfilled with a'] =
-assert['not to be fulfilled with an'] = assert['to not be fulfilled with an'] = assert['to be not fulfilled with an'] =
+//assert['not to be fulfilled with'] = assert['to not be fulfilled with'] = assert['to be not fulfilled with'] =
+//assert['not to be fulfilled with a'] = assert['to not be fulfilled with a'] = assert['to be not fulfilled with a'] =
+//assert['not to be fulfilled with an'] = assert['to not be fulfilled with an'] = assert['to be not fulfilled with an'] =
 assert.notFulfilled =
 assert.rejected = async ( from , promise , expectedErrorInstance , expectedPartialError ) => {
 	var error , hasThrown = false ;
@@ -1862,12 +1871,12 @@ assert.rejected = async ( from , promise , expectedErrorInstance , expectedParti
 
 	if ( expectedErrorInstance ) {
 		if ( ! hasThrown || ! ( error instanceof expectedErrorInstance ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , promise , 'to be rejected with ' + article , expectedErrorInstance ) ;
 		}
 
 		if ( expectedPartialError && ! isEqual( expectedPartialError , error , true , true ) ) {
-			let article = vowel[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+			let article = VOWEL[ ( '' + ( expectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 			throw assertionError( from , promise , 'to be rejected with ' + article , expectedErrorInstance , expectedPartialError ) ;
 		}
 	}
@@ -1887,9 +1896,9 @@ assert['not to be rejected with'] = assert['to not be rejected with'] = assert['
 assert['not to be rejected with a'] = assert['to not be rejected with a'] = assert['to be not rejected with a'] =
 assert['not to be rejected with an'] = assert['to not be rejected with an'] = assert['to be not rejected with an'] =
 assert['to be fulfilled'] =
-assert['to be fulfilled with'] =
-assert['to be fulfilled with a'] =
-assert['to be fulfilled with an'] =
+//assert['to be fulfilled with'] =
+//assert['to be fulfilled with a'] =
+//assert['to be fulfilled with an'] =
 assert.fulfilled =
 assert.notRejected = async ( from , promise , notExpectedErrorInstance , notExpectedPartialError ) => {
 	var error , hasThrown = false ;
@@ -1906,12 +1915,12 @@ assert.notRejected = async ( from , promise , notExpectedErrorInstance , notExpe
 		if ( hasThrown && error instanceof notExpectedErrorInstance ) {
 			if ( notExpectedPartialError ) {
 				if ( isEqual( notExpectedPartialError , error , true , true ) ) {
-					let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+					let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 					throw assertionError( from , promise , 'not to be rejected with ' + article , notExpectedErrorInstance , notExpectedPartialError ) ;
 				}
 			}
 			else {
-				let article = vowel[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+				let article = VOWEL[ ( '' + ( notExpectedErrorInstance.name || '(anonymous)' ) )[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 				throw assertionError( from , promise , 'not to be rejected with ' + article , notExpectedErrorInstance ) ;
 			}
 		}
@@ -1968,7 +1977,7 @@ assert.typeOf = ( from , actual , expected ) => {
 	}
 
 	if ( ! typeCheckers[ expected ]( actual ) ) {
-		let article = vowel[ expected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+		let article = VOWEL[ expected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 		throw assertionError( from , actual , 'to be ' + article , expected ) ;
 	}
 } ;
@@ -1985,7 +1994,7 @@ assert.notTypeOf = ( from , actual , notExpected ) => {
 	}
 
 	if ( typeCheckers[ notExpected ]( actual ) ) {
-		let article = vowel[ notExpected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
+		let article = VOWEL[ notExpected[ 0 ] ] ? 'an' : 'a' ;	// cosmetic
 		throw assertionError( from , actual , 'not to be ' + article , notExpected ) ;
 	}
 } ;

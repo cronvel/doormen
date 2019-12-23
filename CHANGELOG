@@ -1,4 +1,10 @@
 
+v0.10.16
+--------
+
+Expect/assertion: set error.from when necessary
+
+
 v0.10.15
 --------
 
