@@ -2852,11 +2852,25 @@ doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 ).to.be( 0.3 ) ) ;
 doormen.expect( 0.1 + 0.2 ).to.be.close.to( 0.3 ) ;
 doormen.expect( 0.1 + 0.2 ).to.be.around( 0.3 ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 ).not.to.be.close.to( 0.3 ) ) ;
-doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.not.close.to( 0.3 ) ;
-doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 + Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
+doormen.expect( 0.1 + 0.2 + 2 * Number.EPSILON ).to.be.not.close.to( 0.3 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 + 2 * Number.EPSILON ).to.be.close.to( 0.3 ) ) ;
 // Non-numbers throw
 doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.be.close.to( 0.3 ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( "0.3" ).to.be.close.to( 0.3 ) ) ;
+doormen.expect( 0 ).to.be.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 ).not.to.be.close.to( 0 ) ) ;
+doormen.expect( 0 + Number.MIN_VALUE ).to.be.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 + Number.MIN_VALUE ).not.to.be.close.to( 0 ) ) ;
+doormen.expect( 0 + 4 * Number.MIN_VALUE ).to.be.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 + 4 * Number.MIN_VALUE ).not.to.be.close.to( 0 ) ) ;
+doormen.expect( 0 + 5 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 + 5 * Number.MIN_VALUE ).to.be.close.to( 0 ) ) ;
+doormen.expect( 0 - Number.MIN_VALUE ).to.be.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 - Number.MIN_VALUE ).to.be.not.close.to( 0 ) ) ;
+doormen.expect( 0 - 4 * Number.MIN_VALUE ).to.be.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 - 4 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ) ;
+doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.close.to( 0 ) ) ;
 ```
 
 expect a value to be above/below/at least/at most.

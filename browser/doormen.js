@@ -1143,6 +1143,9 @@ assert.notShallowCloneOf.inspect = true ;
 
 
 
+const EPSILON_DELTA_RATE = 1 + 4 * Number.EPSILON ;
+const EPSILON_ZERO_DELTA = 4 * Number.MIN_VALUE ;
+
 // Epsilon aware comparison, or with a custom delta
 assert['to be close to'] =
 assert['to be around'] =
@@ -1151,15 +1154,24 @@ assert.around = ( from , actual , value , delta ) => {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
-	if ( ! delta ) {
-		delta = 2 * Number.EPSILON ;
-
-		if ( value ) {
-			delta = Math.pow( 2 , Math.ceil( Math.log2( Math.abs( value ) ) ) ) * delta ;
-		}
+	if ( Number.isNaN( actual ) || Number.isNaN( value ) ) {
+		throw assertionError( from , actual , 'to be around' , value ) ;
 	}
 
-	if ( actual < value - delta || actual > value + delta || Number.isNaN( actual ) ) {
+	if ( ! delta ) {
+		if ( actual === 0 || value === 0 ) {
+			if ( actual > value + EPSILON_ZERO_DELTA || value > actual + EPSILON_ZERO_DELTA ) {
+				throw assertionError( from , actual , 'to be around' , value ) ;
+			}
+		}
+		else if ( actual > value * EPSILON_DELTA_RATE || value > actual * EPSILON_DELTA_RATE ) {
+			throw assertionError( from , actual , 'to be around' , value ) ;
+		}
+
+		return ;
+	}
+
+	if ( actual < value - delta || actual > value + delta ) {
 		throw assertionError( from , actual , 'to be around' , value ) ;
 	}
 } ;
@@ -1178,12 +1190,19 @@ assert.notAround = ( from , actual , value , delta ) => {
 		throw assertionError( from , actual , 'to be a number' ) ;
 	}
 
-	if ( ! delta ) {
-		delta = 2 * Number.EPSILON ;
+	if ( Number.isNaN( actual ) || Number.isNaN( value ) ) { return ; }
 
-		if ( value ) {
-			delta = Math.pow( 2 , Math.ceil( Math.log2( Math.abs( value ) ) ) ) * delta ;
+	if ( ! delta ) {
+		if ( actual === 0 || value === 0 ) {
+			if ( actual <= value + EPSILON_ZERO_DELTA && value <= actual + EPSILON_ZERO_DELTA ) {
+				throw assertionError( from , actual , 'not to be around' , value ) ;
+			}
 		}
+		else if ( actual <= value * EPSILON_DELTA_RATE && value <= actual * EPSILON_DELTA_RATE ) {
+			throw assertionError( from , actual , 'not to be around' , value ) ;
+		}
+
+		return ;
 	}
 
 	if ( ( actual >= value - delta && actual <= value + delta ) || Number.isNaN( actual ) ) {
@@ -4119,6 +4138,9 @@ filters.notIn = function( data , params , element ) {
 
 
 
+const EPSILON_DELTA_RATE = 1 + 4 * Number.EPSILON ;
+const EPSILON_ZERO_DELTA = 4 * Number.MIN_VALUE ;
+
 /*
 	Should be FAST! Some critical application part are depending on it.
 	When a reporter will be coded, it should be plugged in a way that does not slow it down.
@@ -4127,14 +4149,15 @@ filters.notIn = function( data , params , element ) {
 		like: if true, the prototype of object are not compared
 		oneWay: if true, check partially, e.g.:
 			{ a: 1 , b: 2 } and { a: 1 , b: 2 , c: 3 } DOES pass the test
-			but { a: 1 , b: 2 , c: 3 } and { a: 1 , b: 2 } DOES NOT pass the test
+			but the reverse { a: 1 , b: 2 , c: 3 } and { a: 1 , b: 2 } DOES NOT pass the test
 */
-function isEqual( left , right , like , oneWay ) {
+function isEqual( left , right , like , oneWay , around ) {
 	var runtime = {
 		leftStack: [] ,
 		rightStack: [] ,
 		like: !! like ,
-		oneWay: !! oneWay
+		oneWay: !! oneWay ,
+		around: !! around
 	} ;
 
 	return isEqual_( runtime , left , right ) ;
@@ -4149,17 +4172,28 @@ function isEqual_( runtime , left , right ) {
 	// If it's strictly equals, then early exit now.
 	if ( left === right ) { return true ; }
 
-	// If one is truthy and the other falsy, early exit now
-	// It is an important test since it catch the "null is an object" case that can confuse things later
-	if ( ! left !== ! right ) { return false ; }	// jshint ignore:line
-
 	// If the type mismatch exit now.
 	if ( typeof left !== typeof right ) { return false ; }
 
 	// Below, left and rights have the same type
 
-	// NaN check
-	if ( typeof left === 'number' && Number.isNaN( left ) && Number.isNaN( right ) ) { return true ; }
+	if ( typeof left === 'number' ) {
+		// NaN check
+		if ( Number.isNaN( left ) && Number.isNaN( right ) ) { return true ; }
+
+		// Epsilon error
+		if ( runtime.around ) {
+			if ( left === 0 || right === 0 ) {
+				if ( left <= right + EPSILON_ZERO_DELTA && right <= left + EPSILON_ZERO_DELTA ) { return true ; }
+			}
+			else if ( left <= right * EPSILON_DELTA_RATE && right <= left * EPSILON_DELTA_RATE ) { return true ; }
+		}
+	}
+
+	// Should comes after the number check
+	// If one is truthy and the other falsy, early exit now
+	// It is an important test since it catch the "null is an object" case that can confuse things later
+	if ( ! left !== ! right ) { return false ; }
 
 	// Should come after the NaN check
 	if ( ! left ) { return false ; }
@@ -7130,7 +7164,7 @@ function inspectError( options , error ) {
 	if ( stack ) { str += options.style.errorStack( stack ) + '\n' ; }
 
 	if ( error.from ) {
-		str += options.style.newline + options.style.errorFromMessage( 'Error created from:' ) + options.style.newline + inspectError( options , error.from ) ;
+		str += options.style.newline + options.style.errorFromMessage( 'From error:' ) + options.style.newline + inspectError( options , error.from ) ;
 	}
 
 	return str ;
@@ -7169,9 +7203,10 @@ function inspectStack( options , stack ) {
 	else {
 		stack = stack.replace( /^[^\n]*\n/ , '' ) ;
 		stack = stack.replace(
-			/^\s*(at)\s+(?:((?:new +)?[^\s:()[\]\n]+(?:\([^)]+\))?)\s)?(?:\[as ([^\s:()[\]\n]+)\]\s)?(?:\(?([^:()[\]\n]+):([0-9]+):([0-9]+)\)?)?$/mg ,
-			( matches , at , method , as , file , line , column ) => {
+			/^\s*(at)\s+(?:(?:(async|new)\s+)?([^\s:()[\]\n]+(?:\([^)]+\))?)\s)?(?:\[as ([^\s:()[\]\n]+)\]\s)?(?:\(?([^:()[\]\n]+):([0-9]+):([0-9]+)\)?)?$/mg ,
+			( matches , at , keyword , method , as , file , line , column ) => {
 				return options.style.errorStack( '    at ' ) +
+					( keyword ? options.style.errorStackKeyword( keyword ) + ' ' : '' ) +
 					( method ? options.style.errorStackMethod( method ) + ' ' : '' ) +
 					( as ? options.style.errorStack( '[as ' ) + options.style.errorStackMethodAs( as ) + options.style.errorStack( '] ' ) : '' ) +
 					options.style.errorStack( '(' ) +
@@ -7217,6 +7252,7 @@ inspectStyle.none = {
 	errorType: inspectStyleNoop ,
 	errorMessage: inspectStyleNoop ,
 	errorStack: inspectStyleNoop ,
+	errorStackKeyword: inspectStyleNoop ,
 	errorStackMethod: inspectStyleNoop ,
 	errorStackMethodAs: inspectStyleNoop ,
 	errorStackFile: inspectStyleNoop ,
@@ -7255,6 +7291,7 @@ inspectStyle.color = Object.assign( {} , inspectStyle.none , {
 	errorType: str => ansi.red + ansi.bold + str + ansi.reset ,
 	errorMessage: str => ansi.red + ansi.italic + str + ansi.reset ,
 	errorStack: str => ansi.brightBlack + str + ansi.reset ,
+	errorStackKeyword: str => ansi.italic + ansi.bold + str + ansi.reset ,
 	errorStackMethod: str => ansi.brightYellow + str + ansi.reset ,
 	errorStackMethodAs: str => ansi.yellow + str + ansi.reset ,
 	errorStackFile: str => ansi.brightCyan + str + ansi.reset ,
@@ -7293,6 +7330,7 @@ inspectStyle.html = Object.assign( {} , inspectStyle.none , {
 	errorType: str => '<span style="color:red">' + str + '</span>' ,
 	errorMessage: str => '<span style="color:red">' + str + '</span>' ,
 	errorStack: str => '<span style="color:gray">' + str + '</span>' ,
+	errorStackKeyword: str => '<i>' + str + '</i>' ,
 	errorStackMethod: str => '<span style="color:yellow">' + str + '</span>' ,
 	errorStackMethodAs: str => '<span style="color:yellow">' + str + '</span>' ,
 	errorStackFile: str => '<span style="color:cyan">' + str + '</span>' ,
@@ -7803,7 +7841,7 @@ unicode.toFullWidth = str => {
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7834,18 +7872,25 @@ unicode.toFullWidth = str => {
 	Stand-alone fork of extend.js, without options.
 */
 
-module.exports = function clone( originalObject , circular ) {
+function clone( originalObject , circular ) {
 	// First create an empty object with
 	// same prototype of our original source
 
-	var propertyIndex , descriptor , keys , current , nextSource , indexOf ,
+	var originalProto = Object.getPrototypeOf( originalObject ) ;
+
+	// Opaque objects, like Date
+	if ( clone.opaque.has( originalProto ) ) { return clone.opaque.get( originalProto )( originalObject ) ; }
+
+	var propertyIndex , descriptor , keys , current , nextSource , proto ,
 		copies = [ {
 			source: originalObject ,
-			target: Array.isArray( originalObject ) ? [] : Object.create( Object.getPrototypeOf( originalObject ) )
+			target: Array.isArray( originalObject ) ? [] : Object.create( originalProto )
 		} ] ,
 		cloneObject = copies[ 0 ].target ,
-		sourceReferences = [ originalObject ] ,
-		targetReferences = [ cloneObject ] ;
+		refMap = new Map() ;
+
+	refMap.set( originalObject , cloneObject ) ;
+
 
 	// First in, first out
 	while ( ( current = copies.shift() ) ) {
@@ -7855,42 +7900,57 @@ module.exports = function clone( originalObject , circular ) {
 			// Save the source's descriptor
 			descriptor = Object.getOwnPropertyDescriptor( current.source , keys[ propertyIndex ] ) ;
 
+
 			if ( ! descriptor.value || typeof descriptor.value !== 'object' ) {
 				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 				continue ;
 			}
 
 			nextSource = descriptor.value ;
-			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( Object.getPrototypeOf( nextSource ) ) ;
 
 			if ( circular ) {
-				indexOf = sourceReferences.indexOf( nextSource ) ;
-
-				if ( indexOf !== -1 ) {
+				if ( refMap.has( nextSource ) ) {
 					// The source is already referenced, just assign reference
-					descriptor.value = targetReferences[ indexOf ] ;
+					descriptor.value = refMap.get( nextSource ) ;
 					Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 					continue ;
 				}
-
-				sourceReferences.push( nextSource ) ;
-				targetReferences.push( descriptor.value ) ;
 			}
 
-			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+			proto = Object.getPrototypeOf( descriptor.value ) ;
 
+			// Opaque objects, like Date, not recursivity for them
+			if ( clone.opaque.has( proto ) ) {
+				descriptor.value = clone.opaque.get( proto )( descriptor.value ) ;
+				Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
+				continue ;
+			}
+
+			descriptor.value = Array.isArray( nextSource ) ? [] : Object.create( proto ) ;
+
+			if ( circular ) { refMap.set( nextSource , descriptor.value ) ; }
+
+			Object.defineProperty( current.target , keys[ propertyIndex ] , descriptor ) ;
 			copies.push( { source: nextSource , target: descriptor.value } ) ;
 		}
 	}
 
 	return cloneObject ;
-} ;
+}
+
+module.exports = clone ;
+
+
+
+clone.opaque = new Map() ;
+clone.opaque.set( Date.prototype , src => new Date( src ) ) ;
+
 
 },{}],30:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2018 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 

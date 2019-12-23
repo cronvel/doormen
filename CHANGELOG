@@ -1,4 +1,10 @@
 
+v0.10.18
+--------
+
+Better 'around' assertion, .isEqual() support epsilon-aware comparison
+
+
 v0.10.17
 --------
 
