@@ -3149,6 +3149,13 @@ doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create
 doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , { a: 1 , b: 2 } ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
 ```
 
+expect a value to 'only have keys' should throw, suggesting to use 'only have own keys' instead.
+
+```js
+doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 } ).to.only.have.key( 'a' ) ) , "AssertionError: Instead of using assertion 'onlyKeys', you should use assertion 'onlyOwnKeys'." ) ;
+doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 , b: 2 } ).to.only.have.key( 'a' ) ) , "AssertionError: Instead of using assertion 'onlyKeys', you should use assertion 'onlyOwnKeys'." ) ;
+```
+
 expect a value to only have own keys.
 
 ```js

@@ -1,4 +1,10 @@
 
+v0.10.19
+--------
+
+Add dummy assertion 'onlyKeys', always throwing and suggesting to use 'onlyOwnKeys' instead (because it is common to try 'onlyKeys' first, not remembering that it is not very useful)
+
+
 v0.10.18
 --------
 

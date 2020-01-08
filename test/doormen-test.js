@@ -3570,6 +3570,11 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( proto ) , { a: 1 , b: 2 } ) ).not.to.have.own.keys( 'a' , 'd' ) ) ;
 	} ) ;
 
+	it( "expect a value to 'only have keys' should throw, suggesting to use 'only have own keys' instead" , () => {
+		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 } ).to.only.have.key( 'a' ) ) , "AssertionError: Instead of using assertion 'onlyKeys', you should use assertion 'onlyOwnKeys'." ) ;
+		doormen.equals( '' + doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 , b: 2 } ).to.only.have.key( 'a' ) ) , "AssertionError: Instead of using assertion 'onlyKeys', you should use assertion 'onlyOwnKeys'." ) ;
+	} ) ;
+
 	it( "expect a value to only have own keys" , () => {
 		doormen.expect( { a: 1 } ).to.only.have.own.key( 'a' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 , b: 2 } ).to.have.only.own.key( 'a' ) ) ;
