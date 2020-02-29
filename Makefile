@@ -17,7 +17,7 @@ dev-install: log/npm-dev-install.log
 build: browser
 
 # Build the browser lib
-browser: browser/doormen.js browser/doormen.min.js
+browser: browser/doormen.js browser/doormen.min.js browser/doormen-light.js browser/doormen-light.min.js
 
 # This run the JsHint & Mocha BDD test, display it to STDOUT & save it to log/mocha.log and log/jshint.log
 test: log/jshint.log log/mocha.log
@@ -59,6 +59,14 @@ browser/doormen.js: lib/*.js
 # Build the browser minified lib
 browser/doormen.min.js: browser/doormen.js
 	${UGLIFY} browser/doormen.js -o browser/doormen.min.js -m
+
+# Build the browser lib
+browser/doormen-light.js: lib/*.js
+	${BROWSERIFY} lib/browser-light.js -i buffer -i mongodb -s doormen -o browser/doormen-light.js
+
+# Build the browser minified lib
+browser/doormen-light.min.js: browser/doormen-light.js
+	${UGLIFY} browser/doormen-light.js -o browser/doormen-light.min.js -m
 
 # JsHint STDOUT test
 log/jshint.log: log/npm-dev-install.log lib/*.js test/*.js

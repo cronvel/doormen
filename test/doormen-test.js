@@ -2949,7 +2949,6 @@ describe( "Complex multiple-children constraints" , () => {
 describe( "Schema validation" , () => {
 
 	it( "Validate a schema" , () => {
-
 		var schema ;
 
 		schema = { properties: { a: { optional: true , type: 'string' } } } ;
