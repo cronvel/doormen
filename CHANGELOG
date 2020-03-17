@@ -1,4 +1,10 @@
 
+v0.11.0
+-------
+
+BREAKING: doormen.isEqual() options are now in an object, instead of the forever growing argument list, it supports a brand new option: 'unordered', that match when an array have the correct elements but not always in the correct order.
+
+
 v0.10.21
 --------
 

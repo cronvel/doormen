@@ -254,29 +254,40 @@ describe( "Equality checker" , () => {
 
 	it( ".isEqual() 'like' option" ) ;
 	it( ".isEqual() 'oneWay' option" ) ;
+	
+	it( ".isEqual() 'unordered' option" , () => {
+		expect( doormen.isEqual( [1,2,3] , [1,2,3] , { unordered: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( [2,3,1] , [1,2,3] , { unordered: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( [2,2,1] , [1,2,3] , { unordered: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( [3,2,1] , [2,2,3] , { unordered: true } ) ).to.be( false ) ;
+
+		expect( doormen.isEqual( [{a:1},{b:2},[4,3,2]] , [{a:1},{b:2},[4,3,2]] , { unordered: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( [{a:1},{b:2},[4,3,2]] , [[2,4,3],{a:1},{b:2}] , { unordered: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( [[2,4,3],{a:1},{b:2}] , [{a:1},{b:2},[4,3,2]] , { unordered: true } ) ).to.be( true ) ;
+	} ) ;
 
 	it( ".isEqual() 'around' option" , () => {
-		expect( doormen.isEqual( 1 , 1 , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 1 , 1.0000001 , false , false , true ) ).to.be( false ) ;
-		expect( doormen.isEqual( 1.0000001 , 1 , false , false , true ) ).to.be( false ) ;
-		expect( doormen.isEqual( 1 , 1 + Number.EPSILON , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 1 , 1 - Number.EPSILON , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 1 + Number.EPSILON , 1 , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 1 - Number.EPSILON , 1 , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 0.125 , 0.125 + Number.EPSILON , false , false , true ) ).to.be( false ) ;
-		expect( doormen.isEqual( 0.125 , 0.125 + 0.125 * Number.EPSILON , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 8 , 8 + 8 * Number.EPSILON , false , false , true ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 , 1 , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 , 1.0000001 , { around: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( 1.0000001 , 1 , { around: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( 1 , 1 + Number.EPSILON , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 , 1 - Number.EPSILON , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 + Number.EPSILON , 1 , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 - Number.EPSILON , 1 , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 0.125 , 0.125 + Number.EPSILON , { around: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( 0.125 , 0.125 + 0.125 * Number.EPSILON , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 8 , 8 + 8 * Number.EPSILON , { around: true } ) ).to.be( true ) ;
 
 		// We allow up to 4 Epsilons of error by default
-		expect( doormen.isEqual( 1 , 1 + 4 * Number.EPSILON , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 1 , 1 + 5 * Number.EPSILON , false , false , true ) ).to.be( false ) ;
-		expect( doormen.isEqual( 8 , 8 + 32 * Number.EPSILON , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( 8 , 8 + 64 * Number.EPSILON , false , false , true ) ).to.be( false ) ;
-		expect( doormen.isEqual( 8 , 8 + 40 * Number.EPSILON , false , false , true ) ).to.be( false ) ;
+		expect( doormen.isEqual( 1 , 1 + 4 * Number.EPSILON , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 1 , 1 + 5 * Number.EPSILON , { around: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( 8 , 8 + 32 * Number.EPSILON , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( 8 , 8 + 64 * Number.EPSILON , { around: true } ) ).to.be( false ) ;
+		expect( doormen.isEqual( 8 , 8 + 40 * Number.EPSILON , { around: true } ) ).to.be( false ) ;
 
 
-		expect( doormen.isEqual( { a: 8 } , { a: 8 + 32 * Number.EPSILON } , false , false , true ) ).to.be( true ) ;
-		expect( doormen.isEqual( { a: 8 } , { a: 8 + 64 * Number.EPSILON } , false , false , true ) ).to.be( false ) ;
+		expect( doormen.isEqual( { a: 8 } , { a: 8 + 32 * Number.EPSILON } , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( { a: 8 } , { a: 8 + 64 * Number.EPSILON } , { around: true } ) ).to.be( false ) ;
 	} ) ;
 } ) ;
 
@@ -3033,7 +3044,6 @@ describe( "Purify" , () => {
 describe( "Export mode" , () => {
 
 	it( ".export() and 'of'" , () => {
-
 		var data , schema , returned ;
 
 		schema = {
@@ -3051,7 +3061,6 @@ describe( "Export mode" , () => {
 	} ) ;
 
 	it( ".export() and 'properties'" , () => {
-
 		var data , schema , returned ;
 
 		schema = {
@@ -3087,7 +3096,6 @@ describe( "Export mode" , () => {
 	} ) ;
 
 	it( ".export() and 'elements'" , () => {
-
 		var data , schema , returned ;
 
 		schema = {

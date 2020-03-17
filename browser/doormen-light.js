@@ -1675,8 +1675,10 @@ doormen.not.equals = function notEquals( left , right ) {
 
 
 
+const IS_EQUAL_LIKE = { like: true } ;
+
 doormen.alike = function alike( left , right ) {
-	if ( ! doormen.isEqual( left , right , true ) ) {
+	if ( ! doormen.isEqual( left , right , IS_EQUAL_LIKE ) ) {
 		throw new doormen.AssertionError( 'should have been alike' , alike , {
 			actual: left ,
 			expected: right ,
@@ -1689,7 +1691,7 @@ doormen.alike = function alike( left , right ) {
 
 // Inverse of alike
 doormen.not.alike = function notAlike( left , right ) {
-	if ( doormen.isEqual( left , right , true ) ) {
+	if ( doormen.isEqual( left , right , IS_EQUAL_LIKE ) ) {
 		throw new doormen.AssertionError( 'should not have been alike' , notAlike , {
 			actual: left ,
 			expected: right ,
@@ -1999,11 +2001,12 @@ filters.notIn = function( data , params , element ) {
 
 
 
+const DEFAULT_OPTIONS = {} ;
 const EPSILON_DELTA_RATE = 1 + 4 * Number.EPSILON ;
 const EPSILON_ZERO_DELTA = 4 * Number.MIN_VALUE ;
 
 /*
-	Should be FAST! Some critical application part are depending on it.
+	Should be FAST! Some critical application parts are depending on it.
 	When a reporter will be coded, it should be plugged in a way that does not slow it down.
 
 	Options:
@@ -2011,14 +2014,17 @@ const EPSILON_ZERO_DELTA = 4 * Number.MIN_VALUE ;
 		oneWay: if true, check partially, e.g.:
 			{ a: 1 , b: 2 } and { a: 1 , b: 2 , c: 3 } DOES pass the test
 			but the reverse { a: 1 , b: 2 , c: 3 } and { a: 1 , b: 2 } DOES NOT pass the test
+		around: numbers are checked epsilon-aware
+		unordered: arrays are equals whenever they have all elements in common, whatever the order
 */
-function isEqual( left , right , like , oneWay , around ) {
+function isEqual( left , right , options = DEFAULT_OPTIONS ) {
 	var runtime = {
 		leftStack: [] ,
 		rightStack: [] ,
-		like: !! like ,
-		oneWay: !! oneWay ,
-		around: !! around
+		like: !! options.like ,
+		oneWay: !! options.oneWay ,
+		around: !! options.around ,
+		unordered: !! options.unordered
 	} ;
 
 	return isEqual_( runtime , left , right ) ;
@@ -2027,7 +2033,7 @@ function isEqual( left , right , like , oneWay , around ) {
 
 
 function isEqual_( runtime , left , right ) {
-	var index , indexMax , keys , key , leftIndexOf , rightIndexOf , recursiveTest ,
+	var index , indexMax , index2 , index2Max , found , indexUsed , keys , key , leftIndexOf , rightIndexOf , recursiveTest ,
 		valueOfLeft , valueOfRight , leftProto , rightProto , leftConstructor , rightConstructor ;
 
 	// If it's strictly equals, then early exit now.
@@ -2076,16 +2082,75 @@ function isEqual_( runtime , left , right ) {
 			// Arrays
 			if ( ! Array.isArray( right ) || left.length !== right.length ) { return false ; }
 
-			for ( index = 0 , indexMax = left.length ; index < indexMax ; index ++ ) {
-				if ( left[ index ] === right[ index ] ) { continue ; }
+			if ( runtime.unordered ) {
+				if ( indexUsed ) { indexUsed.length = 0 ; }
+				else { indexUsed = new Array( left.length ) ; }
 
-				runtime.leftStack.push( left ) ;
-				runtime.rightStack.push( right ) ;
-				recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] ) ;
-				//if ( ! recursiveTest ) { return false ; }
-				runtime.leftStack.pop() ;
-				runtime.rightStack.pop() ;
-				if ( ! recursiveTest ) { return false ; }
+				indexMax = left.length ;
+				index2Max = right.length ;
+
+				for ( index = 0 ; index < indexMax ; index ++ ) {
+					// Optimization heuristic: first search using the same index, because when using this option blindly,
+					// both array may be ordered or almost ordered.
+					// Since unordered comparison is O(2n), it can help a lot...
+					if ( ! indexUsed[ index ] ) {
+						if ( left[ index ] === right[ index ] ) { continue ; }
+
+						runtime.leftStack.push( left ) ;
+						runtime.rightStack.push( right ) ;
+						recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] ) ;
+						runtime.leftStack.pop() ;
+						runtime.rightStack.pop() ;
+
+						if ( recursiveTest ) {
+							indexUsed[ index ] = true ;
+							continue ;
+						}
+					}
+
+					found = false ;
+
+					for ( index2 = 0 ; index2 < index2Max ; index2 ++ ) {
+						// Continue if already checked just above (in the optimization heuristic part)
+						// or if the index have been used already.
+						if ( index === index2 || indexUsed[ index2 ] ) {
+							continue ;
+						}
+
+						if ( left[ index ] === right[ index2 ] ) {
+							found = true ;
+							indexUsed[ index2 ] = true ;
+							break ;
+						}
+
+						runtime.leftStack.push( left ) ;
+						runtime.rightStack.push( right ) ;
+						recursiveTest = isEqual_( runtime , left[ index ] , right[ index2 ] ) ;
+						runtime.leftStack.pop() ;
+						runtime.rightStack.pop() ;
+
+						if ( recursiveTest ) {
+							found = true ;
+							indexUsed[ index2 ] = true ;
+							break ;
+						}
+					}
+
+					if ( ! found ) { return false ; }
+				}
+			}
+			else {
+				for ( index = 0 , indexMax = left.length ; index < indexMax ; index ++ ) {
+					if ( left[ index ] === right[ index ] ) { continue ; }
+
+					runtime.leftStack.push( left ) ;
+					runtime.rightStack.push( right ) ;
+					recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] ) ;
+					runtime.leftStack.pop() ;
+					runtime.rightStack.pop() ;
+
+					if ( ! recursiveTest ) { return false ; }
+				}
 			}
 		}
 		else if ( Buffer.isBuffer( left ) ) {

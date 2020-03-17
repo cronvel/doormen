@@ -2612,78 +2612,78 @@ doormen.equals(
 
 ```js
 var data , schema , returned ;
-		schema = {
-			of: { type: 'string' , sanitize: 'trim' }
-		} ;
-		data = { a: 'abc' , b: '  def  ' } ;
-		returned = doormen.export( schema , data ) ;
-		doormen.equals( data , { a: 'abc' , b: '  def  ' } ) ;
-		doormen.equals( returned , { a: 'abc' , b: 'def' } ) ;
-		returned = doormen( schema , data ) ;
-		doormen.equals( data , { a: 'abc' , b: 'def' } ) ;
-		doormen.equals( returned , { a: 'abc' , b: 'def' } ) ;
+schema = {
+	of: { type: 'string' , sanitize: 'trim' }
+} ;
+data = { a: 'abc' , b: '  def  ' } ;
+returned = doormen.export( schema , data ) ;
+doormen.equals( data , { a: 'abc' , b: '  def  ' } ) ;
+doormen.equals( returned , { a: 'abc' , b: 'def' } ) ;
+returned = doormen( schema , data ) ;
+doormen.equals( data , { a: 'abc' , b: 'def' } ) ;
+doormen.equals( returned , { a: 'abc' , b: 'def' } ) ;
 ```
 
 .export() and 'properties'.
 
 ```js
 var data , schema , returned ;
-		schema = {
-			properties: {
-				a: { type: 'string' , sanitize: 'toUpperCase' } ,
-				b: { type: 'string' , sanitize: 'trim' }
-			}
-		} ;
-		data = { a: 'abc' , b: '  def  ' } ;
-		returned = doormen.export( schema , data ) ;
-		doormen.equals( data , { a: 'abc' , b: '  def  ' } ) ;
-		doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
-		returned = doormen( schema , data ) ;
-		doormen.equals( data , { a: 'ABC' , b: 'def' } ) ;
-		doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
-		data = { a: 'abc' , b: '  def  ' , c: 'toto' } ;
-		doormen.shouldThrow( () => {
-			returned = doormen.export( schema , data ) ;
-		} ) ;
-		schema.extraProperties = true ;
-		data = { a: 'abc' , b: '  def  ' , c: 'toto' } ;
-		returned = doormen.export( schema , data ) ;
-		doormen.equals( data , { a: 'abc' , b: '  def  ' , c: 'toto' } ) ;
-		doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
-		returned = doormen( schema , data ) ;
-		doormen.equals( data , { a: 'ABC' , b: 'def' , c: 'toto' } ) ;
-		doormen.equals( returned , { a: 'ABC' , b: 'def' , c: 'toto' } ) ;
+schema = {
+	properties: {
+		a: { type: 'string' , sanitize: 'toUpperCase' } ,
+		b: { type: 'string' , sanitize: 'trim' }
+	}
+} ;
+data = { a: 'abc' , b: '  def  ' } ;
+returned = doormen.export( schema , data ) ;
+doormen.equals( data , { a: 'abc' , b: '  def  ' } ) ;
+doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
+returned = doormen( schema , data ) ;
+doormen.equals( data , { a: 'ABC' , b: 'def' } ) ;
+doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
+data = { a: 'abc' , b: '  def  ' , c: 'toto' } ;
+doormen.shouldThrow( () => {
+	returned = doormen.export( schema , data ) ;
+} ) ;
+schema.extraProperties = true ;
+data = { a: 'abc' , b: '  def  ' , c: 'toto' } ;
+returned = doormen.export( schema , data ) ;
+doormen.equals( data , { a: 'abc' , b: '  def  ' , c: 'toto' } ) ;
+doormen.equals( returned , { a: 'ABC' , b: 'def' } ) ;
+returned = doormen( schema , data ) ;
+doormen.equals( data , { a: 'ABC' , b: 'def' , c: 'toto' } ) ;
+doormen.equals( returned , { a: 'ABC' , b: 'def' , c: 'toto' } ) ;
 ```
 
 .export() and 'elements'.
 
 ```js
 var data , schema , returned ;
-		schema = {
-			elements: [
-				{ type: 'string' , sanitize: 'toUpperCase' } ,
-				{ type: 'string' , sanitize: 'trim' }
-			]
-		} ;
-		data = [ 'abc' , '  def  ' ] ;
-		returned = doormen.export( schema , data ) ;
-		doormen.equals( data , [ 'abc' , '  def  ' ] ) ;
-		doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
-		returned = doormen( schema , data ) ;
-		doormen.equals( data , [ 'ABC' , 'def' ] ) ;
-		doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
-		data = [ 'abc' , '  def  ' , 'toto' ] ;
-		doormen.shouldThrow( () => {
-			returned = doormen.export( schema , data ) ;
-		} ) ;
-		schema.extraElements = true ;
-		data = [ 'abc' , '  def  ' , 'toto' ] ;
-		returned = doormen.export( schema , data ) ;
-		doormen.equals( data , [ 'abc' , '  def  ' , 'toto' ] ) ;
-		doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
-		returned = doormen( schema , data ) ;
-		doormen.equals( data , [ 'ABC' , 'def' , 'toto' ] ) ;
-		doormen.equals( returned , [ 'ABC' , 'def' , 'toto' ] ) ;
+schema = {
+	elements: [
+		{ type: 'string' , sanitize: 'toUpperCase' } ,
+		{ type: 'string' , sanitize: 'trim' }
+	]
+} ;
+data = [ 'abc' , '  def  ' ] ;
+returned = doormen.export( schema , data ) ;
+doormen.equals( data , [ 'abc' , '  def  ' ] ) ;
+doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
+returned = doormen( schema , data ) ;
+doormen.equals( data , [ 'ABC' , 'def' ] ) ;
+doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
+data = [ 'abc' , '  def  ' , 'toto' ] ;
+doormen.shouldThrow( () => {
+	returned = doormen.export( schema , data ) ;
+} ) ;
+schema.extraElements = true ;
+data = [ 'abc' , '  def  ' , 'toto' ] ;
+returned = doormen.export( schema , data ) ;
+doormen.equals( data , [ 'abc' , '  def  ' , 'toto' ] ) ;
+doormen.equals( returned , [ 'ABC' , 'def' ] ) ;
+returned = doormen( schema , data ) ;
+doormen.equals( data , [ 'ABC' , 'def' , 'toto' ] ) ;
+doormen.equals( returned , [ 'ABC' , 'def' , 'toto' ] ) ;
 ```
 
 <a name="expect-bdd-assertion-library"></a>
