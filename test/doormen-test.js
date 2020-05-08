@@ -1194,7 +1194,7 @@ describe( "Children and recursivity" , () => {
 
 describe( "Mask" , () => {
 
-	it( "Should mask data using a tier-level" , () => {
+	it( "should mask data using a tier-level" , () => {
 		var schema = {
 			properties: {
 				a: {
@@ -1240,7 +1240,7 @@ describe( "Mask" , () => {
 		) ;
 	} ) ;
 
-	it( "Should mask nested data using a tier-level" , () => {
+	it( "should mask nested data using a tier-level" , () => {
 		var schema = {
 			properties: {
 				a: {
@@ -1347,7 +1347,7 @@ describe( "Mask" , () => {
 		) ;
 	} ) ;
 
-	it( "Should mask data using tags" , () => {
+	it( "should mask data using tags" , () => {
 		var schema = {
 			properties: {
 				_id: { tags: [] } ,
@@ -1417,7 +1417,7 @@ describe( "Mask" , () => {
 
 	} ) ;
 
-	it( "Should mask nested data using tags" , () => {
+	it( "should mask nested data using tags" , () => {
 		var schema = {
 			properties: {
 				_id: {} ,
@@ -1498,6 +1498,87 @@ describe( "Mask" , () => {
 				] ,
 				title: '10 things you should know about nothing' ,
 				post: 'blah blah blah blah'
+			}
+		) ;
+	} ) ;
+
+	it( "tag-masking and 'noSubmasking' behavior" , () => {
+		var schema = {
+			properties: {
+				_id: {} ,
+				slug: { tags: [ 'internal' , 'meta' ] } ,
+				accesses: {
+					of: {
+						properties: {
+							userId: {} ,
+							accessLevel: { tags: [ 'internal' ] } ,
+							details: {
+								tags: [ 'internal' ] ,
+								properties: {
+									k1: { type: 'string' , tags: [ 'nope' ] } ,
+									k2: { type: 'string' }
+								}
+							}
+						}
+					}
+				} ,
+				title: { tags: [ 'meta' ] } ,
+				post: { tags: [ 'content' ] }
+			}
+		} ;
+
+		var data = {
+			_id: '1978f09ac3e' ,
+			slug: 'ten-things-about-nothing' ,
+			accesses: [
+				{
+					userId: 'bob' ,
+					accessLevel: 2 ,
+					details: { k1: 'one' , k2: 'two' }
+				} ,
+				{
+					userId: 'bill' ,
+					accessLevel: 3 ,
+					details: { k1: 'three' , k2: 'four' }
+				}
+			] ,
+			title: '10 things you should know about nothing' ,
+			post: 'blah blah blah blah'
+		} ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'meta' ] ) ,
+			{
+				_id: '1978f09ac3e' ,
+				slug: 'ten-things-about-nothing' ,
+				accesses: [ { userId: 'bob' } , { userId: 'bill' } ] ,
+				title: '10 things you should know about nothing'
+			}
+		) ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'internal' ] ) ,
+			{
+				_id: '1978f09ac3e' ,
+				slug: 'ten-things-about-nothing' ,
+				accesses: [
+					{ userId: 'bob' , accessLevel: 2 , details: { k2: 'two' } } ,
+					{ userId: 'bill' , accessLevel: 3 , details: { k2: 'four' } }
+				]
+			}
+		) ;
+
+		schema.properties.accesses.of.properties.details.noSubmasking = true ;
+
+		doormen.equals(
+			doormen.tagMask( schema , data , [ 'internal' ] ) ,
+			{
+				_id: '1978f09ac3e' ,
+				slug: 'ten-things-about-nothing' ,
+				accesses: [
+					{ userId: 'bob' , accessLevel: 2 , details: { k1: 'one' , k2: 'two' } } ,
+					{ userId: 'bill' , accessLevel: 3 , details: { k1: 'three' , k2: 'four' } }
+				]
 			}
 		) ;
 	} ) ;
@@ -1675,7 +1756,7 @@ describe( "Mask" , () => {
 		doormen.equals( doormen.patch( { allowedTags: [ 'meta' , 'content' ] } , schema , { a: 1 , b: 'two' } ) , { a: '1' , b: 'two' } ) ;
 	} ) ;
 
-	it( "Should find all tags in a schema" , () => {
+	it( "should find all tags in a schema" , () => {
 		var schema = {
 			properties: {
 				_id: {} ,
