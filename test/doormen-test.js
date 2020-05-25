@@ -3463,6 +3463,10 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( 0 - 4 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ) ;
 		doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.close.to( 0 ) ) ;
+
+		
+		// Historical bug with negative numbers
+		doormen.expect( -1 ).to.be.around( -1 ) ;
 	} ) ;
 
 	it( "expect a value to be above/below/at least/at most" , () => {

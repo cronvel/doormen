@@ -1145,7 +1145,7 @@ var schema = {
 
 <a name="mask"></a>
 # Mask
-Should mask data using a tier-level.
+should mask data using a tier-level.
 
 ```js
 var schema = {
@@ -1191,7 +1191,7 @@ doormen.equals(
 ) ;
 ```
 
-Should mask nested data using a tier-level.
+should mask nested data using a tier-level.
 
 ```js
 var schema = {
@@ -1298,7 +1298,7 @@ doormen.equals(
 ) ;
 ```
 
-Should mask data using tags.
+should mask data using tags.
 
 ```js
 var schema = {
@@ -1363,7 +1363,7 @@ doormen.equals(
 ) ;
 ```
 
-Should mask nested data using tags.
+should mask nested data using tags.
 
 ```js
 var schema = {
@@ -1441,6 +1441,84 @@ doormen.equals(
 		] ,
 		title: '10 things you should know about nothing' ,
 		post: 'blah blah blah blah'
+	}
+) ;
+```
+
+tag-masking and 'noSubmasking' behavior.
+
+```js
+var schema = {
+	properties: {
+		_id: {} ,
+		slug: { tags: [ 'internal' , 'meta' ] } ,
+		accesses: {
+			of: {
+				properties: {
+					userId: {} ,
+					accessLevel: { tags: [ 'internal' ] } ,
+					details: {
+						tags: [ 'internal' ] ,
+						properties: {
+							k1: { type: 'string' , tags: [ 'nope' ] } ,
+							k2: { type: 'string' }
+						}
+					}
+				}
+			}
+		} ,
+		title: { tags: [ 'meta' ] } ,
+		post: { tags: [ 'content' ] }
+	}
+} ;
+var data = {
+	_id: '1978f09ac3e' ,
+	slug: 'ten-things-about-nothing' ,
+	accesses: [
+		{
+			userId: 'bob' ,
+			accessLevel: 2 ,
+			details: { k1: 'one' , k2: 'two' }
+		} ,
+		{
+			userId: 'bill' ,
+			accessLevel: 3 ,
+			details: { k1: 'three' , k2: 'four' }
+		}
+	] ,
+	title: '10 things you should know about nothing' ,
+	post: 'blah blah blah blah'
+} ;
+doormen.equals(
+	doormen.tagMask( schema , data , [ 'meta' ] ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [ { userId: 'bob' } , { userId: 'bill' } ] ,
+		title: '10 things you should know about nothing'
+	}
+) ;
+doormen.equals(
+	doormen.tagMask( schema , data , [ 'internal' ] ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [
+			{ userId: 'bob' , accessLevel: 2 , details: { k2: 'two' } } ,
+			{ userId: 'bill' , accessLevel: 3 , details: { k2: 'four' } }
+		]
+	}
+) ;
+schema.properties.accesses.of.properties.details.noSubmasking = true ;
+doormen.equals(
+	doormen.tagMask( schema , data , [ 'internal' ] ) ,
+	{
+		_id: '1978f09ac3e' ,
+		slug: 'ten-things-about-nothing' ,
+		accesses: [
+			{ userId: 'bob' , accessLevel: 2 , details: { k1: 'one' , k2: 'two' } } ,
+			{ userId: 'bill' , accessLevel: 3 , details: { k1: 'three' , k2: 'four' } }
+		]
 	}
 ) ;
 ```
@@ -2871,6 +2949,9 @@ doormen.expect( 0 - 4 * Number.MIN_VALUE ).to.be.close.to( 0 ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( 0 - 4 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ) ;
 doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.not.close.to( 0 ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( 0 - 5 * Number.MIN_VALUE ).to.be.close.to( 0 ) ) ;
+
+// Historical bug with negative numbers
+doormen.expect( -1 ).to.be.around( -1 ) ;
 ```
 
 expect a value to be above/below/at least/at most.

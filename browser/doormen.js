@@ -1163,12 +1163,19 @@ assert.around = ( from , actual , value , delta ) => {
 	}
 
 	if ( ! delta ) {
-		if ( actual === 0 || value === 0 ) {
+		let absActual = Math.abs( actual ) ,
+			absValue = Math.abs( value ) ;
+
+		if ( absActual <= EPSILON_ZERO_DELTA || absValue <= EPSILON_ZERO_DELTA ) {
 			if ( actual > value + EPSILON_ZERO_DELTA || value > actual + EPSILON_ZERO_DELTA ) {
 				throw assertionError( from , actual , 'to be around' , value ) ;
 			}
 		}
-		else if ( actual > value * EPSILON_DELTA_RATE || value > actual * EPSILON_DELTA_RATE ) {
+		else if ( actual * value < 0 ) {
+			// Sign mismatch
+			throw assertionError( from , actual , 'to be around' , value ) ;
+		}
+		else if ( absActual > absValue * EPSILON_DELTA_RATE || absValue > absActual * EPSILON_DELTA_RATE ) {
 			throw assertionError( from , actual , 'to be around' , value ) ;
 		}
 
