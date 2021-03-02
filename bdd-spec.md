@@ -12,7 +12,7 @@
    - [Numbers meta types](#numbers-meta-types)
    - [Strings meta types](#strings-meta-types)
    - [Sanitize](#sanitize)
-   - [Sanitize + Patch reporting](#sanitize--patch-reporting)
+   - [Sanitize + Patch reporting](#sanitize-patch-reporting)
    - [Full report mode](#full-report-mode)
    - [Patch validation](#patch-validation)
    - [Patch application](#patch-application)
@@ -2107,7 +2107,7 @@ doormen.equals( doormen( { sanitize: 'resize' , leftPadding: '----' , length: 3 
 doormen.equals( doormen( { sanitize: 'resize' , rightPadding: '----' , length: 3 } , 'a' ) , 'a--' ) ;
 ```
 
-<a name="sanitize--patch-reporting"></a>
+<a name="sanitize-patch-reporting"></a>
 # Sanitize + Patch reporting
 sanitize should should report in the provided patch object.
 
