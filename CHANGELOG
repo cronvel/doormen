@@ -1,4 +1,10 @@
 
+v0.11.3
+-------
+
+doormen.path() refacto, also the name is deprecated in favor of doormen.subSchema(), new doormen.directSubSchema()
+
+
 v0.11.2
 -------
 

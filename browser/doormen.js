@@ -2,7 +2,7 @@
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -58,7 +58,7 @@ AssertionError.prototype.name = 'AssertionError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -206,7 +206,7 @@ Form.prototype.commit = function() {
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -345,11 +345,11 @@ Input.prototype.update = function() {
 } ;
 
 
-},{"./core.js":9,"tree-kit/lib/clone.js":32}],4:[function(require,module,exports){
+},{"./core.js":9,"tree-kit/lib/clone.js":30}],4:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -394,7 +394,7 @@ SchemaError.prototype.name = 'SchemaError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -441,7 +441,7 @@ ValidatorError.prototype.name = 'ValidatorError' ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2073,11 +2073,11 @@ assert.fail.inspect = true ;
 assert.fail.none = true ;
 
 
-},{"./AssertionError.js":1,"./isEqual.js":14,"./typeCheckers.js":18,"string-kit/lib/inspect.js":26}],7:[function(require,module,exports){
+},{"./AssertionError.js":1,"./isEqual.js":14,"./typeCheckers.js":18,"string-kit/lib/inspect.js":25}],7:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2109,11 +2109,11 @@ module.exports = require( './doormen.js' ) ;
 module.exports.isBrowser = true ;
 
 },{"./doormen.js":11}],8:[function(require,module,exports){
-(function (global){(function (){
+(function (global){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2348,13 +2348,13 @@ constraints.extraction = function( data , params , element , clone ) {
 } ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./core.js":9,"string-kit/lib/format.js":25,"tree-kit/lib/dotPath.js":33}],9:[function(require,module,exports){
-(function (global){(function (){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./core.js":9,"string-kit/lib/format.js":24,"tree-kit/lib/dotPath.js":31}],9:[function(require,module,exports){
+(function (global){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -2832,31 +2832,34 @@ function addToPatch( patch , path , data ) {
 
 
 
-doormen.path = function( schema , path , noSubmasking = false , noOpaque = false ) {
-	var index = 0 ;
+doormen.path =	// DEPRECATED name, use doormen.subSchema()
+doormen.subSchema = ( schema , path , noSubmasking = false , noOpaque = false ) => {
+	var i , iMax ;
 
 	if ( ! Array.isArray( path ) ) {
 		if ( typeof path !== 'string' ) { throw new Error( "Argument #1 'path' should be a string or an array" ) ; }
-		path = path.split( '.' ) ;
+		path = path.split( '.' ).filter( e => e ) ;
 	}
 
-	if ( ! schema || typeof schema !== 'object' ) {
-		throw new doormen.SchemaError( schema + " is not a schema (not an object or an array of object)." ) ;
+	try {
+		for ( i = 0 , iMax = path.length ; i < iMax && schema ; i ++ ) {
+			schema = doormen.directSubSchema( schema , path[ i ] , noSubmasking , noOpaque ) ;
+		}
+	}
+	catch ( error ) {
+		error.message += ' (at: ' + path.slice( 0 , i + 1 ).join( '.' ) + ')' ;
+		throw error ;
 	}
 
-	// Skip empty path
-	while ( index < path.length && ! path[ index ] ) { index ++ ; }
-
-	return schemaPath_( schema , path , index , noSubmasking , noOpaque ) ;
+	return schema ;
 } ;
 
 
 
-function schemaPath_( schema , path , index , noSubmasking , noOpaque ) {
-	var key ;
-
-	// Found it! return now!
-	if ( index >= path.length ) { return schema ; }
+doormen.directSubSchema = ( schema , key , noSubmasking , noOpaque ) => {
+	if ( ! schema || typeof schema !== 'object' ) {
+		throw new doormen.SchemaError( "Not a schema (not an object or an array of object)." ) ;
+	}
 
 	if ( noOpaque && schema.opaque ) {
 		throw new doormen.ValidatorError( "Path leading inside an opaque object." ) ;
@@ -2864,45 +2867,53 @@ function schemaPath_( schema , path , index , noSubmasking , noOpaque ) {
 
 	if ( noSubmasking && schema.noSubmasking ) { return null ; }
 
-	key = path[ index ] ;
-
-
 	// 0) Arrays are alternatives
-	if ( Array.isArray( schema ) ) { throw new Error( "Schema alternatives are not supported for path matching ATM." ) ; }
+	if ( Array.isArray( schema ) ) { throw new Error( "Schema alternatives are not supported for subSchema ATM." ) ; }
 
 	// 1) Recursivity
 	if ( schema.properties !== undefined ) {
 		if ( ! schema.properties || typeof schema.properties !== 'object' ) {
-			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'properties' should be an object." ) ;
+			throw new doormen.SchemaError( "Bad schema: 'properties' should be an object." ) ;
 		}
 
 		if ( schema.properties[ key ] ) {
-			//path.shift() ;
-			return schemaPath_( schema.properties[ key ] , path , index + 1 , noSubmasking , noOpaque ) ;
+			return schema.properties[ key ] ;
 		}
 		else if ( ! schema.extraProperties ) {
-			throw new doormen.SchemaError( "Bad path (at " + path + "), property '" + key + "' not found and the schema does not allow extra properties." ) ;
+			throw new doormen.SchemaError( "Bad path: property '" + key + "' not found and the schema does not allow extra properties." ) ;
+		}
+	}
+
+	if ( schema.elements !== undefined ) {
+		if ( ! Array.isArray( schema.elements ) ) {
+			throw new doormen.SchemaError( "Bad schema: 'elements' should be an array." ) ;
+		}
+
+		key = + key ;
+
+		if ( schema.elements[ key ] ) {
+			return schema.elements[ key ] ;
+		}
+		else if ( ! schema.extraElements ) {
+			throw new doormen.SchemaError( "Bad path: element #" + key + " not found and the schema does not allow extra elements." ) ;
 		}
 	}
 
 	if ( schema.of !== undefined ) {
 		if ( ! schema.of || typeof schema.of !== 'object' ) {
-			throw new doormen.SchemaError( "Bad schema (at " + path + "), 'of' should contain a schema object." ) ;
+			throw new doormen.SchemaError( "Bad schema: 'of' should contain a schema object." ) ;
 		}
 
-		//path.shift() ;
-		return schemaPath_( schema.of , path , index + 1 , noSubmasking , noOpaque ) ;
+		return schema.of ;
 	}
-
-	// "element" is not supported ATM
-	//if ( schema.elements !== undefined ) {}
 
 	// Sub-schema not found, it should be open to anything, so return {}
 	return {} ;
-}
+} ;
 
 
 
+// Refacto:
 // Manage recursivity when dealing with schemas and data
 // ----------------------------------------------------------------------------------------------------------- TODO ----------------------------------------------------
 // The main check() function should use it
@@ -3193,7 +3204,7 @@ doormen.patchTier = function( schema , patch ) {
 		path = paths[ i ].split( '.' ) ;
 
 		while ( path.length ) {
-			maxTier = Math.max( maxTier , doormen.path( schema , path ).tier || 1 ) ;
+			maxTier = Math.max( maxTier , doormen.subSchema( schema , path ).tier || 1 ) ;
 			path.pop() ;
 		}
 	}
@@ -3225,7 +3236,7 @@ function checkOnePatchPathByTags( schema , path , allowedTags , element ) {
 	path = path.split( '.' ) ;
 
 	while ( path.length ) {
-		subSchema = doormen.path( schema , path ) ;
+		subSchema = doormen.subSchema( schema , path ) ;
 
 		if ( subSchema.tags ) {
 			found = false ;
@@ -3313,10 +3324,10 @@ doormen.patch = function( ... args ) {
 			}
 
 			if ( patchCommands[ patchCommandName ].applyToChildren ) {
-				subSchema = doormen.path( schema , path , undefined , true ).of || {} ;
+				subSchema = doormen.subSchema( schema , path , undefined , true ).of || {} ;
 			}
 			else {
-				subSchema = doormen.path( schema , path , undefined , true ) ;
+				subSchema = doormen.subSchema( schema , path , undefined , true ) ;
 			}
 
 			if ( patchCommands[ patchCommandName ].sanitize ) {
@@ -3336,7 +3347,7 @@ doormen.patch = function( ... args ) {
 			}
 		}
 		else {
-			subSchema = doormen.path( schema , path , undefined , true ) ;
+			subSchema = doormen.subSchema( schema , path , undefined , true ) ;
 
 			//sanitized[ path ] = doormen( options , subSchema , value ) ;
 			sanitized[ path ] = context.check( subSchema , value , {
@@ -3628,13 +3639,13 @@ doormen.not.alike = function notAlike( left , right ) {
 } ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./AssertionError.js":1,"./SchemaError.js":4,"./ValidatorError.js":5,"./constraints.js":8,"./defaultFunctions.js":10,"./filters.js":13,"./isEqual.js":14,"./mask.js":15,"./sanitizers.js":16,"./schemaSchema.js":17,"./typeCheckers.js":18,"tree-kit/lib/clone.js":32,"tree-kit/lib/dotPath.js":33}],10:[function(require,module,exports){
-(function (global){(function (){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./AssertionError.js":1,"./SchemaError.js":4,"./ValidatorError.js":5,"./constraints.js":8,"./defaultFunctions.js":10,"./filters.js":13,"./isEqual.js":14,"./mask.js":15,"./sanitizers.js":16,"./schemaSchema.js":17,"./typeCheckers.js":18,"tree-kit/lib/clone.js":30,"tree-kit/lib/dotPath.js":31}],10:[function(require,module,exports){
+(function (global){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3673,12 +3684,12 @@ module.exports = defaultFunctions ;
 defaultFunctions.now = () => new Date() ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],11:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3723,7 +3734,7 @@ doormen.Form = require( './Form.js' ) ;
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3946,11 +3957,11 @@ var handler = {
 
 
 },{"./assert.js":6}],13:[function(require,module,exports){
-(function (global){(function (){
+(function (global){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4166,13 +4177,13 @@ filters.notIn = function( data , params , element ) {
 } ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./core.js":9}],14:[function(require,module,exports){
-(function (Buffer){(function (){
+(function (Buffer){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4427,12 +4438,12 @@ function isEqual_( runtime , left , right ) {
 module.exports = isEqual ;
 
 
-}).call(this)}).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
+}).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
 },{"../node_modules/is-buffer/index.js":20}],15:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4687,11 +4698,11 @@ exports.getAllSchemaTags = function( schema , tags = new Set() , depthLimit = 10
 
 
 },{}],16:[function(require,module,exports){
-(function (global){(function (){
+(function (global){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -4973,12 +4984,12 @@ sanitizers.mongoId = data => {
 } ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./core.js":9,"mongodb":19,"string-kit/lib/latinize.js":28,"string-kit/lib/toTitleCase.js":30}],17:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./core.js":9,"mongodb":19,"string-kit/lib/latinize.js":27,"string-kit/lib/toTitleCase.js":28}],17:[function(require,module,exports){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -5099,11 +5110,11 @@ module.exports = schemaSchema ;
 
 
 },{}],18:[function(require,module,exports){
-(function (global,Buffer){(function (){
+(function (global,Buffer){
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -5391,7 +5402,7 @@ typeCheckers.mongoId = data => {
 } ;
 
 
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 },{"./core.js":9,"buffer":19}],19:[function(require,module,exports){
 
 },{}],20:[function(require,module,exports){
@@ -5607,289 +5618,7 @@ process.umask = function() { return 0; };
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
-
-	The MIT License (MIT)
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
-
-"use strict" ;
-
-
-
-/*
-	Number formatting class.
-	.format() should entirely use it for everything related to number formatting.
-	It avoids unsolvable rounding error with epsilon.
-	It is dedicated to number display to user, not computing.
-*/
-
-
-
-function StringNumber( number ) {
-	this.sign = 1 ;
-	this.digits = [] ;
-	this.exposant = 0 ;
-	this.special = null ;
-	this.set( number ) ;
-}
-
-module.exports = StringNumber ;
-
-
-
-StringNumber.prototype.set = function( number ) {
-	var matches , digits , exposant , v , i , iMax , index , hasNonZeroHead , tailIndex ;
-
-	number = + number ;
-
-	if ( ! Number.isFinite( number ) ) {
-		this.special = number ;
-		return null ;
-	}
-
-	number = '' + number ;
-	matches = number.match( /(-)?([0-9]+)(?:.([0-9]+))?(?:e([+-][0-9]+))?/ ) ;
-	if ( ! matches ) { throw new Error( 'Unexpected error' ) ; }
-
-	this.sign = matches[ 1 ] ? -1 : 1 ;
-	this.exposant = matches[ 2 ].length + ( parseInt( matches[ 4 ] , 10 ) || 0 ) ;
-
-	// Copy each digits and cast them back into a number
-	index = 0 ;
-	hasNonZeroHead = false ;
-	tailIndex = 0 ;	// used to cut trailing zero
-
-	for ( i = 0 , iMax = matches[ 2 ].length ; i < iMax ; i ++ ) {
-		v = + matches[ 2 ][ i ] ;
-		if ( v !== 0 ) {
-			hasNonZeroHead = true ;
-			this.digits[ index ] = v ;
-			index ++ ;
-			tailIndex = index ;
-		}
-		else if ( hasNonZeroHead ) {
-			this.digits[ index ] = v ;
-			index ++ ;
-		}
-		else {
-			this.exposant -- ;
-		}
-	}
-
-	if ( matches[ 3 ] ) {
-		for ( i = 0 , iMax = matches[ 3 ].length ; i < iMax ; i ++ ) {
-			v = + matches[ 3 ][ i ] ;
-
-			if ( v !== 0 ) {
-				hasNonZeroHead = true ;
-				this.digits[ index ] = v ;
-				index ++ ;
-				tailIndex = index ;
-			}
-			else if ( hasNonZeroHead ) {
-				this.digits[ index ] = v ;
-				index ++ ;
-			}
-			else {
-				this.exposant -- ;
-			}
-		}
-	}
-
-	if ( tailIndex !== index ) {
-		this.digits.length = tailIndex ;
-	}
-} ;
-
-
-
-StringNumber.prototype.toNumber = function() {
-	// Using a string representation
-	if ( this.special !== null ) { return this.special ; }
-	return parseFloat( ( this.sign < 0 ? '-' : '' ) + '0.' + this.digits.join( '' ) + 'e' + this.exposant ) ;
-} ;
-
-
-
-StringNumber.prototype.toString = function( ... args ) {
-	if ( this.special !== null ) { return '' + this.special ; }
-	if ( this.exposant > 20 || this.exposant < -20 ) { return this.toScientificString( ... args ) ; }
-	return this.toNoExpString( ... args ) ;
-} ;
-
-
-
-StringNumber.prototype.toScientific =
-StringNumber.prototype.toScientificString = function() {
-	if ( this.special !== null ) { return '' + this.special ; }
-
-	var str = this.sign < 0 ? '-' : '' ;
-	if ( ! this.digits.length ) { return str + '0' ; }
-
-	str += this.digits[ 0 ] ;
-
-	if ( this.digits.length > 1 ) {
-		str += '.' + this.digits.join( '' ).slice( 1 ) ;
-	}
-
-	str += 'e' + ( this.exposant > 1 ? '+' : this.exposant < 1 ? '-' : '' ) + ( this.exposant - 1 ) ;
-	return str ;
-} ;
-
-
-
-// leadingZero = minimal number of number before the dot, they will be left-padded with zero if needed.
-// trailingZero = minimal number of number before the dot, they will be right-padded with zero if needed.
-// onlyIfDecimal: set it to true if you don't want right padding zero when there is no decimal
-StringNumber.prototype.toNoExp =
-StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , exposant = this.exposant ) {
-	if ( this.special !== null ) { return '' + this.special ; }
-
-	var str = this.sign < 0 ? '-' : '' ;
-
-	if ( ! this.digits.length ) {
-		str += '0'.repeat( leadingZero ) ;
-		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
-		return str ;
-	}
-
-	var digits = this.digits.join( '' ) ;
-
-	if ( exposant <= 0 ) {
-		// This number is of type 0.[0...]xyz
-		str += '0'.repeat( leadingZero ) + '.' + '0'.repeat( -exposant ) + digits ;
-		if ( trailingZero && digits.length - exposant < trailingZero ) {
-			str += '0'.repeat( trailingZero - digits.length + exposant ) ;
-		}
-		return str ;
-	}
-
-	if ( exposant >= this.digits.length ) {
-		// This number is of type xyz[0...]
-		if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
-		str += digits + '0'.repeat( exposant - this.digits.length ) ;
-		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
-		return str ;
-	}
-
-	// Here the digits are splitted with a dot in the middle
-	if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
-	str += digits.slice( 0 , exposant ) + '.' + digits.slice( exposant ) ;
-
-	if (
-		trailingZero && digits.length - exposant < trailingZero
-		&& ( ! onlyIfDecimal || digits.length - exposant > 0 )
-	) {
-		str += '0'.repeat( trailingZero - digits.length + exposant ) ;
-	}
-
-	return str ;
-} ;
-
-
-
-// Metric prefix
-const MUL_PREFIX = [ '' , 'k' , 'M' , 'G' , 'T' , 'P' , 'E' , 'Z' , 'Y' ] ;
-const SUB_MUL_PREFIX = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
-
-
-
-StringNumber.prototype.toMetric =
-StringNumber.prototype.toMetricString = function() {
-	if ( this.special !== null ) { return '' + this.special ; }
-	if ( ! this.digits.length ) { return this.sign > 0 ? '0' : '-0' ; }
-
-	var prefix = '' , fakeExposant ;
-
-	if ( this.exposant > 0 ) {
-		fakeExposant = 1 + ( ( this.exposant - 1 ) % 3 ) ;
-		prefix = MUL_PREFIX[ Math.floor( ( this.exposant - 1 ) / 3 ) ] ;
-		// Fallback to scientific if the number is to big
-		if ( prefix === undefined ) { return this.toScientificString() ; }
-	}
-	else {
-		fakeExposant = 3 - ( -this.exposant % 3 ) ;
-		prefix = SUB_MUL_PREFIX[ 1 + Math.floor( -this.exposant / 3 ) ] ;
-		// Fallback to scientific if the number is to small
-		if ( prefix === undefined ) { return this.toScientificString() ; }
-	}
-
-	return this.toNoExpString( undefined , undefined , undefined , fakeExposant ) + prefix ;
-} ;
-
-
-
-StringNumber.prototype.precision = function( n ) {
-	if ( this.special !== null || n >= this.digits.length ) { return this ; }
-
-	if ( n < 0 ) { this.digits.length = 0 ; return this ; }
-
-	if ( this.digits[ n ] >= 5 ) {
-		let i = n - 1 ,
-			done = false ;
-
-		// Cascading increase
-		for ( ; i >= 0 ; i -- ) {
-			if ( this.digits[ i ] < 9 ) { this.digits[ i ] ++ ; done = true ; break ; }
-			else { this.digits[ i ] = 0 ; }
-		}
-
-		if ( ! done ) {
-			this.exposant ++ ;
-			this.digits[ 0 ] = 1 ;
-			this.digits.length = 1 ;
-		}
-		else {
-			this.digits.length = i + 1 ;
-		}
-	}
-	else {
-		this.digits.length = n ;
-		this.removeTrailingZero() ;
-	}
-
-	return this ;
-} ;
-
-
-
-StringNumber.prototype.round = function( decimalPlace = 0 ) {
-	var n = this.exposant + decimalPlace ;
-	return this.precision( n ) ;
-} ;
-
-
-
-StringNumber.prototype.removeTrailingZero = function() {
-	var i = this.digits.length - 1 ;
-	while( i >= 0 && this.digits[ i ] === 0 ) { i -- ; }
-	this.digits.length = i + 1 ;
-} ;
-
-
-},{}],23:[function(require,module,exports){
-/*
-	String Kit
-
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -5967,11 +5696,11 @@ module.exports = {
 } ;
 
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -6072,12 +5801,12 @@ exports.unicodePercentEncode = str => str.replace( /[\x00-\x1f\u0100-\uffff\x7f%
 exports.httpHeaderValue = str => exports.unicodePercentEncode( str ) ;
 
 
-},{}],25:[function(require,module,exports){
-(function (Buffer){(function (){
+},{}],24:[function(require,module,exports){
+(function (Buffer){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -6115,8 +5844,6 @@ const inspectError = require( './inspect.js' ).inspectError ;
 const escape = require( './escape.js' ) ;
 const ansi = require( './ansi.js' ) ;
 const unicode = require( './unicode.js' ) ;
-const naturalSort = require( './naturalSort.js' ) ;
-const StringNumber = require( './StringNumber.js' ) ;
 
 
 
@@ -6125,7 +5852,7 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%s		string
 	%S		string, interpret ^ formatting
 	%r		raw string: without sanitizer
-	%n		natural: output the most natural representation for this type, object entries are sorted by keys
+	%n		natural: output the most natural representation for this type
 	%N		even more natural: avoid type hinting marks like bracket for array
 	%f		float
 	%e		for scientific notation
@@ -6134,12 +5861,10 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%U		unsigned positive integer (>0)
 	%k		number with metric system prefixes
 	%t		time duration, convert ms into H:min:s
-	%m		convert degree into degree, minutes and seconds
-	%h		hexadecimal (input is a number)
-	%x		hexadecimal (input is a number), force pair of symbols (e.g. 'f' -> '0f')
+	%h		hexadecimal
+	%x		hexadecimal, force pair of symbols (e.g. 'f' -> '0f')
 	%o		octal
 	%b		binary
-	%X		hexadecimal: convert a string into hex charcode, force pair of symbols (e.g. 'f' -> '0f')
 	%z		base64
 	%Z		base64url
 	%O		object (like inspect, but with ultra minimal options)
@@ -6389,8 +6114,7 @@ modes.N = ( arg , isSubCall ) => {
 
 	if ( proto === null || proto === Object.prototype ) {
 		// Plain objects
-		arg = Object.entries( arg ).sort( naturalSort )
-			.map( e => e[ 0 ] + ': ' + modes.N( e[ 1 ] , true ) ) ;
+		arg = Object.entries( arg ).map( e => e[ 0 ] + ': ' + modes.N( e[ 1 ] , true ) ) ;
 
 		if ( isSubCall ) {
 			return '{' + arg.join( ', ' ) + '}' ;
@@ -6411,12 +6135,8 @@ modes.n = arg => modes.N( arg , true ) ;
 
 // float
 modes.f = ( arg , modeArg ) => {
-	var match , k , v , lv , sn ,
-		leftPadding = 1 ,
-		rightPadding = 0 ,
-		rightPaddingOnlyIfDecimal = false ,
-		rounding = null ,
-		precision = null ;
+	var match , k , v , lv , n , step = 0 ,
+		toFixed , toFixedIfDecimal , padding ;
 
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
@@ -6428,64 +6148,69 @@ modes.f = ( arg , modeArg ) => {
 			[ , k , v ] = match ;
 
 			if ( k === 'z' ) {
-				// Zero-left padding
-				leftPadding = + v ;
+				padding = + v ;
 			}
 			else if ( ! k ) {
 				if ( v[ 0 ] === '.' ) {
-					// Rounding after the decimal
 					lv = v[ v.length - 1 ] ;
 
-					// Zero-right padding?
 					if ( lv === '!' ) {
-						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
+						toFixed = n ;
 					}
 					else if ( lv === '?' ) {
-						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
-						rightPaddingOnlyIfDecimal = true ;
+						n = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
+						toFixed = n ;
+						toFixedIfDecimal = true ;
 					}
 					else {
-						rounding = parseInt( v.slice( 1 ) , 10 ) ;
+						n = parseInt( v.slice( 1 ) , 10 ) ;
+						step = 10 ** ( -n ) ;
 					}
 				}
 				else if ( v[ v.length - 1 ] === '.' ) {
-					// Rounding before the decimal
-					rounding = -parseInt( v.slice( 0 , -1 ) , 10 ) ;
+					n = parseInt( v.slice( 0 , -1 ) , 10 ) ;
+					step = 10 ** n ;
 				}
 				else {
-					// Precision
-					precision = parseInt( v , 10 ) ;
+					n = parseInt( v , 10 ) ;
+					step = 10 ** ( Math.ceil( Math.log10( arg + Number.EPSILON ) + Number.EPSILON ) - n ) ;
 				}
 			}
 		}
 	}
 
-	sn = new StringNumber( arg ) ;
-	if ( rounding !== null ) { sn.round( rounding ) ; }
-	if ( precision !== null ) { sn.precision( precision ) ; }
-	return sn.toString( leftPadding , rightPadding , rightPaddingOnlyIfDecimal ) ;
+	if ( step ) { arg = round( arg , step ) ; }
+
+	if ( toFixed !== undefined && ( ! toFixedIfDecimal || arg !== Math.trunc( arg ) ) ) {
+		arg = arg.toFixed( toFixed ) ;
+	}
+	else {
+		arg = '' + arg ;
+	}
+
+	if ( padding ) {
+		n = arg.indexOf( '.' ) ;
+		if ( n === -1 ) { n = arg.length ; }
+		if ( arg[ 0 ] === '-' ) {
+			if ( n - 1 < padding ) {
+				arg = '-' + '0'.repeat( 1 + padding - n ) + arg.slice( 1 ) ;
+			}
+		}
+		else if ( n < padding ) {
+			arg = '0'.repeat( padding - n ) + arg ;
+		}
+	}
+
+	return arg ;
 } ;
 
 modes.f.noSanitize = true ;
 
 
 
-// metric system
-modes.k = arg => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { return '0' ; }
-	//return metricPrefix( arg ) ;
-
-	var sn = new StringNumber( arg ) ;
-	sn.precision( 3 ) ;
-	return sn.toMetricString() ;
-} ;
-
-modes.k.noSanitize = true ;
-
-
-
-// /!\ Should use StringNumber
 // scientific notation
 modes.e = ( arg , modeArg ) => {
 	var match , k , v ;
@@ -6546,7 +6271,17 @@ modes.U.noSanitize = true ;
 
 
 
-// /!\ Should use StringNumber???
+// metric system
+modes.k = arg => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { return '0' ; }
+	return metricPrefix( arg ) ;
+} ;
+
+modes.k.noSanitize = true ;
+
+
+
 // Degree, minutes and seconds.
 // Unlike %t which receive ms, here the input is in degree.
 modes.m = arg => {
@@ -6576,7 +6311,6 @@ modes.m.noSanitize = true ;
 
 
 
-// /!\ Should use StringNumber???
 // time duration, transform ms into H:min:s
 // Later it should format Date as well: number=duration, date object=date
 // Note that it would not replace moment.js, but it could uses it.
@@ -6647,17 +6381,6 @@ modes.b = arg => {
 } ;
 
 modes.b.noSanitize = true ;
-
-
-
-// String to hexadecimal, force pair of symboles
-modes.X = arg => {
-	if ( typeof arg === 'string' ) { arg = Buffer.from( arg ) ; }
-	else if ( ! Buffer.isBuffer( arg ) ) { return '' ; }
-	return arg.toString( 'hex' ) ;
-} ;
-
-modes.X.noSanitize = true ;
 
 
 
@@ -6794,9 +6517,6 @@ exports.format = exports.formatMethod.bind( defaultFormatter ) ;
 exports.format.default = defaultFormatter ;
 
 
-
-// /!\ Should upgrade that with Terminal-Kit Markup parser /!\
-// It supports complex markup, see: Terminal-Kit/lib/misc.js misc.parseMarkup().
 
 exports.markupMethod = function( str ) {
 	if ( typeof str !== 'string' ) {
@@ -7036,13 +6756,53 @@ function round( v , step ) {
 }
 
 
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"./StringNumber.js":22,"./ansi.js":23,"./escape.js":24,"./inspect.js":26,"./naturalSort.js":29,"./unicode.js":31,"buffer":19}],26:[function(require,module,exports){
-(function (Buffer,process){(function (){
+
+// Metric prefix
+const MUL_PREFIX = [ '' , 'k' , 'M' , 'G' , 'T' , 'P' , 'E' , 'Z' , 'Y' ] ;
+const SUB_MUL_PREFIX = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
+const IROUND_STEP = [ 100 , 10 , 1 ] ;
+
+
+
+function metricPrefix( n ) {
+	var log , logDiv3 , logMod , base , prefix ;
+
+	if ( ! n || n === 1 ) { return '' + n ; }
+	if ( n < 0 ) { return '-' + metricPrefix( -n ) ; }
+
+	if ( n > 1 ) {
+		log = Math.floor( Math.log10( n ) ) ;
+		logDiv3 = Math.floor( log / 3 ) ;
+		logMod = log % 3 ;
+		base = iround( n / ( Math.pow( 1000 , logDiv3 ) ) , IROUND_STEP[ logMod ] ) ;
+		prefix = MUL_PREFIX[ logDiv3 ] ;
+	}
+	else {
+		log = Math.floor( Math.log10( n ) ) ;
+		logDiv3 = Math.floor( log / 3 ) ;
+		logMod = log % 3 ;
+		if ( logMod < 0 ) { logMod += 3 ; }
+		base = iround( n / ( Math.pow( 1000 , logDiv3 ) ) , IROUND_STEP[ logMod ] ) ;
+		prefix = SUB_MUL_PREFIX[ -logDiv3 ] ;
+	}
+
+	return '' + base + prefix ;
+}
+
+
+
+function iround( v , istep ) {
+	return Math.round( ( v + Number.EPSILON ) * istep ) / istep ;
+}
+
+
+}).call(this,require("buffer").Buffer)
+},{"./ansi.js":22,"./escape.js":23,"./inspect.js":25,"./unicode.js":29,"buffer":19}],25:[function(require,module,exports){
+(function (Buffer,process){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7733,14 +7493,14 @@ inspectStyle.html = Object.assign( {} , inspectStyle.none , {
 } ) ;
 
 
-}).call(this)}).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
-},{"../../is-buffer/index.js":20,"./ansi.js":23,"./escape.js":24,"_process":21}],27:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../is-buffer/index.js")},require('_process'))
+},{"../../is-buffer/index.js":20,"./ansi.js":22,"./escape.js":23,"_process":21}],26:[function(require,module,exports){
 module.exports={"߀":"0","́":""," ":" ","Ⓐ":"A","Ａ":"A","À":"A","Á":"A","Â":"A","Ầ":"A","Ấ":"A","Ẫ":"A","Ẩ":"A","Ã":"A","Ā":"A","Ă":"A","Ằ":"A","Ắ":"A","Ẵ":"A","Ẳ":"A","Ȧ":"A","Ǡ":"A","Ä":"A","Ǟ":"A","Ả":"A","Å":"A","Ǻ":"A","Ǎ":"A","Ȁ":"A","Ȃ":"A","Ạ":"A","Ậ":"A","Ặ":"A","Ḁ":"A","Ą":"A","Ⱥ":"A","Ɐ":"A","Ꜳ":"AA","Æ":"AE","Ǽ":"AE","Ǣ":"AE","Ꜵ":"AO","Ꜷ":"AU","Ꜹ":"AV","Ꜻ":"AV","Ꜽ":"AY","Ⓑ":"B","Ｂ":"B","Ḃ":"B","Ḅ":"B","Ḇ":"B","Ƀ":"B","Ɓ":"B","ｃ":"C","Ⓒ":"C","Ｃ":"C","Ꜿ":"C","Ḉ":"C","Ç":"C","Ⓓ":"D","Ｄ":"D","Ḋ":"D","Ď":"D","Ḍ":"D","Ḑ":"D","Ḓ":"D","Ḏ":"D","Đ":"D","Ɗ":"D","Ɖ":"D","ᴅ":"D","Ꝺ":"D","Ð":"Dh","Ǳ":"DZ","Ǆ":"DZ","ǲ":"Dz","ǅ":"Dz","ɛ":"E","Ⓔ":"E","Ｅ":"E","È":"E","É":"E","Ê":"E","Ề":"E","Ế":"E","Ễ":"E","Ể":"E","Ẽ":"E","Ē":"E","Ḕ":"E","Ḗ":"E","Ĕ":"E","Ė":"E","Ë":"E","Ẻ":"E","Ě":"E","Ȅ":"E","Ȇ":"E","Ẹ":"E","Ệ":"E","Ȩ":"E","Ḝ":"E","Ę":"E","Ḙ":"E","Ḛ":"E","Ɛ":"E","Ǝ":"E","ᴇ":"E","ꝼ":"F","Ⓕ":"F","Ｆ":"F","Ḟ":"F","Ƒ":"F","Ꝼ":"F","Ⓖ":"G","Ｇ":"G","Ǵ":"G","Ĝ":"G","Ḡ":"G","Ğ":"G","Ġ":"G","Ǧ":"G","Ģ":"G","Ǥ":"G","Ɠ":"G","Ꞡ":"G","Ᵹ":"G","Ꝿ":"G","ɢ":"G","Ⓗ":"H","Ｈ":"H","Ĥ":"H","Ḣ":"H","Ḧ":"H","Ȟ":"H","Ḥ":"H","Ḩ":"H","Ḫ":"H","Ħ":"H","Ⱨ":"H","Ⱶ":"H","Ɥ":"H","Ⓘ":"I","Ｉ":"I","Ì":"I","Í":"I","Î":"I","Ĩ":"I","Ī":"I","Ĭ":"I","İ":"I","Ï":"I","Ḯ":"I","Ỉ":"I","Ǐ":"I","Ȉ":"I","Ȋ":"I","Ị":"I","Į":"I","Ḭ":"I","Ɨ":"I","Ⓙ":"J","Ｊ":"J","Ĵ":"J","Ɉ":"J","ȷ":"J","Ⓚ":"K","Ｋ":"K","Ḱ":"K","Ǩ":"K","Ḳ":"K","Ķ":"K","Ḵ":"K","Ƙ":"K","Ⱪ":"K","Ꝁ":"K","Ꝃ":"K","Ꝅ":"K","Ꞣ":"K","Ⓛ":"L","Ｌ":"L","Ŀ":"L","Ĺ":"L","Ľ":"L","Ḷ":"L","Ḹ":"L","Ļ":"L","Ḽ":"L","Ḻ":"L","Ł":"L","Ƚ":"L","Ɫ":"L","Ⱡ":"L","Ꝉ":"L","Ꝇ":"L","Ꞁ":"L","Ǉ":"LJ","ǈ":"Lj","Ⓜ":"M","Ｍ":"M","Ḿ":"M","Ṁ":"M","Ṃ":"M","Ɱ":"M","Ɯ":"M","ϻ":"M","Ꞥ":"N","Ƞ":"N","Ⓝ":"N","Ｎ":"N","Ǹ":"N","Ń":"N","Ñ":"N","Ṅ":"N","Ň":"N","Ṇ":"N","Ņ":"N","Ṋ":"N","Ṉ":"N","Ɲ":"N","Ꞑ":"N","ᴎ":"N","Ǌ":"NJ","ǋ":"Nj","Ⓞ":"O","Ｏ":"O","Ò":"O","Ó":"O","Ô":"O","Ồ":"O","Ố":"O","Ỗ":"O","Ổ":"O","Õ":"O","Ṍ":"O","Ȭ":"O","Ṏ":"O","Ō":"O","Ṑ":"O","Ṓ":"O","Ŏ":"O","Ȯ":"O","Ȱ":"O","Ö":"O","Ȫ":"O","Ỏ":"O","Ő":"O","Ǒ":"O","Ȍ":"O","Ȏ":"O","Ơ":"O","Ờ":"O","Ớ":"O","Ỡ":"O","Ở":"O","Ợ":"O","Ọ":"O","Ộ":"O","Ǫ":"O","Ǭ":"O","Ø":"O","Ǿ":"O","Ɔ":"O","Ɵ":"O","Ꝋ":"O","Ꝍ":"O","Œ":"OE","Ƣ":"OI","Ꝏ":"OO","Ȣ":"OU","Ⓟ":"P","Ｐ":"P","Ṕ":"P","Ṗ":"P","Ƥ":"P","Ᵽ":"P","Ꝑ":"P","Ꝓ":"P","Ꝕ":"P","Ⓠ":"Q","Ｑ":"Q","Ꝗ":"Q","Ꝙ":"Q","Ɋ":"Q","Ⓡ":"R","Ｒ":"R","Ŕ":"R","Ṙ":"R","Ř":"R","Ȑ":"R","Ȓ":"R","Ṛ":"R","Ṝ":"R","Ŗ":"R","Ṟ":"R","Ɍ":"R","Ɽ":"R","Ꝛ":"R","Ꞧ":"R","Ꞃ":"R","Ⓢ":"S","Ｓ":"S","ẞ":"S","Ś":"S","Ṥ":"S","Ŝ":"S","Ṡ":"S","Š":"S","Ṧ":"S","Ṣ":"S","Ṩ":"S","Ș":"S","Ş":"S","Ȿ":"S","Ꞩ":"S","Ꞅ":"S","Ⓣ":"T","Ｔ":"T","Ṫ":"T","Ť":"T","Ṭ":"T","Ț":"T","Ţ":"T","Ṱ":"T","Ṯ":"T","Ŧ":"T","Ƭ":"T","Ʈ":"T","Ⱦ":"T","Ꞇ":"T","Þ":"Th","Ꜩ":"TZ","Ⓤ":"U","Ｕ":"U","Ù":"U","Ú":"U","Û":"U","Ũ":"U","Ṹ":"U","Ū":"U","Ṻ":"U","Ŭ":"U","Ü":"U","Ǜ":"U","Ǘ":"U","Ǖ":"U","Ǚ":"U","Ủ":"U","Ů":"U","Ű":"U","Ǔ":"U","Ȕ":"U","Ȗ":"U","Ư":"U","Ừ":"U","Ứ":"U","Ữ":"U","Ử":"U","Ự":"U","Ụ":"U","Ṳ":"U","Ų":"U","Ṷ":"U","Ṵ":"U","Ʉ":"U","Ⓥ":"V","Ｖ":"V","Ṽ":"V","Ṿ":"V","Ʋ":"V","Ꝟ":"V","Ʌ":"V","Ꝡ":"VY","Ⓦ":"W","Ｗ":"W","Ẁ":"W","Ẃ":"W","Ŵ":"W","Ẇ":"W","Ẅ":"W","Ẉ":"W","Ⱳ":"W","Ⓧ":"X","Ｘ":"X","Ẋ":"X","Ẍ":"X","Ⓨ":"Y","Ｙ":"Y","Ỳ":"Y","Ý":"Y","Ŷ":"Y","Ỹ":"Y","Ȳ":"Y","Ẏ":"Y","Ÿ":"Y","Ỷ":"Y","Ỵ":"Y","Ƴ":"Y","Ɏ":"Y","Ỿ":"Y","Ⓩ":"Z","Ｚ":"Z","Ź":"Z","Ẑ":"Z","Ż":"Z","Ž":"Z","Ẓ":"Z","Ẕ":"Z","Ƶ":"Z","Ȥ":"Z","Ɀ":"Z","Ⱬ":"Z","Ꝣ":"Z","ⓐ":"a","ａ":"a","ẚ":"a","à":"a","á":"a","â":"a","ầ":"a","ấ":"a","ẫ":"a","ẩ":"a","ã":"a","ā":"a","ă":"a","ằ":"a","ắ":"a","ẵ":"a","ẳ":"a","ȧ":"a","ǡ":"a","ä":"a","ǟ":"a","ả":"a","å":"a","ǻ":"a","ǎ":"a","ȁ":"a","ȃ":"a","ạ":"a","ậ":"a","ặ":"a","ḁ":"a","ą":"a","ⱥ":"a","ɐ":"a","ɑ":"a","ꜳ":"aa","æ":"ae","ǽ":"ae","ǣ":"ae","ꜵ":"ao","ꜷ":"au","ꜹ":"av","ꜻ":"av","ꜽ":"ay","ⓑ":"b","ｂ":"b","ḃ":"b","ḅ":"b","ḇ":"b","ƀ":"b","ƃ":"b","ɓ":"b","Ƃ":"b","ⓒ":"c","ć":"c","ĉ":"c","ċ":"c","č":"c","ç":"c","ḉ":"c","ƈ":"c","ȼ":"c","ꜿ":"c","ↄ":"c","C":"c","Ć":"c","Ĉ":"c","Ċ":"c","Č":"c","Ƈ":"c","Ȼ":"c","ⓓ":"d","ｄ":"d","ḋ":"d","ď":"d","ḍ":"d","ḑ":"d","ḓ":"d","ḏ":"d","đ":"d","ƌ":"d","ɖ":"d","ɗ":"d","Ƌ":"d","Ꮷ":"d","ԁ":"d","Ɦ":"d","ð":"dh","ǳ":"dz","ǆ":"dz","ⓔ":"e","ｅ":"e","è":"e","é":"e","ê":"e","ề":"e","ế":"e","ễ":"e","ể":"e","ẽ":"e","ē":"e","ḕ":"e","ḗ":"e","ĕ":"e","ė":"e","ë":"e","ẻ":"e","ě":"e","ȅ":"e","ȇ":"e","ẹ":"e","ệ":"e","ȩ":"e","ḝ":"e","ę":"e","ḙ":"e","ḛ":"e","ɇ":"e","ǝ":"e","ⓕ":"f","ｆ":"f","ḟ":"f","ƒ":"f","ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ⓖ":"g","ｇ":"g","ǵ":"g","ĝ":"g","ḡ":"g","ğ":"g","ġ":"g","ǧ":"g","ģ":"g","ǥ":"g","ɠ":"g","ꞡ":"g","ꝿ":"g","ᵹ":"g","ⓗ":"h","ｈ":"h","ĥ":"h","ḣ":"h","ḧ":"h","ȟ":"h","ḥ":"h","ḩ":"h","ḫ":"h","ẖ":"h","ħ":"h","ⱨ":"h","ⱶ":"h","ɥ":"h","ƕ":"hv","ⓘ":"i","ｉ":"i","ì":"i","í":"i","î":"i","ĩ":"i","ī":"i","ĭ":"i","ï":"i","ḯ":"i","ỉ":"i","ǐ":"i","ȉ":"i","ȋ":"i","ị":"i","į":"i","ḭ":"i","ɨ":"i","ı":"i","ⓙ":"j","ｊ":"j","ĵ":"j","ǰ":"j","ɉ":"j","ⓚ":"k","ｋ":"k","ḱ":"k","ǩ":"k","ḳ":"k","ķ":"k","ḵ":"k","ƙ":"k","ⱪ":"k","ꝁ":"k","ꝃ":"k","ꝅ":"k","ꞣ":"k","ⓛ":"l","ｌ":"l","ŀ":"l","ĺ":"l","ľ":"l","ḷ":"l","ḹ":"l","ļ":"l","ḽ":"l","ḻ":"l","ſ":"l","ł":"l","ƚ":"l","ɫ":"l","ⱡ":"l","ꝉ":"l","ꞁ":"l","ꝇ":"l","ɭ":"l","ǉ":"lj","ⓜ":"m","ｍ":"m","ḿ":"m","ṁ":"m","ṃ":"m","ɱ":"m","ɯ":"m","ⓝ":"n","ｎ":"n","ǹ":"n","ń":"n","ñ":"n","ṅ":"n","ň":"n","ṇ":"n","ņ":"n","ṋ":"n","ṉ":"n","ƞ":"n","ɲ":"n","ŉ":"n","ꞑ":"n","ꞥ":"n","ԉ":"n","ǌ":"nj","ⓞ":"o","ｏ":"o","ò":"o","ó":"o","ô":"o","ồ":"o","ố":"o","ỗ":"o","ổ":"o","õ":"o","ṍ":"o","ȭ":"o","ṏ":"o","ō":"o","ṑ":"o","ṓ":"o","ŏ":"o","ȯ":"o","ȱ":"o","ö":"o","ȫ":"o","ỏ":"o","ő":"o","ǒ":"o","ȍ":"o","ȏ":"o","ơ":"o","ờ":"o","ớ":"o","ỡ":"o","ở":"o","ợ":"o","ọ":"o","ộ":"o","ǫ":"o","ǭ":"o","ø":"o","ǿ":"o","ꝋ":"o","ꝍ":"o","ɵ":"o","ɔ":"o","ᴑ":"o","œ":"oe","ƣ":"oi","ꝏ":"oo","ȣ":"ou","ⓟ":"p","ｐ":"p","ṕ":"p","ṗ":"p","ƥ":"p","ᵽ":"p","ꝑ":"p","ꝓ":"p","ꝕ":"p","ρ":"p","ⓠ":"q","ｑ":"q","ɋ":"q","ꝗ":"q","ꝙ":"q","ⓡ":"r","ｒ":"r","ŕ":"r","ṙ":"r","ř":"r","ȑ":"r","ȓ":"r","ṛ":"r","ṝ":"r","ŗ":"r","ṟ":"r","ɍ":"r","ɽ":"r","ꝛ":"r","ꞧ":"r","ꞃ":"r","ⓢ":"s","ｓ":"s","ś":"s","ṥ":"s","ŝ":"s","ṡ":"s","š":"s","ṧ":"s","ṣ":"s","ṩ":"s","ș":"s","ş":"s","ȿ":"s","ꞩ":"s","ꞅ":"s","ẛ":"s","ʂ":"s","ß":"ss","ⓣ":"t","ｔ":"t","ṫ":"t","ẗ":"t","ť":"t","ṭ":"t","ț":"t","ţ":"t","ṱ":"t","ṯ":"t","ŧ":"t","ƭ":"t","ʈ":"t","ⱦ":"t","ꞇ":"t","þ":"th","ꜩ":"tz","ⓤ":"u","ｕ":"u","ù":"u","ú":"u","û":"u","ũ":"u","ṹ":"u","ū":"u","ṻ":"u","ŭ":"u","ü":"u","ǜ":"u","ǘ":"u","ǖ":"u","ǚ":"u","ủ":"u","ů":"u","ű":"u","ǔ":"u","ȕ":"u","ȗ":"u","ư":"u","ừ":"u","ứ":"u","ữ":"u","ử":"u","ự":"u","ụ":"u","ṳ":"u","ų":"u","ṷ":"u","ṵ":"u","ʉ":"u","ⓥ":"v","ｖ":"v","ṽ":"v","ṿ":"v","ʋ":"v","ꝟ":"v","ʌ":"v","ꝡ":"vy","ⓦ":"w","ｗ":"w","ẁ":"w","ẃ":"w","ŵ":"w","ẇ":"w","ẅ":"w","ẘ":"w","ẉ":"w","ⱳ":"w","ⓧ":"x","ｘ":"x","ẋ":"x","ẍ":"x","ⓨ":"y","ｙ":"y","ỳ":"y","ý":"y","ŷ":"y","ỹ":"y","ȳ":"y","ẏ":"y","ÿ":"y","ỷ":"y","ẙ":"y","ỵ":"y","ƴ":"y","ɏ":"y","ỿ":"y","ⓩ":"z","ｚ":"z","ź":"z","ẑ":"z","ż":"z","ž":"z","ẓ":"z","ẕ":"z","ƶ":"z","ȥ":"z","ɀ":"z","ⱬ":"z","ꝣ":"z"}
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7775,97 +7535,11 @@ module.exports = function( str ) {
 
 
 
-},{"./latinize-map.json":27}],29:[function(require,module,exports){
+},{"./latinize-map.json":26}],28:[function(require,module,exports){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
-
-	The MIT License (MIT)
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
-
-"use strict" ;
-
-
-
-/*
- * Natural Sort algorithm for Javascript - Version 0.8 - Released under MIT license
- * Author: Jim Palmer (based on chunking idea from Dave Koelle)
- */
-module.exports = function( a , b ) {
-	var re = /(^([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)?$|^0x[\da-fA-F]+$|\d+)/g ,
-		sre = /^\s+|\s+$/g ,   // trim pre-post whitespace
-		snre = /\s+/g ,        // normalize all whitespace to single ' ' character
-		dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[/-]\d{1,4}[/-]\d{1,4}|^\w+, \w+ \d+, \d{4})/ ,
-		hre = /^0x[0-9a-f]+$/i ,
-		ore = /^0/ ,
-		i = function( s ) {
-			return ( '' + s ).toLowerCase().replace( sre , '' ) ;
-		} ,
-		// convert all to strings strip whitespace
-		x = i( a ) || '' ,
-		y = i( b ) || '' ,
-		// chunk/tokenize
-		xN = x.replace( re , '\0$1\0' ).replace( /\0$/ , '' )
-			.replace( /^\0/ , '' )
-			.split( '\0' ) ,
-		yN = y.replace( re , '\0$1\0' ).replace( /\0$/ , '' )
-			.replace( /^\0/ , '' )
-			.split( '\0' ) ,
-		// numeric, hex or date detection
-		xD = parseInt( x.match( hre ) , 16 ) || ( xN.length !== 1 && Date.parse( x ) ) ,
-		yD = parseInt( y.match( hre ) , 16 ) || xD && y.match( dre ) && Date.parse( y ) || null ,
-		normChunk = function( s , l ) {
-			// normalize spaces; find floats not starting with '0', string or 0 if not defined (Clint Priest)
-			return ( ! s.match( ore ) || l === 1 ) && parseFloat( s ) || s.replace( snre , ' ' ).replace( sre , '' ) || 0 ;	// jshint ignore:line
-		} ,
-		oFxNcL , oFyNcL ;
-	// first try and sort Hex codes or Dates
-	if ( yD ) {
-		if ( xD < yD ) { return -1 ; }
-		else if ( xD > yD ) { return 1 ; }
-	}
-	// natural sorting through split numeric strings and default strings
-	for( var cLoc = 0 , xNl = xN.length , yNl = yN.length , numS = Math.max( xNl , yNl ) ; cLoc < numS ; cLoc ++ ) {
-		oFxNcL = normChunk( xN[cLoc] , xNl ) ;
-		oFyNcL = normChunk( yN[cLoc] , yNl ) ;
-		// handle numeric vs string comparison - number < string - (Kyle Adams)
-		if ( isNaN( oFxNcL ) !== isNaN( oFyNcL ) ) { return ( isNaN( oFxNcL ) ) ? 1 : -1 ; }
-		// rely on string comparison if different types - i.e. '02' < 2 != '02' < '2'
-		else if ( typeof oFxNcL !== typeof oFyNcL ) {
-			oFxNcL += '' ;
-			oFyNcL += '' ;
-		}
-		if ( oFxNcL < oFyNcL ) { return -1 ; }
-		if ( oFxNcL > oFyNcL ) { return 1 ; }
-	}
-	return 0 ;
-} ;
-
-
-},{}],30:[function(require,module,exports){
-/*
-	String Kit
-
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -7915,11 +7589,11 @@ module.exports = function toTitleCase( str , options ) {
 
 
 
-},{}],31:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*
 	String Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -8186,21 +7860,12 @@ unicode.arrayWidth = ( array , limit ) => {
 
 
 
-// Userland may use this, it is more efficient than .truncateWidth() + .width(),
-// and BTW even more than testing .width() then .truncateWidth() + .width()
-var lastTruncateWidth = 0 ;
-unicode.getLastTruncateWidth = () => lastTruncateWidth ;
-
-
-
 // Return a string that does not exceed the limit
 // Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
 unicode.widthLimit =	// DEPRECATED
 unicode.truncateWidth = ( str , limit ) => {
-	var value , extra , charWidth , counter = 0 , lastCounter = 0 ,
+	var value , extra , counter = 0 , lastCounter = 0 , width = 0 ,
 		length = str.length ;
-
-	lastTruncateWidth = 0 ;
 
 	while ( counter < length ) {
 		value = str.charCodeAt( counter ++ ) ;
@@ -8219,13 +7884,12 @@ unicode.truncateWidth = ( str , limit ) => {
 			}
 		}
 
-		charWidth = unicode.codePointWidth( value ) ;
+		width += unicode.codePointWidth( value ) ;
 
-		if ( lastTruncateWidth + charWidth > limit ) {
+		if ( width > limit ) {
 			return str.slice( 0 , lastCounter ) ;
 		}
 
-		lastTruncateWidth += charWidth ;
 		lastCounter = counter ;
 	}
 
@@ -8326,11 +7990,11 @@ unicode.toFullWidth = str => {
 } ;
 
 
-},{}],32:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -8435,11 +8099,11 @@ clone.opaque = new Map() ;
 clone.opaque.set( Date.prototype , src => new Date( src ) ) ;
 
 
-},{}],33:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /*
 	Tree Kit
 
-	Copyright (c) 2014 - 2021 Cédric Ronvel
+	Copyright (c) 2014 - 2019 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -8472,14 +8136,17 @@ module.exports = dotPath ;
 
 
 const EMPTY_PATH = [] ;
-const PROTO_POLLUTION_MESSAGE = 'This would pollute prototype' ;
-
-
 
 function toPathArray( path ) {
-	if ( Array.isArray( path ) ) { return path ; }
-	else if ( ! path ) { return EMPTY_PATH ; }
-	else if ( typeof path === 'string' ) { return path.split( '.' ) ; }
+	if ( Array.isArray( path ) ) {
+		return path ;
+	}
+	else if ( ! path ) {
+		return EMPTY_PATH ;
+	}
+	else if ( typeof path === 'string' ) {
+		return path.split( '.' ) ;
+	}
 
 	throw new TypeError( '[tree.dotPath]: the path argument should be a string or an array' ) ;
 }
@@ -8487,17 +8154,34 @@ function toPathArray( path ) {
 
 
 // Walk the tree using the path array.
-function walk( object , pathArray , maxOffset = 0 ) {
-	var i , iMax , key ,
+function walk( object , pathArray ) {
+	var i , iMax ,
 		pointer = object ;
 
-	for ( i = 0 , iMax = pathArray.length + maxOffset ; i < iMax ; i ++ ) {
-		key = pathArray[ i ] ;
+	for ( i = 0 , iMax = pathArray.length ; i < iMax ; i ++ ) {
+		if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+			return undefined ;
+		}
 
-		if ( key === '__proto__' || typeof pointer === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-		if ( ! pointer || typeof pointer !== 'object' ) { return undefined ; }
+		pointer = pointer[ pathArray[ i ] ] ;
+	}
 
-		pointer = pointer[ key ] ;
+	return pointer ;
+}
+
+
+
+// Walk the tree, stop before the last path part.
+function walkBeforeLast( object , pathArray ) {
+	var i , iMax ,
+		pointer = object ;
+
+	for ( i = 0 , iMax = pathArray.length - 1 ; i < iMax ; i ++ ) {
+		if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+			return undefined ;
+		}
+
+		pointer = pointer[ pathArray[ i ] ] ;
 	}
 
 	return pointer ;
@@ -8509,14 +8193,16 @@ function walk( object , pathArray , maxOffset = 0 ) {
 // Return that before-the-last element.
 // Object MUST be an object! no check are performed for the first step!
 function pave( object , pathArray ) {
-	var i , iMax , key ,
+	var i , iMax ,
+		key ,
 		pointer = object ;
 
 	for ( i = 0 , iMax = pathArray.length - 1 ; i < iMax ; i ++ ) {
 		key = pathArray[ i ] ;
 
-		if ( key === '__proto__' || typeof pointer[ key ] === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-		if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = {} ; }
+		if ( ! pointer[ key ] || ( typeof pointer[ key ] !== 'object' && typeof pointer[ key ] !== 'function' ) ) {
+			pointer[ key ] = {} ;
+		}
 
 		pointer = pointer[ key ] ;
 	}
@@ -8526,42 +8212,37 @@ function pave( object , pathArray ) {
 
 
 
-dotPath.get = ( object , path ) => walk( object , toPathArray( path ) ) ;
+dotPath.get = function( object , path ) {
+	return walk( object , toPathArray( path ) ) ;
+} ;
 
 
 
-dotPath.set = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.set = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
 
-	pointer[ key ] = value ;
+	pointer[ pathArray[ pathArray.length - 1 ] ] = value ;
 
 	return value ;
 } ;
 
 
 
-dotPath.define = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.define = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( ! ( key in pointer ) ) { pointer[ key ] = value ; }
 
@@ -8570,18 +8251,15 @@ dotPath.define = ( object , path , value ) => {
 
 
 
-dotPath.inc = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.inc = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] ++ ; }
 	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = 1 ; }
@@ -8591,18 +8269,15 @@ dotPath.inc = ( object , path , value ) => {
 
 
 
-dotPath.dec = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.dec = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] -- ; }
 	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = -1 ; }
@@ -8612,18 +8287,15 @@ dotPath.dec = ( object , path , value ) => {
 
 
 
-dotPath.concat = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.concat = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
 	else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
@@ -8636,18 +8308,15 @@ dotPath.concat = ( object , path , value ) => {
 
 
 
-dotPath.insert = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.insert = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( ! pointer[ key ] ) { pointer[ key ] = value ; }
 	else if ( Array.isArray( pointer[ key ] ) && Array.isArray( value ) ) {
@@ -8660,33 +8329,29 @@ dotPath.insert = ( object , path , value ) => {
 
 
 
-dotPath.delete = ( object , path ) => {
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
+dotPath.delete = function( object , path ) {
+	var pathArray = toPathArray( path ) ;
+	var pointer = walkBeforeLast( object , pathArray ) ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( ! pointer || ( typeof pointer !== 'object' && typeof pointer !== 'function' ) ) {
+		return false ;
+	}
 
-	var pointer = walk( object , pathArray , -1 ) ;
-
-	if ( ! pointer || typeof pointer !== 'object' ) { return false ; }
-
-	return delete pointer[ key ] ;
+	return delete pointer[ pathArray[ pathArray.length - 1 ] ] ;
 } ;
 
 
 
-dotPath.autoPush = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.autoPush = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( pointer[ key ] === undefined ) { pointer[ key ] = value ; }
 	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
@@ -8697,18 +8362,16 @@ dotPath.autoPush = ( object , path , value ) => {
 
 
 
-dotPath.append = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.append = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
 	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].push( value ) ; }
@@ -8719,18 +8382,16 @@ dotPath.append = ( object , path , value ) => {
 
 
 
-dotPath.prepend = ( object , path , value ) => {
-	if ( ! object || typeof object !== 'object' ) {
+dotPath.prepend = function( object , path , value ) {
+	if ( ! object || ( typeof object !== 'object' && typeof object !== 'function' ) ) {
 		// Throw?
 		return undefined ;
 	}
 
-	var pathArray = toPathArray( path ) ,
-		key = pathArray[ pathArray.length - 1 ] ;
-
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
-
+	var pathArray = toPathArray( path ) ;
 	var pointer = pave( object , pathArray ) ;
+
+	var key = pathArray[ pathArray.length - 1 ] ;
 
 	if ( ! pointer[ key ] ) { pointer[ key ] = [ value ] ; }
 	else if ( Array.isArray( pointer[ key ] ) ) { pointer[ key ].unshift( value ) ; }

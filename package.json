@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "directories": {
@@ -48,7 +48,7 @@
     "title": "Doormen",
     "years": [
       2015,
-      2020
+      2021
     ],
     "owner": "Cédric Ronvel"
   }

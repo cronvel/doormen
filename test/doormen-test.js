@@ -1,7 +1,7 @@
 /*
 	Doormen
 
-	Copyright (c) 2015 - 2020 Cédric Ronvel
+	Copyright (c) 2015 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -3868,9 +3868,9 @@ describe( "Expect BDD assertion library" , () => {
 
 
 
-describe( "Path in the schema" , () => {
+describe( "Sub-schema path" , () => {
 
-	it( "should find the schema for an object path" , () => {
+	it( "should find the sub-schema for a path" , () => {
 		var schema = {
 			type: 'strictObject' ,
 			properties: {
@@ -3898,88 +3898,126 @@ describe( "Path in the schema" , () => {
 						type: 'string' ,
 						another: 'custom'
 					}
+				} ,
+				key5: {
+					type: 'array' ,
+					of: {
+						type: 'string' ,
+						more: 'data'
+					}
+				} ,
+				key6: {
+					type: 'array' ,
+					elements: [
+						{ type: 'string' , custom: '0' } ,
+						{ type: 'number' , custom: '1' } ,
+						{ type: 'boolean' , custom: '2' } ,
+					]
 				}
 			}
 		} ;
 
 		doormen.equals(
-			doormen.path( schema , '' ) ,
+			doormen.subSchema( schema , '' ) ,
 			schema
 		) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key1' ) ,
+			doormen.subSchema( schema , 'key1' ) ,
 			schema.properties.key1
 		) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key2' ) ,
+			doormen.subSchema( schema , 'key2' ) ,
 			schema.properties.key2
 		) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key3' ) ,
+			doormen.subSchema( schema , 'key3' ) ,
 			schema.properties.key3
 		) ;
 
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'unexistant' ) ;
-		} ) ;
+		doormen.shouldThrow( () => doormen.subSchema( schema , 'unexistant' ) ) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key3.subkey1' ) ,
+			doormen.subSchema( schema , 'key3.subkey1' ) ,
 			schema.properties.key3.properties.subkey1
 		) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key4.anything' ) ,
+			doormen.subSchema( schema , 'key4.anything' ) ,
 			schema.properties.key4.of
 		) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key4.anythingelse' ) ,
+			doormen.subSchema( schema , 'key4.anythingelse' ) ,
 			schema.properties.key4.of
 		) ;
 
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'unexistant.unexistant' ) ;
-		} ) ;
+		doormen.shouldThrow( () => doormen.subSchema( schema , 'unexistant.unexistant' ) ) ;
 
 		doormen.equals(
-			doormen.path( schema , 'key2.unexistant' ) ,
+			doormen.subSchema( schema , 'key2.unexistant' ) ,
 			{}
 		) ;
 
-		doormen.shouldThrow( () => {
-			doormen.path( schema , 'key3.unexistant' ) ;
-		} ) ;
+		doormen.shouldThrow( () => doormen.subSchema( schema , 'key3.unexistant' ) ) ;
+		
+		doormen.equals(
+			doormen.subSchema( schema , 'key5.0' ) ,
+			{ type: 'string' , more: 'data' }
+		) ;
+
+		doormen.equals(
+			doormen.subSchema( schema , 'key5.1' ) ,
+			{ type: 'string' , more: 'data' }
+		) ;
+		
+		doormen.equals(
+			doormen.subSchema( schema , 'key6.0' ) ,
+			{ type: 'string' , custom: '0' } ,
+		) ;
+
+		doormen.equals(
+			doormen.subSchema( schema , 'key6.1' ) ,
+			{ type: 'number' , custom: '1' } ,
+		) ;
+
+		doormen.equals(
+			doormen.subSchema( schema , 'key6.2' ) ,
+			{ type: 'boolean' , custom: '2' } ,
+		) ;
+		
+		doormen.shouldThrow( () => doormen.subSchema( schema , 'key6.3' ) ) ;
+		
 
 		
 		// Test the noSubmasking option
+
 		doormen.equals(
-			doormen.path( schema , '' , true ) ,
+			doormen.subSchema( schema , '' , true ) ,
 			schema
 		) ;
 		doormen.equals(
-			doormen.path( schema , 'key4' , true ) ,
+			doormen.subSchema( schema , 'key4' , true ) ,
 			schema.properties.key4
 		) ;
 		doormen.equals(
-			doormen.path( schema , 'key4.anything' , true ) ,
+			doormen.subSchema( schema , 'key4.anything' , true ) ,
 			null
 		) ;
 
 		schema.noSubmasking = true ;
 		doormen.equals(
-			doormen.path( schema , '' , true ) ,
+			doormen.subSchema( schema , '' , true ) ,
 			schema
 		) ;
 		doormen.equals(
-			doormen.path( schema , 'key4' , true ) ,
+			doormen.subSchema( schema , 'key4' , true ) ,
 			null
 		) ;
 		doormen.equals(
-			doormen.path( schema , 'key4.anything' , true ) ,
+			doormen.subSchema( schema , 'key4.anything' , true ) ,
 			null
 		) ;
 	} ) ;
