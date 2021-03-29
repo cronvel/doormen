@@ -289,6 +289,29 @@ describe( "Equality checker" , () => {
 		expect( doormen.isEqual( { a: 8 } , { a: 8 + 32 * Number.EPSILON } , { around: true } ) ).to.be( true ) ;
 		expect( doormen.isEqual( { a: 8 } , { a: 8 + 64 * Number.EPSILON } , { around: true } ) ).to.be( false ) ;
 	} ) ;
+
+	it( ".isEqual.getLastPath() should return the offending path of the last .isEqual() call that had returned false" , () => {
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3}} , {a:1,b:2,sub:{c:3}} ) ).to.be( true ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( null ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3}} , {a:1,b:2,sub:{c:4}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.c' ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3,e:5}} , {a:1,b:2,sub:{c:3}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.e' ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3}} , {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.d' ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3,d:[1,4,5]}} , {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.d.1' ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3,d:[1]}} , {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.d.1' ) ;
+
+		expect( doormen.isEqual( {a:1,b:2,sub:{c:3,d:[1,2,3,4]}} , {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ).to.be( false ) ;
+		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.d.3' ) ;
+	} ) ;
 } ) ;
 
 

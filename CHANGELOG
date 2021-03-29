@@ -1,4 +1,11 @@
 
+v0.12.0
+-------
+
+Maybe breaking -- new .isEqual.getLastPath() returns the dot-path to the part of the object that was not equal
+AssertionError now add the offending path to the error message (if any) and also have 'expectationPath' and 'showPathDiff' properties.
+
+
 v0.11.3
 -------
 
