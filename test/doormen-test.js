@@ -311,6 +311,8 @@ describe( "Equality checker" , () => {
 
 		expect( doormen.isEqual( {a:1,b:2,sub:{c:3,d:[1,2,3,4]}} , {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ).to.be( false ) ;
 		expect( doormen.isEqual.getLastPath() ).to.be( '.sub.d.3' ) ;
+
+		//doormen.expect( {a:1,b:2,sub:{c:3,d:[1,2,3,4]}} ).to.partially.equal( {a:1,b:2,sub:{c:3,d:[1,2,3]}} ) ;
 	} ) ;
 } ) ;
 

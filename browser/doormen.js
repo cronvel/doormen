@@ -983,7 +983,7 @@ assert.partiallyEqual = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to partially equal' , expected ) ;
 	}
 } ;
-//assert.partiallyEqual.showDiff = true ;
+assert.partiallyEqual.showPathDiff = true ;
 assert.partiallyEqual.inspect = true ;
 
 
@@ -1014,7 +1014,7 @@ assert.partiallyLike = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to be partially like' , expected ) ;
 	}
 } ;
-//assert.partiallyLike.showDiff = true ;
+assert.partiallyLike.showPathDiff = true ;
 assert.partiallyLike.inspect = true ;
 
 
