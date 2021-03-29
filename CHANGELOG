@@ -1,4 +1,10 @@
 
+v0.12.3
+-------
+
+Fix circular require error
+
+
 v0.12.2
 -------
 

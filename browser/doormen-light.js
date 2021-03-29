@@ -114,7 +114,7 @@ AssertionError.create = ( from , actual , expectationPath , expectationType , ..
 		}
 	}
 
-	if ( expectationPath ) {
+	if ( typeof expectationPath === 'string' ) {
 		message += ' (offending path: ' + expectationPath + ')' ;
 		if ( expectationPath[ 0 ] === '.' ) { expectationPath = expectationPath.slice( 1 ) ; }
 	}
@@ -124,13 +124,13 @@ AssertionError.create = ( from , actual , expectationPath , expectationType , ..
 	if ( expectations.length === 1 ) {
 		outOpt.expected = expectations[ 0 ] ;
 		outOpt.showDiff = inOpt.showDiff ;
-		if ( expectationPath ) { outOpt.showPathDiff = inOpt.showPathDiff ; }
+		if ( typeof expectationPath === 'string' ) { outOpt.showPathDiff = inOpt.showPathDiff ; }
 	}
 
 	if ( actual instanceof Error ) {
 		outOpt.fromError = actual ;
 	}
-	else if ( actual instanceof assert.FunctionCall && actual.hasThrown ) {
+	else if ( ( actual instanceof assert.FunctionCall ) && actual.hasThrown ) {
 		outOpt.fromError = actual.error ;
 	}
 
@@ -330,6 +330,11 @@ ValidatorError.prototype.name = 'ValidatorError' ;
 
 
 
+const assert = {} ;
+module.exports = assert ;
+
+
+
 const typeCheckers = require( './typeCheckers.js' ) ;
 
 const isEqual = require( './isEqual.js' ) ;
@@ -338,11 +343,6 @@ const IS_EQUAL_PARTIALLY_LIKE = { like: true , oneWay: true } ;
 const IS_EQUAL_PARTIALLY_EQUAL = { oneWay: true } ;
 
 const VOWEL = new Set( [ 'a' , 'e' , 'i' , 'o' , 'u' , 'y' , 'A' , 'E' , 'I' , 'O' , 'U' , 'Y' ] ) ;
-
-
-
-var assert = {} ;
-module.exports = assert ;
 
 
 
