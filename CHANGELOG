@@ -1,4 +1,10 @@
 
+v0.12.1
+-------
+
+Fix AssertionError#expectationPath to remove the '.' at the begining of the path, to be compliant with tree-kit's dotPath()
+
+
 v0.12.0
 -------
 
