@@ -115,7 +115,7 @@ AssertionError.create = ( from , actual , expectationPath , expectationType , ..
 	}
 
 	if ( typeof expectationPath === 'string' ) {
-		message += ' (offending path: ' + expectationPath + ')' ;
+		if ( expectationPath ) { message += ' (offending path: ' + expectationPath + ')' ; }
 		if ( expectationPath[ 0 ] === '.' ) { expectationPath = expectationPath.slice( 1 ) ; }
 	}
 
@@ -2556,6 +2556,7 @@ doormen.subSchema = ( schema , path , noSubmasking = false , noOpaque = false ) 
 	}
 
 	try {
+		// It should exit if schema is falsy (e.g. when the noSubmasking option on)
 		for ( i = 0 , iMax = path.length ; i < iMax && schema ; i ++ ) {
 			schema = doormen.directSubSchema( schema , path[ i ] , noSubmasking , noOpaque ) ;
 		}
@@ -2569,6 +2570,9 @@ doormen.subSchema = ( schema , path , noSubmasking = false , noOpaque = false ) 
 } ;
 
 
+
+const EMPTY_SCHEMA = {} ;
+Object.freeze( EMPTY_SCHEMA ) ;
 
 doormen.directSubSchema = ( schema , key , noSubmasking , noOpaque ) => {
 	if ( ! schema || typeof schema !== 'object' ) {
@@ -2622,7 +2626,7 @@ doormen.directSubSchema = ( schema , key , noSubmasking , noOpaque ) => {
 	}
 
 	// Sub-schema not found, it should be open to anything, so return {}
-	return {} ;
+	return EMPTY_SCHEMA ;
 } ;
 
 
