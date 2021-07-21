@@ -3557,7 +3557,8 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.have.length.of( 8 ) ) ;
 	} ) ;
 
-	it( "expect a value to contain/not contain" , () => {
+	it( "www expect a value to contain/not contain" , () => {
+		// String
 		doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Hello' , 'Bob' ) ;
@@ -3569,6 +3570,8 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Hi' , 'Bob' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hi' , 'Bob' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hello' , 'Bill' ) ) ;
+		
+		// Array
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' , 'Jack' ) ;
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' ) ;
@@ -3583,8 +3586,16 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Roger' , 'Jack' ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' , 'Roger' ) ) ;
-		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'Bob' ) ;
-		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'bob' ) ) ;
+
+		doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'Bob' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'bob' ) ) ;
+		// Map and 'have' behavior
+		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'Bob' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'bob' ) ) ;
+
+		// Object
+		doormen.expect( { a: "Alice" , b: "Bob" , c: "Jack" } ).to.contain( 'Bob' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.contain( 'Bobby' ) ) ;
 	} ) ;
 
 	it( "expect a value to contain/not contain only" , () => {
@@ -3610,6 +3621,32 @@ describe( "Expect BDD assertion library" , () => {
 
 		// Ambigous assertion
 		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain.only( 'Alice' ) ) ;
+	} ) ;
+
+	it( "www expect a value to only contain unique values" , () => {
+		// Array
+		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Alice" ] ).to.only.contain.unique.values() ) ;
+		
+		var o = {} ;
+		doormen.expect( [ {} , {} ] ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( [ {} , o , o ] ).to.only.contain.unique.values() ) ;
+
+		// Object
+		doormen.expect( { a: "Alice" , b: "Bob" , c: "Jack" } ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.only.contain.unique.values() ) ;
+		
+		var o = {} ;
+		doormen.expect( { a: {} , b: {} } ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( { a: {} , b: o , c: o } ).to.only.contain.unique.values() ) ;
+
+		// Map
+		doormen.expect( new Map( [ [ 'a', "Alice" ] , [ 'b', "Bob" ] , [ 'c', "Jack" ] ] ) ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 'a', "Alice" ] , [ 'b', "Bob" ] , [ 'c', "Alice" ] ] ) ).to.only.contain.unique.values() ) ;
+		
+		var o = {} ;
+		doormen.expect( new Map( [ [ 'a', {} ] , [ 'b', {} ] ] ) ).to.only.contain.unique.values() ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 'a', {} ] , [ 'b', o ] , [ 'c', o ] ] ) ).to.only.contain.unique.values() ) ;
 	} ) ;
 
 	it( "expect a value to be empty/not empty" , () => {
