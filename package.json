@@ -6,6 +6,9 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": ">=12.9.0"
+  },
   "dependencies": {
     "string-kit": "^0.12.5",
     "tree-kit": "^0.7.0"

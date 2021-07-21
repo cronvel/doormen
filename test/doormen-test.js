@@ -3589,13 +3589,19 @@ describe( "Expect BDD assertion library" , () => {
 
 		doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'Bob' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'bob' ) ) ;
-		// Map and 'have' behavior
-		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'Bob' ) ;
-		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'bob' ) ) ;
 
 		// Object
 		doormen.expect( { a: "Alice" , b: "Bob" , c: "Jack" } ).to.contain( 'Bob' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.contain( 'Bobby' ) ) ;
+	} ) ;
+
+	it( "www have vs contain" , () => {
+		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'two' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'Jack' ) ) ;
+
+		// Map and 'have' behavior
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'two' ) ) ;
+		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'Jack' ) ;
 	} ) ;
 
 	it( "expect a value to contain/not contain only" , () => {
@@ -3621,6 +3627,19 @@ describe( "Expect BDD assertion library" , () => {
 
 		// Ambigous assertion
 		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain.only( 'Alice' ) ) ;
+	} ) ;
+
+	it( "www have only vs contain only" , () => {
+		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' , 'three' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( "Alice" , "Bob" , "Jack" ) ) ;
+
+		// Map and 'have' behavior
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( 1 , 2 , 'two' ) ) ;
+		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" , "Jack" ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" , "Jack" , "Jim" ) ) ;
 	} ) ;
 
 	it( "www expect a value to only contain unique values" , () => {
@@ -3916,6 +3935,22 @@ describe( "Expect BDD assertion library" , () => {
 		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
+	} ) ;
+
+	it( "xxx expectation for each value of an iterable using expect.each()" , () => {
+		doormen.expect.each( [] ).to.be.a( 'number' ) ;
+		doormen.expect.each( [ 1,2,3 ] ).to.be.a( 'number' ) ;
+		doormen.expect.each( { a:1,b:2,c:3 } ).to.be.a( 'number' ) ;
+		doormen.expect.each( new Set( [ 1,2,3 ] ) ).to.be.a( 'number' ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect.each( [ 1,2,3,"bob" ] ).to.be.a( 'number' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect.each( [ 1,2,3,"bob",4 ] ).to.be.a( 'number' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect.each( [ "bob" ] ).to.be.a( 'number' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect.each( { a:1,b:2,c:"bob" } ).to.be.a( 'number' ) ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect.each( new Set( [ 1,2,3,"bob" ] ) ).to.be.a( 'number' ) ) ;
+	} ) ;
+
+	it( "yyy expectation for each promise of an iterable using expect.each()" , async () => {
+		await doormen.expect.each( [ resolveTimeout(1), resolveTimeout(2), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ;
 	} ) ;
 
 	/*
