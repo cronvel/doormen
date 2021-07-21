@@ -395,6 +395,33 @@ assert.FunctionCall = FunctionCall ;
 
 
 
+function toArrayOfValues( value ) {
+	return (
+		! value || typeof value !== 'object' ? [ value ] :
+		Array.isArray( value ) ? value :
+		typeof value.values === 'function' ? [ ... value.values() ] :
+		Object.values( value )
+	) ;
+}
+
+assert._toArrayOfValues = toArrayOfValues ;
+
+
+
+function toSetOfValues( value ) {
+	return (
+		! value || typeof value !== 'object' ? new Set( [ value ] ) :
+		value instanceof Set ? value :
+		Array.isArray( value ) ? new Set( value ) :
+		typeof value.values === 'function' ? new Set( value.values() ) :
+		new Set( Object.values( value ) )
+	) ;
+}
+
+assert._toSetOfValues = toSetOfValues ;
+
+
+
 /*
 	TODO:
 
@@ -1104,17 +1131,13 @@ assert['to contain'] =
 assert['to have'] =
 assert['to include'] =
 assert.has =
-assert.include =
-assert.contain = ( from , actual , ... expected ) => {
+assert.includes = assert.include =
+assert.contains = assert.contain = ( from , actual , ... expected ) => {
 	var has = false ;
 
 	if ( actual && typeof actual === 'object' ) {
-		if ( Array.isArray( actual ) ) {
-			has = expected.every( value => actual.includes( value ) ) ;
-		}
-		else if ( typeof actual.has === 'function' ) {
-			has = expected.every( value => actual.has( value ) ) ;
-		}
+		let actualValues = toArrayOfValues( actual ) ;
+		has = expected.every( value => actualValues.includes( value ) ) ;
 	}
 	else if ( typeof actual === 'string' ) {
 		has = expected.every( value => actual.includes( value ) ) ;
@@ -1137,12 +1160,8 @@ assert.notContain = ( from , actual , ... notExpected ) => {
 	var has = false ;
 
 	if ( actual && typeof actual === 'object' ) {
-		if ( Array.isArray( actual ) ) {
-			has = notExpected.some( value => actual.includes( value ) ) ;
-		}
-		else if ( typeof actual.has === 'function' ) {
-			has = notExpected.some( value => actual.has( value ) ) ;
-		}
+		let actualValues = toArrayOfValues( actual ) ;
+		has = notExpected.some( value => actualValues.includes( value ) ) ;
 	}
 	else if ( typeof actual === 'string' ) {
 		has = notExpected.some( value => actual.includes( value ) ) ;
@@ -1156,28 +1175,58 @@ assert.notContain.inspect = true ;
 
 
 
+// .has() is ambigous, it's like .contain() except for object having a .has() method: e.g. Map, for Set it still produces the same result
+assert['to have'] =
+assert.has = ( from , actual , ... expected ) => {
+	if ( actual && typeof actual === 'object' ) {
+		if ( typeof actual.has === 'function' ) {
+			if ( ! expected.every( value => actual.has( value ) ) ) {
+				throw AssertionError.create( from , actual , null , 'to have' , expected ) ;
+			}
+
+			return ;
+		}
+	}
+
+	assert.contain( from , actual , ... expected ) ;
+} ;
+assert.has.inspect = true ;
+
+
+
+// .hasNot() is ambigous, it's like .notContain() except for object having a .has() method: e.g. Map, for Set it still produces the same result
+assert['to have not'] = assert['to not have'] = assert['not to have'] =
+assert.hasNot = ( from , actual , ... notExpected ) => {
+	if ( actual && typeof actual === 'object' ) {
+		if ( typeof actual.has === 'function' ) {
+			if ( notExpected.some( value => actual.has( value ) ) ) {
+				throw AssertionError.create( from , actual , null , 'not to have' , notExpected ) ;
+			}
+			return ;
+		}
+	}
+
+	assert.notContain( from , actual , ... notExpected ) ;
+} ;
+assert.hasNot.inspect = true ;
+
+
+
 assert['to only contain'] = assert['to contain only'] =
 assert['to only have'] = assert['to have only'] =
 assert['to only include'] = assert['to include only'] =
-assert.includeOnly =
-assert.containOnly = ( from , actual , ... expected ) => {
+assert.includeOnly = assert.includesOnly =
+assert.containOnly = assert.containsOnly = ( from , actual , ... expected ) => {
 	var has = false ;
 
 	if ( actual && typeof actual === 'object' ) {
-		if ( Array.isArray( actual ) ) {
-			// Turn 'actual' to a Set to dedup everything
-			actual = new Set( actual ) ;
-		}
-
-		if ( typeof actual.has === 'function' ) {
-			// Turn 'expected' to a Set to dedup everything
-			expected = new Set( expected ) ;
-			// Check size, then iterate...
-			has = actual.size === expected.size && [ ... expected ].every( value => actual.has( value ) ) ;
-		}
+		let actualValues = toSetOfValues( actual ) ;
+		let expectedValues = toSetOfValues( expected ) ;
+		// Check size, then iterate...
+		has = actualValues.size === expectedValues.size && [ ... expectedValues ].every( value => actualValues.has( value ) ) ;
 	}
 	else if ( typeof actual === 'string' ) {
-		// Does not make sens at all to use this assertion for strings, but well...
+		// Does not make sense at all to use this assertion for strings, but well...
 		has = expected.every( value => actual === value ) ;
 	}
 
@@ -1192,13 +1241,79 @@ assert.containOnly.glue = ', ' ;
 
 assert['not to only contain'] = assert['to not only contain'] =
 assert['not to contain only'] = assert['to not contain only'] = assert['to contain not only'] =
-assert['not to only have'] = assert['to not only have'] =
-assert['not to have only'] = assert['to not have only'] = assert['to have not only'] =
 assert['not to only include'] = assert['to not only include'] =
 assert['not to include only'] = assert['to not include only'] = assert['to include not only'] =
 assert.notIncludeOnly =
 assert.notContainOnly = ( from ) => {
 	throw new AssertionError( "Ambigous assertion type 'not to contain only'" , from ) ;
+} ;
+
+
+
+assert['to only have'] = assert['to have only'] =
+assert.hasOnly = ( from , actual , ... expected ) => {
+	if ( actual && typeof actual === 'object' ) {
+		if ( typeof actual.has === 'function' ) {
+			let actualValues = toSetOfValues( actual ) ;
+			let expectedValues = toSetOfValues( expected ) ;
+			// Check size, then iterate...
+			// Use actual, not actualValues inside every()
+			if ( actualValues.size !== expectedValues.size || ! [ ... expectedValues ].every( value => actual.has( value ) ) ) {
+				throw AssertionError.create( from , actual , null , 'to have only' , expected ) ;
+			}
+
+			return ;
+		}
+	}
+
+	assert.containOnly( from , actual , ... expected ) ;
+} ;
+assert.hasOnly.inspect = true ;
+assert.hasOnly.glue = ', ' ;
+
+
+
+assert['not to only have'] = assert['to not only have'] =
+assert['not to have only'] = assert['to not have only'] = assert['to have not only'] =
+assert.hasNotOnly = ( from ) => {
+	throw new AssertionError( "Ambigous assertion type 'not to have only'" , from ) ;
+} ;
+
+
+
+assert['to only have unique values'] =
+assert['to have only unique values'] =
+assert['to only contain unique values'] =
+assert['to contain only unique values'] =
+assert['to only include unique values'] =
+assert['to include only unique values'] =
+assert.onlyUniqueValues = ( from , actual ) => {
+	if ( ! actual || typeof actual !== 'object' ) {
+		throw AssertionError.create( from , actual , null , 'to only contain unique values' ) ;
+	}
+
+	var actualValues = toArrayOfValues( actual ) ;
+
+	for ( let i = 0 ; i < actualValues.length ; i ++ ) {
+		for ( let j = i + 1 ; j < actualValues.length ; j ++ ) {
+			if ( actualValues[ i ] === actualValues[ j ] ) {
+				throw AssertionError.create( from , actual , null , 'to only contain unique values' ) ;
+			}
+		}
+	}
+} ;
+assert.onlyUniqueValues.inspect = true ;
+
+
+
+assert['not to only have unique values'] = assert['to not only have unique values'] =
+assert['not to have only unique values'] = assert['to not have only unique values'] = assert['to have not only unique values'] =
+assert['not to only contain unique values'] = assert['to not only contain unique values'] =
+assert['not to contain only unique values'] = assert['to not contain only unique values'] = assert['to contain not only unique values'] =
+assert['not to only include unique values'] = assert['to not only include unique values'] =
+assert['not to include only unique values'] = assert['to not include only unique values'] = assert['to include not only unique values'] =
+assert.notOnlyUniqueValues = ( from ) => {
+	throw new AssertionError( "Ambigous assertion type 'not to contain only unique values'" , from ) ;
 } ;
 
 
@@ -1331,10 +1446,9 @@ assert.ownKeys.glue = ', ' ;
 assert['to only have key'] = assert['to have only key'] = assert['to have only key'] =
 assert['to only have keys'] = assert['to have only keys'] = assert['to have only keys'] =
 assert.onlyKey =
-assert.onlyKeys = ( from , actual , ... keys ) => {
+assert.onlyKeys = ( from ) => {
 	throw new AssertionError( "Instead of using assertion 'onlyKeys', you should use assertion 'onlyOwnKeys'." , from ) ;
 } ;
-assert.onlyKeys.glue = ', ' ;
 
 
 
@@ -5110,16 +5224,20 @@ process.umask = function() { return 0; };
 	Number formatting class.
 	.format() should entirely use it for everything related to number formatting.
 	It avoids unsolvable rounding error with epsilon.
-	It is dedicated to number display to user, not computing.
+	It is dedicated for number display, not for computing.
 */
 
 
 
-function StringNumber( number ) {
+function StringNumber( number , decimalSeparator = '.' , groupSeparator = '' ) {
 	this.sign = 1 ;
 	this.digits = [] ;
 	this.exposant = 0 ;
-	this.special = null ;
+	this.special = null ;	// 'special' store special values like NaN, Infinity, etc
+
+	this.decimalSeparator = decimalSeparator ;
+	this.groupSeparator = groupSeparator ;
+
 	this.set( number ) ;
 }
 
@@ -5209,6 +5327,30 @@ StringNumber.prototype.toString = function( ... args ) {
 
 
 
+StringNumber.prototype.toExponential =
+StringNumber.prototype.toExponentialString = function() {
+	if ( this.special !== null ) { return '' + this.special ; }
+
+	var str = this.sign < 0 ? '-' : '' ;
+	if ( ! this.digits.length ) { return str + '0' ; }
+
+	str += this.digits[ 0 ] ;
+
+	if ( this.digits.length > 1 ) {
+		str += this.decimalSeparator + this.digits.join( '' ).slice( 1 ) ;
+	}
+
+	str += 'e' + ( this.exposant > 0 ? '+' : '' ) + ( this.exposant - 1 ) ;
+	return str ;
+} ;
+
+
+
+const SUPER_NUMBER = [ '⁰' , '¹' , '²' , '³' , '⁴' , '⁵' , '⁶' , '⁷' , '⁸' , '⁹' ] ;
+const SUPER_PLUS = '⁺' ;
+const SUPER_MINUS = '⁻' ;
+const ZERO_CHAR_CODE = '0'.charCodeAt( 0 ) ;
+
 StringNumber.prototype.toScientific =
 StringNumber.prototype.toScientificString = function() {
 	if ( this.special !== null ) { return '' + this.special ; }
@@ -5219,58 +5361,83 @@ StringNumber.prototype.toScientificString = function() {
 	str += this.digits[ 0 ] ;
 
 	if ( this.digits.length > 1 ) {
-		str += '.' + this.digits.join( '' ).slice( 1 ) ;
+		str += this.decimalSeparator + this.digits.join( '' ).slice( 1 ) ;
 	}
 
-	str += 'e' + ( this.exposant > 1 ? '+' : this.exposant < 1 ? '-' : '' ) + ( this.exposant - 1 ) ;
+	var exposantStr =
+		( this.exposant <= 0 ? SUPER_MINUS : '' ) +
+		( '' + Math.abs( this.exposant - 1 ) ).split( '' ).map( c => SUPER_NUMBER[ c.charCodeAt( 0 ) - ZERO_CHAR_CODE ] )
+			.join( '' ) ;
+
+	str += ' × 10' + exposantStr ;
 	return str ;
 } ;
 
 
 
 // leadingZero = minimal number of number before the dot, they will be left-padded with zero if needed.
-// trailingZero = minimal number of number before the dot, they will be right-padded with zero if needed.
+// trailingZero = minimal number of number after the dot, they will be right-padded with zero if needed.
 // onlyIfDecimal: set it to true if you don't want right padding zero when there is no decimal
 StringNumber.prototype.toNoExp =
-StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , exposant = this.exposant ) {
+StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , forcePlusSign = false , exposant = this.exposant ) {
 	if ( this.special !== null ) { return '' + this.special ; }
 
-	var str = this.sign < 0 ? '-' : '' ;
+	var integerDigits = [] , decimalDigits = [] ,
+		str = this.sign < 0 ? '-' : forcePlusSign ? '+' : '' ;
 
 	if ( ! this.digits.length ) {
-		str += '0'.repeat( leadingZero ) ;
-		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
-		return str ;
-	}
+		arrayFill( integerDigits , 0 , leadingZero ) ;
 
-	var digits = this.digits.join( '' ) ;
-
-	if ( exposant <= 0 ) {
-		// This number is of type 0.[0...]xyz
-		str += '0'.repeat( leadingZero ) + '.' + '0'.repeat( -exposant ) + digits ;
-		if ( trailingZero && digits.length - exposant < trailingZero ) {
-			str += '0'.repeat( trailingZero - digits.length + exposant ) ;
+		if ( trailingZero && ! onlyIfDecimal ) {
+			arrayFill( decimalDigits , 0 , trailingZero ) ;
 		}
-		return str ;
 	}
+	else if ( exposant <= 0 ) {
+		// This number is of type 0.[0...]xyz
+		arrayFill( integerDigits , 0 , leadingZero ) ;
 
-	if ( exposant >= this.digits.length ) {
+		arrayFill( decimalDigits , 0 , -exposant ) ;
+		arrayConcatSlice( decimalDigits , this.digits ) ;
+
+		if ( trailingZero && this.digits.length - exposant < trailingZero ) {
+			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
+		}
+	}
+	else if ( exposant >= this.digits.length ) {
 		// This number is of type xyz[0...]
-		if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
-		str += digits + '0'.repeat( exposant - this.digits.length ) ;
-		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
-		return str ;
+		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
+		arrayConcatSlice( integerDigits , this.digits ) ;
+		arrayFill( integerDigits , 0 , exposant - this.digits.length ) ;
+
+		if ( trailingZero && ! onlyIfDecimal ) {
+			arrayFill( decimalDigits , 0 , trailingZero ) ;
+		}
+	}
+	else {
+		// Here the digits are splitted with a dot in the middle
+		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
+		arrayConcatSlice( integerDigits , this.digits , 0 , exposant ) ;
+
+		arrayConcatSlice( decimalDigits , this.digits , exposant ) ;
+
+		if (
+			trailingZero && this.digits.length - exposant < trailingZero
+			&& ( ! onlyIfDecimal || this.digits.length - exposant > 0 )
+		) {
+			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
+		}
 	}
 
-	// Here the digits are splitted with a dot in the middle
-	if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
-	str += digits.slice( 0 , exposant ) + '.' + digits.slice( exposant ) ;
+	str += this.groupSeparator ?
+		this.groupDigits( integerDigits , this.groupSeparator ) :
+		integerDigits.join( '' ) ;
 
-	if (
-		trailingZero && digits.length - exposant < trailingZero
-		&& ( ! onlyIfDecimal || digits.length - exposant > 0 )
-	) {
-		str += '0'.repeat( trailingZero - digits.length + exposant ) ;
+	if ( decimalDigits.length ) {
+		str += this.decimalSeparator + (
+			this.decimalGroupSeparator ?
+				this.groupDigits( decimalDigits , this.decimalGroupSeparator ) :
+				decimalDigits.join( '' )
+		) ;
 	}
 
 	return str ;
@@ -5285,7 +5452,7 @@ const SUB_MUL_PREFIX = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
 
 
 StringNumber.prototype.toMetric =
-StringNumber.prototype.toMetricString = function() {
+StringNumber.prototype.toMetricString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , forcePlusSign = false ) {
 	if ( this.special !== null ) { return '' + this.special ; }
 	if ( ! this.digits.length ) { return this.sign > 0 ? '0' : '-0' ; }
 
@@ -5304,7 +5471,7 @@ StringNumber.prototype.toMetricString = function() {
 		if ( prefix === undefined ) { return this.toScientificString() ; }
 	}
 
-	return this.toNoExpString( undefined , undefined , undefined , fakeExposant ) + prefix ;
+	return this.toNoExpString( leadingZero , trailingZero , onlyIfDecimal , forcePlusSign , fakeExposant ) + prefix ;
 } ;
 
 
@@ -5355,6 +5522,37 @@ StringNumber.prototype.removeTrailingZero = function() {
 	while( i >= 0 && this.digits[ i ] === 0 ) { i -- ; }
 	this.digits.length = i + 1 ;
 } ;
+
+
+
+const GROUP_SIZE = 3 ;
+
+StringNumber.prototype.groupDigits = function( digits , separator , inverseOrder = false ) {
+	var str = '' ,
+		offset = inverseOrder ? 0 : GROUP_SIZE - ( digits.length % GROUP_SIZE ) ,
+		i = 0 ,
+		iMax = digits.length ;
+
+	for ( ; i < iMax ; i ++ ) {
+		str += i && ( ( i + offset ) % GROUP_SIZE === 0 ) ? separator + digits[ i ] : digits[ i ] ;
+	}
+
+	return str ;
+} ;
+
+
+
+function arrayFill( intoArray , value , repeat ) {
+	while ( repeat -- ) { intoArray[ intoArray.length ] = value ; }
+	return intoArray ;
+}
+
+
+
+function arrayConcatSlice( intoArray , sourceArray , start = 0 , end = sourceArray.length ) {
+	for ( let i = start ; i < end ; i ++ ) { intoArray[ intoArray.length ] = sourceArray[ i ] ; }
+	return intoArray ;
+}
 
 
 },{}],19:[function(require,module,exports){
@@ -5600,11 +5798,14 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%n		natural: output the most natural representation for this type, object entries are sorted by keys
 	%N		even more natural: avoid type hinting marks like bracket for array
 	%f		float
-	%e		for scientific notation
-	%d	%i	integer
+	%k		number with metric system prefixes
+	%e		for exponential notation (e.g. 1.23e+2)
+	%K		for scientific notation (e.g. 1.23 × 10²)
+	%i	%d	integer
 	%u		unsigned integer
 	%U		unsigned positive integer (>0)
-	%k		number with metric system prefixes
+	%P		number to (absolute) percent (e.g.: 0.75 -> 75%)
+	%p		number to relative percent (e.g.: 1.25 -> +25% ; 0.75 -> -25%)
 	%t		time duration, convert ms into H:min:s
 	%m		convert degree into degree, minutes and seconds
 	%h		hexadecimal (input is a number)
@@ -5834,8 +6035,12 @@ modes.S.noCommonModeArg = true ;
 modes.N = ( arg , isSubCall ) => {
 	if ( typeof arg === 'string' ) { return arg ; }
 
-	if ( arg === null || arg === undefined || arg === true || arg === false || typeof arg === 'number' ) {
+	if ( arg === null || arg === undefined || arg === true || arg === false ) {
 		return '' + arg ;
+	}
+
+	if ( typeof arg === 'number' ) {
+		return modes.f( arg , '.3g ' ) ;
 	}
 
 	if ( Array.isArray( arg ) ) {
@@ -5883,105 +6088,117 @@ modes.n = arg => modes.N( arg , true ) ;
 
 // float
 modes.f = ( arg , modeArg ) => {
-	var match , k , v , lv , sn ,
-		leftPadding = 1 ,
-		rightPadding = 0 ,
-		rightPaddingOnlyIfDecimal = false ,
-		rounding = null ,
-		precision = null ;
-
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	if ( modeArg ) {
-		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
 
-		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-			[ , k , v ] = match ;
+	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
+	if ( modes.precision ) { sn.precision( modes.precision ) ; }
 
-			if ( k === 'z' ) {
-				// Zero-left padding
-				leftPadding = + v ;
-			}
-			else if ( ! k ) {
-				if ( v[ 0 ] === '.' ) {
-					// Rounding after the decimal
-					lv = v[ v.length - 1 ] ;
-
-					// Zero-right padding?
-					if ( lv === '!' ) {
-						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
-					}
-					else if ( lv === '?' ) {
-						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
-						rightPaddingOnlyIfDecimal = true ;
-					}
-					else {
-						rounding = parseInt( v.slice( 1 ) , 10 ) ;
-					}
-				}
-				else if ( v[ v.length - 1 ] === '.' ) {
-					// Rounding before the decimal
-					rounding = -parseInt( v.slice( 0 , -1 ) , 10 ) ;
-				}
-				else {
-					// Precision
-					precision = parseInt( v , 10 ) ;
-				}
-			}
-		}
-	}
-
-	sn = new StringNumber( arg ) ;
-	if ( rounding !== null ) { sn.round( rounding ) ; }
-	if ( precision !== null ) { sn.precision( precision ) ; }
-	return sn.toString( leftPadding , rightPadding , rightPaddingOnlyIfDecimal ) ;
+	return sn.toString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
 } ;
 
 modes.f.noSanitize = true ;
 
 
 
+// absolute percent
+modes.P = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	arg *= 100 ;
+
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+
+	// Force rounding to zero by default
+	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
+	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+
+	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) + '%' ;
+} ;
+
+modes.P.noSanitize = true ;
+
+
+
+// relative percent
+modes.p = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	arg = ( arg - 1 ) * 100 ;
+
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+
+	// Force rounding to zero by default
+	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
+	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+
+	// 4th argument force a '+' sign
+	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal , true ) + '%' ;
+} ;
+
+modes.p.noSanitize = true ;
+
+
+
 // metric system
-modes.k = arg => {
+modes.k = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { return '0' ; }
-	//return metricPrefix( arg ) ;
 
-	var sn = new StringNumber( arg ) ;
-	sn.precision( 3 ) ;
-	return sn.toMetricString() ;
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+
+	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
+	// Default to 3 numbers precision
+	if ( modes.precision || modes.rounding === null ) { sn.precision( modes.precision || 3 ) ; }
+
+	return sn.toMetricString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
 } ;
 
 modes.k.noSanitize = true ;
 
 
 
-// /!\ Should use StringNumber
-// scientific notation
+// exponential notation, a.k.a. "E notation" (e.g. 1.23e+2)
 modes.e = ( arg , modeArg ) => {
-	var match , k , v ;
-
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	if ( modeArg ) {
-		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
 
-		if ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-			[ , k , v ] = match ;
+	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
+	if ( modes.precision ) { sn.precision( modes.precision ) ; }
 
-			if ( ! k ) {
-				return '' + arg.toExponential( parseInt( v , 10 ) - 1 ) ;
-			}
-		}
-	}
-
-	return '' + arg.toExponential() ;
-
+	return sn.toExponential() ;
 } ;
 
 modes.e.noSanitize = true ;
+
+
+
+// scientific notation (e.g. 1.23 × 10²)
+modes.K = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	var modes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+
+	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
+	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+
+	return sn.toScientific() ;
+} ;
+
+modes.K.noSanitize = true ;
 
 
 
@@ -6441,6 +6658,78 @@ function commonModeArg( str , modeArg ) {
 
 
 
+const FLOAT_MODES = {
+	leftPadding: 1 ,
+	rightPadding: 0 ,
+	rightPaddingOnlyIfDecimal: false ,
+	rounding: null ,
+	precision: null ,
+	groupSeparator: ''
+} ;
+
+// Generic number modes
+function floatModeArg( modeArg ) {
+	var match , k , v , lv ;
+
+	FLOAT_MODES.leftPadding = 1 ;
+	FLOAT_MODES.rightPadding = 0 ;
+	FLOAT_MODES.rightPaddingOnlyIfDecimal = false ;
+	FLOAT_MODES.rounding = null ;
+	FLOAT_MODES.precision = null ;
+	FLOAT_MODES.groupSeparator = '' ;
+
+	if ( modeArg ) {
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
+
+		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
+
+			if ( k === 'z' ) {
+				// Zero-left padding
+				FLOAT_MODES.leftPadding = + v ;
+			}
+			else if ( k === 'g' ) {
+				// Group separator
+				FLOAT_MODES.groupSeparator = v || ' ' ;
+			}
+			else if ( ! k ) {
+				if ( v === 'g' ) {
+					// Group separator
+					FLOAT_MODES.groupSeparator = ' ' ;
+				}
+				else if ( v[ 0 ] === '.' ) {
+					// Rounding after the decimal
+					lv = v[ v.length - 1 ] ;
+
+					// Zero-right padding?
+					if ( lv === '!' ) {
+						FLOAT_MODES.rounding = FLOAT_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+					}
+					else if ( lv === '?' ) {
+						FLOAT_MODES.rounding = FLOAT_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+						FLOAT_MODES.rightPaddingOnlyIfDecimal = true ;
+					}
+					else {
+						FLOAT_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
+					}
+				}
+				else if ( v[ v.length - 1 ] === '.' ) {
+					// Rounding before the decimal
+					FLOAT_MODES.rounding = -parseInt( v.slice( 0 , -1 ) , 10 ) || 0 ;
+				}
+				else {
+					// Precision, but only if integer
+					FLOAT_MODES.precision = parseInt( v , 10 ) || null ;
+				}
+			}
+		}
+	}
+
+	return FLOAT_MODES ;
+}
+
+
+
 // Generic inspect
 function genericInspectMode( arg , modeArg , options , modeOptions , isInspectError = false ) {
 	var match , k , v ,
@@ -6549,6 +6838,7 @@ const escape = require( './escape.js' ) ;
 const ansi = require( './ansi.js' ) ;
 
 const EMPTY = {} ;
+const TRIVIAL_CONSTRUCTOR = new Set( [ Object , Array ] ) ;
 
 
 
@@ -6570,12 +6860,14 @@ const EMPTY = {} ;
 		* noArrayProperty: do not display array properties
 		* noIndex: do not display array indexes
 		* noType: do not display type and constructor
+		* noTypeButConstructor: do not display type, display non-trivial constructor (not Object or Array, but all others)
 		* enumOnly: only display enumerable properties
 		* funcDetails: display function's details
 		* proto: display object's prototype
 		* sort: sort the keys
 		* minimal: imply noFunc: true, noDescriptor: true, noType: true, noArrayProperty: true, enumOnly: true, proto: false and funcDetails: false.
 		  Display a minimal JSON-like output
+		* minimalPlusConstructor: like minimal, but output non-trivial constructor
 		* protoBlackList: `Set` of blacklisted object prototype (will not recurse inside it)
 		* propertyBlackList: `Set` of blacklisted property names (will not even display it)
 		* useInspect: use .inspect() method when available on an object (default to false)
@@ -6611,6 +6903,16 @@ function inspect( options , variable ) {
 		options.funcDetails = false ;
 	}
 
+	if ( options.minimalPlusConstructor ) {
+		options.noFunc = true ;
+		options.noDescriptor = true ;
+		options.noTypeButConstructor = true ;
+		options.noArrayProperty = true ;
+		options.enumOnly = true ;
+		options.proto = false ;
+		options.funcDetails = false ;
+	}
+
 	var str = inspect_( runtime , options , variable ) ;
 
 	if ( str.length > options.outputMaxLength ) {
@@ -6623,7 +6925,7 @@ function inspect( options , variable ) {
 
 
 function inspect_( runtime , options , variable ) {
-	var i , funcName , length , proto , propertyList , constructor , keyIsProperty ,
+	var i , funcName , length , proto , propertyList , isTrivialConstructor , constructor , keyIsProperty ,
 		type , pre , indent , isArray , isFunc , specialObject ,
 		str = '' , key = '' , descriptorStr = '' , descriptor , nextAncestors ;
 
@@ -6688,18 +6990,18 @@ function inspect_( runtime , options , variable ) {
 	}
 	else if ( type === 'number' ) {
 		str += pre + options.style.number( variable.toString() ) +
-			( options.noType ? '' : ' ' + options.style.type( 'number' ) ) +
+			( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'number' ) ) +
 			descriptorStr + options.style.newline ;
 	}
 	else if ( type === 'string' ) {
 		if ( variable.length > options.maxLength ) {
 			str += pre + '"' + options.style.string( escape.control( variable.slice( 0 , options.maxLength - 1 ) ) ) + '…"' +
-				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ' - TRUNCATED)' ) ) +
+				( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ' - TRUNCATED)' ) ) +
 				descriptorStr + options.style.newline ;
 		}
 		else {
 			str += pre + '"' + options.style.string( escape.control( variable ) ) + '"' +
-				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ')' ) ) +
+				( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ')' ) ) +
 				descriptorStr + options.style.newline ;
 		}
 	}
@@ -6729,14 +7031,23 @@ function inspect_( runtime , options , variable ) {
 		else if ( ! variable.constructor.name ) { constructor = '(anonymous)' ; }
 		else { constructor = variable.constructor.name ; }
 
+		isTrivialConstructor = ! variable.constructor || TRIVIAL_CONSTRUCTOR.has( variable.constructor ) ;
+
 		constructor = options.style.constructorName( constructor ) ;
 		proto = Object.getPrototypeOf( variable ) ;
 
 		str += pre ;
 
-		if ( ! options.noType ) {
-			if ( runtime.forceType ) { str += options.style.type( runtime.forceType ) ; }
-			else { str += constructor + funcName + length + ' ' + options.style.type( type ) + descriptorStr ; }
+		if ( ! options.noType && ( ! options.noTypeButConstructor || ! isTrivialConstructor ) ) {
+			if ( runtime.forceType && ! options.noType && ! options.noTypeButConstructor ) {
+				str += options.style.type( runtime.forceType ) ;
+			}
+			else if ( options.noTypeButConstructor ) {
+				str += constructor ;
+			}
+			else {
+				str += constructor + funcName + length + ' ' + options.style.type( type ) + descriptorStr ;
+			}
 
 			if ( ! isFunc || options.funcDetails ) { str += ' ' ; }	// if no funcDetails imply no space here
 		}
@@ -6785,7 +7096,7 @@ function inspect_( runtime , options , variable ) {
 			str += options.style.limit( '[circular]' ) + options.style.newline ;
 		}
 		else {
-			str += ( isArray && options.noType && options.noArrayProperty ? '[' : '{' ) + options.style.newline ;
+			str += ( isArray ? '[' : '{' ) + options.style.newline ;
 
 			// Do not use .concat() here, it doesn't works as expected with arrays...
 			nextAncestors = runtime.ancestors.slice() ;
@@ -6878,7 +7189,7 @@ function inspect_( runtime , options , variable ) {
 				) ;
 			}
 
-			str += indent + ( isArray && options.noType && options.noArrayProperty ? ']' : '}' ) ;
+			str += indent + ( isArray ? ']' : '}' ) ;
 			str += options.style.newline ;
 		}
 	}

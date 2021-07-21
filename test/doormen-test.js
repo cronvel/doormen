@@ -3557,7 +3557,7 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.have.length.of( 8 ) ) ;
 	} ) ;
 
-	it( "www expect a value to contain/not contain" , () => {
+	it( "expect a value to contain/not contain" , () => {
 		// String
 		doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 		doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
@@ -3595,7 +3595,7 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.contain( 'Bobby' ) ) ;
 	} ) ;
 
-	it( "www have vs contain" , () => {
+	it( "have vs contain" , () => {
 		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'two' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'Jack' ) ) ;
 
@@ -3629,7 +3629,7 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain.only( 'Alice' ) ) ;
 	} ) ;
 
-	it( "www have only vs contain only" , () => {
+	it( "have only vs contain only" , () => {
 		doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' , 'three' ) ) ;
@@ -3642,7 +3642,7 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" , "Jack" , "Jim" ) ) ;
 	} ) ;
 
-	it( "www expect a value to only contain unique values" , () => {
+	it( "expect a value to only contain unique values" , () => {
 		// Array
 		doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.only.contain.unique.values() ;
 		doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Alice" ] ).to.only.contain.unique.values() ) ;
@@ -3937,7 +3937,7 @@ describe( "Expect BDD assertion library" , () => {
 		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
 	} ) ;
 
-	it( "xxx expectation for each value of an iterable using expect.each()" , () => {
+	it( "expectation for each value of an iterable using expect.each()" , () => {
 		doormen.expect.each( [] ).to.be.a( 'number' ) ;
 		doormen.expect.each( [ 1,2,3 ] ).to.be.a( 'number' ) ;
 		doormen.expect.each( { a:1,b:2,c:3 } ).to.be.a( 'number' ) ;
@@ -3949,8 +3949,17 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect.each( new Set( [ 1,2,3,"bob" ] ) ).to.be.a( 'number' ) ) ;
 	} ) ;
 
-	it( "yyy expectation for each promise of an iterable using expect.each()" , async () => {
+	it( "expectation for each promise of an iterable using expect.each()" , async () => {
+		var error = new Error( "Error!" ) ;
 		await doormen.expect.each( [ resolveTimeout(1), resolveTimeout(2), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ;
+		await doormen.expect.each( [ resolveTimeout(1), resolveTimeout(2), resolveTimeout(3) ] ).to.fulfill() ;
+		await doormen.expect.each( [ rejectTimeout(error), rejectTimeout(error), rejectTimeout(error) ] ).to.reject() ;
+
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), resolveTimeout({}), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ rejectTimeout(error), rejectTimeout(error), rejectTimeout(error) ] ).to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.reject() ) ;
 	} ) ;
 
 	/*

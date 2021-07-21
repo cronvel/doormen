@@ -1,4 +1,11 @@
 
+v0.13.0
+-------
+
+New: expect.each(), assert.onlyUniqueValues()
+BREAKING assertion change: seperated 'have' and 'contain/include' assertion, they have a different meaning for objects having a .has() method (used by 'have', but not by contain/include), practically, 'contain/include' behavior changed for Map instances! ('contain' check if the Map have value, 'have' if the Map have the key... for Set it changes nothing since .has() check values)
+
+
 v0.12.5
 -------
 

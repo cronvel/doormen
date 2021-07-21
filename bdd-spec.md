@@ -3026,6 +3026,7 @@ doormen.shouldThrowAssertion( () => doormen.expect( [] ).to.have.length.of( 8 ) 
 expect a value to contain/not contain.
 
 ```js
+// String
 doormen.expect( "Hello Bob!" ).to.contain( 'Bob' ) ;
 doormen.expect( "Hello Bob!" ).to.include( 'Bob' ) ;
 doormen.expect( "Hello Bob!" ).to.include( 'Hello' , 'Bob' ) ;
@@ -3037,6 +3038,8 @@ doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( '
 doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).to.contain( 'Hi' , 'Bob' ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hi' , 'Bob' ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.contain( 'Hello' , 'Bill' ) ) ;
+
+// Array
 doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' ) ;
 doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.contain( 'Bob' , 'Jack' ) ;
 doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain( 'Bobby' ) ;
@@ -3051,8 +3054,21 @@ doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" ,
 doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Roger' , 'Jack' ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).not.to.contain( 'Jack' , 'Roger' ) ) ;
-doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'Bob' ) ;
-doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'bob' ) ) ;
+doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'Bob' ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 1 , "Alice" ] , [ 2 , "Bob" ] , [ "two" , "Jack" ] ] ) ).to.contain( 'bob' ) ) ;
+// Object
+doormen.expect( { a: "Alice" , b: "Bob" , c: "Jack" } ).to.contain( 'Bob' ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.contain( 'Bobby' ) ) ;
+```
+
+have vs contain.
+
+```js
+doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'two' ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain( 'Jack' ) ) ;
+// Map and 'have' behavior
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'two' ) ) ;
+doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have( 'Jack' ) ;
 ```
 
 expect a value to contain/not contain only.
@@ -3078,6 +3094,46 @@ doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" ,
 doormen.shouldThrowAssertion( () => doormen.expect( new Set( [ "Alice" , "Bob" , "Jack" ] ) ).to.contain.only( 'Jack' , 'Alice' , 'Bob' , 'Tony' ) ) ;
 // Ambigous assertion
 doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).not.to.contain.only( 'Alice' ) ) ;
+```
+
+have only vs contain only.
+
+```js
+doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( 1 , 2 , 'two' , 'three' ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.contain.only( "Alice" , "Bob" , "Jack" ) ) ;
+// Map and 'have' behavior
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( 1 , 2 , 'two' ) ) ;
+doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" , "Jack" ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ "Alice" , 1 ] , [ "Bob" , 2 ] , [ "Jack" , "two" ] ] ) ).to.have.only( "Alice" , "Bob" , "Jack" , "Jim" ) ) ;
+```
+
+expect a value to only contain unique values.
+
+```js
+// Array
+doormen.expect( [ "Alice" , "Bob" , "Jack" ] ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( [ "Alice" , "Bob" , "Alice" ] ).to.only.contain.unique.values() ) ;
+
+var o = {} ;
+doormen.expect( [ {} , {} ] ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( [ {} , o , o ] ).to.only.contain.unique.values() ) ;
+// Object
+doormen.expect( { a: "Alice" , b: "Bob" , c: "Jack" } ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( { a: "Alice" , b: "Bob" , c: "Alice" } ).to.only.contain.unique.values() ) ;
+
+var o = {} ;
+doormen.expect( { a: {} , b: {} } ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( { a: {} , b: o , c: o } ).to.only.contain.unique.values() ) ;
+// Map
+doormen.expect( new Map( [ [ 'a', "Alice" ] , [ 'b', "Bob" ] , [ 'c', "Jack" ] ] ) ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 'a', "Alice" ] , [ 'b', "Bob" ] , [ 'c', "Alice" ] ] ) ).to.only.contain.unique.values() ) ;
+
+var o = {} ;
+doormen.expect( new Map( [ [ 'a', {} ] , [ 'b', {} ] ] ) ).to.only.contain.unique.values() ;
+doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ 'a', {} ] , [ 'b', o ] , [ 'c', o ] ] ) ).to.only.contain.unique.values() ) ;
 ```
 
 expect a value to be empty/not empty.
@@ -3376,6 +3432,36 @@ async () => {
 		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).not.to.reject() ) ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( () => rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
 		await doormen.shouldRejectAssertion( () => doormen.expect( rejectTimeout( new Error( 'Reject!' ) ) ).to.fulfill() ) ;
+	}
+```
+
+expectation for each value of an iterable using expect.each().
+
+```js
+doormen.expect.each( [] ).to.be.a( 'number' ) ;
+doormen.expect.each( [ 1,2,3 ] ).to.be.a( 'number' ) ;
+doormen.expect.each( { a:1,b:2,c:3 } ).to.be.a( 'number' ) ;
+doormen.expect.each( new Set( [ 1,2,3 ] ) ).to.be.a( 'number' ) ;
+doormen.shouldThrowAssertion( () => doormen.expect.each( [ 1,2,3,"bob" ] ).to.be.a( 'number' ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect.each( [ 1,2,3,"bob",4 ] ).to.be.a( 'number' ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect.each( [ "bob" ] ).to.be.a( 'number' ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect.each( { a:1,b:2,c:"bob" } ).to.be.a( 'number' ) ) ;
+doormen.shouldThrowAssertion( () => doormen.expect.each( new Set( [ 1,2,3,"bob" ] ) ).to.be.a( 'number' ) ) ;
+```
+
+expectation for each promise of an iterable using expect.each().
+
+```js
+async () => {
+		var error = new Error( "Error!" ) ;
+		await doormen.expect.each( [ resolveTimeout(1), resolveTimeout(2), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ;
+		await doormen.expect.each( [ resolveTimeout(1), resolveTimeout(2), resolveTimeout(3) ] ).to.fulfill() ;
+		await doormen.expect.each( [ rejectTimeout(error), rejectTimeout(error), rejectTimeout(error) ] ).to.reject() ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), resolveTimeout({}), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.eventually.be.a( 'number' ) ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ rejectTimeout(error), rejectTimeout(error), rejectTimeout(error) ] ).to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.fulfill() ) ;
+		await doormen.shouldRejectAssertion( () => doormen.expect.each( [ resolveTimeout(1), rejectTimeout(error), resolveTimeout(3) ] ).to.reject() ) ;
 	}
 ```
 
