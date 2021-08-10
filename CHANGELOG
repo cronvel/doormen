@@ -1,4 +1,10 @@
 
+v0.13.1
+-------
+
+New assertions: around in combination with the (equal|like)(partially)? assertion family
+
+
 v0.13.0
 -------
 

@@ -338,9 +338,13 @@ module.exports = assert ;
 const typeCheckers = require( './typeCheckers.js' ) ;
 
 const isEqual = require( './isEqual.js' ) ;
+const IS_EQUAL_AROUND = { around: true } ;
 const IS_EQUAL_LIKE = { like: true } ;
+const IS_EQUAL_LIKE_AROUND = { like: true , around: true } ;
 const IS_EQUAL_PARTIALLY_LIKE = { like: true , oneWay: true } ;
+const IS_EQUAL_PARTIALLY_LIKE_AROUND = { like: true , oneWay: true , around: true } ;
 const IS_EQUAL_PARTIALLY_EQUAL = { oneWay: true } ;
+const IS_EQUAL_PARTIALLY_EQUAL_AROUND = { oneWay: true , around: true } ;
 
 const VOWEL = new Set( [ 'a' , 'e' , 'i' , 'o' , 'u' , 'y' , 'A' , 'E' , 'I' , 'O' , 'U' , 'Y' ] ) ;
 
@@ -679,6 +683,29 @@ assert.notEqual.inspect = true ;
 
 
 
+// Equal around
+assert['to equal around'] =
+assert.equalAround = ( from , actual , expected ) => {
+	if ( ! isEqual( actual , expected , IS_EQUAL_AROUND ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to equal around' , expected ) ;
+	}
+} ;
+assert.equalAround.showDiff = true ;
+assert.equalAround.inspect = true ;
+
+
+
+// Not equal around
+assert['to not equal around'] = assert['not to equal around'] =
+assert.notEqualAround = ( from , actual , notExpected ) => {
+	if ( isEqual( actual , notExpected , IS_EQUAL_AROUND ) ) {
+		throw AssertionError.create( from , actual , null , 'not to equal around' , notExpected ) ;
+	}
+} ;
+assert.notEqualAround.inspect = true ;
+
+
+
 // Like
 assert['to be like'] =
 assert['to be alike'] =
@@ -703,6 +730,31 @@ assert.notLike = ( from , actual , notExpected ) => {
 	}
 } ;
 assert.notLike.inspect = true ;
+
+
+
+// Like around
+assert['to be like around'] =
+assert['to be alike around'] =
+assert.likeAround = ( from , actual , expected ) => {
+	if ( ! isEqual( actual , expected , IS_EQUAL_LIKE_AROUND ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to be like around' , expected ) ;
+	}
+} ;
+assert.likeAround.showDiff = true ;
+assert.likeAround.inspect = true ;
+
+
+
+// Not like around
+assert['to be not like around'] = assert['to not be like around'] = assert['not to be like around'] =
+assert['to be not alike around'] = assert['to not be alike around'] = assert['not to be alike around'] =
+assert.notLikeAround = ( from , actual , notExpected ) => {
+	if ( isEqual( actual , notExpected , IS_EQUAL_LIKE_AROUND ) ) {
+		throw AssertionError.create( from , actual , null , 'not to be like around' , notExpected ) ;
+	}
+} ;
+assert.notLikeAround.inspect = true ;
 
 
 
@@ -741,6 +793,29 @@ assert.notPartiallyEqual.inspect = true ;
 
 
 
+// Equal (around) to a partial object
+assert['to partially equal around'] =
+assert.partiallyEqualAround = ( from , actual , expected ) => {
+	if ( ! isEqual( expected , actual , IS_EQUAL_PARTIALLY_EQUAL_AROUND ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to partially equal around' , expected ) ;
+	}
+} ;
+assert.partiallyEqualAround.showPathDiff = true ;
+assert.partiallyEqualAround.inspect = true ;
+
+
+
+// Not equal (around) to a partial object
+assert['to not partially equal around'] = assert['not to partially equal around'] =
+assert.notPartiallyEqualAround = ( from , actual , notExpected ) => {
+	if ( isEqual( notExpected , actual , IS_EQUAL_PARTIALLY_EQUAL_AROUND ) ) {
+		throw AssertionError.create( from , actual , null , 'not to partially equal around' , notExpected ) ;
+	}
+} ;
+assert.notPartiallyEqualAround.inspect = true ;
+
+
+
 // Like partial
 assert['to be partially like'] =
 assert['to be like partial'] =
@@ -765,6 +840,29 @@ assert.notPartiallyLike = ( from , actual , notExpected ) => {
 	}
 } ;
 assert.notPartiallyLike.inspect = true ;
+
+
+
+// Like (around) partial
+assert['to be partially like around'] =
+assert.partiallyLikeAround = ( from , actual , expected ) => {
+	if ( ! isEqual( expected , actual , IS_EQUAL_PARTIALLY_LIKE_AROUND ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to be partially like around' , expected ) ;
+	}
+} ;
+assert.partiallyLikeAround.showPathDiff = true ;
+assert.partiallyLikeAround.inspect = true ;
+
+
+
+// Not like (around) partial
+assert['to be not partially like around'] = assert['to not be partially like around'] = assert['not to be partially like around'] =
+assert.notPartiallyLikeAround = ( from , actual , notExpected ) => {
+	if ( isEqual( notExpected , actual , IS_EQUAL_PARTIALLY_LIKE_AROUND ) ) {
+		throw AssertionError.create( from , actual , null , 'not to be partially like around' , notExpected ) ;
+	}
+} ;
+assert.notPartiallyLikeAround.inspect = true ;
 
 
 
@@ -5224,20 +5322,16 @@ process.umask = function() { return 0; };
 	Number formatting class.
 	.format() should entirely use it for everything related to number formatting.
 	It avoids unsolvable rounding error with epsilon.
-	It is dedicated for number display, not for computing.
+	It is dedicated to number display to user, not computing.
 */
 
 
 
-function StringNumber( number , decimalSeparator = '.' , groupSeparator = '' ) {
+function StringNumber( number ) {
 	this.sign = 1 ;
 	this.digits = [] ;
 	this.exposant = 0 ;
-	this.special = null ;	// 'special' store special values like NaN, Infinity, etc
-
-	this.decimalSeparator = decimalSeparator ;
-	this.groupSeparator = groupSeparator ;
-
+	this.special = null ;
 	this.set( number ) ;
 }
 
@@ -5327,30 +5421,6 @@ StringNumber.prototype.toString = function( ... args ) {
 
 
 
-StringNumber.prototype.toExponential =
-StringNumber.prototype.toExponentialString = function() {
-	if ( this.special !== null ) { return '' + this.special ; }
-
-	var str = this.sign < 0 ? '-' : '' ;
-	if ( ! this.digits.length ) { return str + '0' ; }
-
-	str += this.digits[ 0 ] ;
-
-	if ( this.digits.length > 1 ) {
-		str += this.decimalSeparator + this.digits.join( '' ).slice( 1 ) ;
-	}
-
-	str += 'e' + ( this.exposant > 0 ? '+' : '' ) + ( this.exposant - 1 ) ;
-	return str ;
-} ;
-
-
-
-const SUPER_NUMBER = [ '⁰' , '¹' , '²' , '³' , '⁴' , '⁵' , '⁶' , '⁷' , '⁸' , '⁹' ] ;
-const SUPER_PLUS = '⁺' ;
-const SUPER_MINUS = '⁻' ;
-const ZERO_CHAR_CODE = '0'.charCodeAt( 0 ) ;
-
 StringNumber.prototype.toScientific =
 StringNumber.prototype.toScientificString = function() {
 	if ( this.special !== null ) { return '' + this.special ; }
@@ -5361,83 +5431,58 @@ StringNumber.prototype.toScientificString = function() {
 	str += this.digits[ 0 ] ;
 
 	if ( this.digits.length > 1 ) {
-		str += this.decimalSeparator + this.digits.join( '' ).slice( 1 ) ;
+		str += '.' + this.digits.join( '' ).slice( 1 ) ;
 	}
 
-	var exposantStr =
-		( this.exposant <= 0 ? SUPER_MINUS : '' ) +
-		( '' + Math.abs( this.exposant - 1 ) ).split( '' ).map( c => SUPER_NUMBER[ c.charCodeAt( 0 ) - ZERO_CHAR_CODE ] )
-			.join( '' ) ;
-
-	str += ' × 10' + exposantStr ;
+	str += 'e' + ( this.exposant > 1 ? '+' : this.exposant < 1 ? '-' : '' ) + ( this.exposant - 1 ) ;
 	return str ;
 } ;
 
 
 
 // leadingZero = minimal number of number before the dot, they will be left-padded with zero if needed.
-// trailingZero = minimal number of number after the dot, they will be right-padded with zero if needed.
+// trailingZero = minimal number of number before the dot, they will be right-padded with zero if needed.
 // onlyIfDecimal: set it to true if you don't want right padding zero when there is no decimal
 StringNumber.prototype.toNoExp =
-StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , forcePlusSign = false , exposant = this.exposant ) {
+StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , exposant = this.exposant ) {
 	if ( this.special !== null ) { return '' + this.special ; }
 
-	var integerDigits = [] , decimalDigits = [] ,
-		str = this.sign < 0 ? '-' : forcePlusSign ? '+' : '' ;
+	var str = this.sign < 0 ? '-' : '' ;
 
 	if ( ! this.digits.length ) {
-		arrayFill( integerDigits , 0 , leadingZero ) ;
-
-		if ( trailingZero && ! onlyIfDecimal ) {
-			arrayFill( decimalDigits , 0 , trailingZero ) ;
-		}
+		str += '0'.repeat( leadingZero ) ;
+		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
+		return str ;
 	}
-	else if ( exposant <= 0 ) {
+
+	var digits = this.digits.join( '' ) ;
+
+	if ( exposant <= 0 ) {
 		// This number is of type 0.[0...]xyz
-		arrayFill( integerDigits , 0 , leadingZero ) ;
-
-		arrayFill( decimalDigits , 0 , -exposant ) ;
-		arrayConcatSlice( decimalDigits , this.digits ) ;
-
-		if ( trailingZero && this.digits.length - exposant < trailingZero ) {
-			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
+		str += '0'.repeat( leadingZero ) + '.' + '0'.repeat( -exposant ) + digits ;
+		if ( trailingZero && digits.length - exposant < trailingZero ) {
+			str += '0'.repeat( trailingZero - digits.length + exposant ) ;
 		}
+		return str ;
 	}
-	else if ( exposant >= this.digits.length ) {
+
+	if ( exposant >= this.digits.length ) {
 		// This number is of type xyz[0...]
-		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
-		arrayConcatSlice( integerDigits , this.digits ) ;
-		arrayFill( integerDigits , 0 , exposant - this.digits.length ) ;
-
-		if ( trailingZero && ! onlyIfDecimal ) {
-			arrayFill( decimalDigits , 0 , trailingZero ) ;
-		}
-	}
-	else {
-		// Here the digits are splitted with a dot in the middle
-		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
-		arrayConcatSlice( integerDigits , this.digits , 0 , exposant ) ;
-
-		arrayConcatSlice( decimalDigits , this.digits , exposant ) ;
-
-		if (
-			trailingZero && this.digits.length - exposant < trailingZero
-			&& ( ! onlyIfDecimal || this.digits.length - exposant > 0 )
-		) {
-			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
-		}
+		if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
+		str += digits + '0'.repeat( exposant - this.digits.length ) ;
+		if ( trailingZero && ! onlyIfDecimal ) { str += '.' + '0'.repeat( trailingZero ) ; }
+		return str ;
 	}
 
-	str += this.groupSeparator ?
-		this.groupDigits( integerDigits , this.groupSeparator ) :
-		integerDigits.join( '' ) ;
+	// Here the digits are splitted with a dot in the middle
+	if ( exposant < leadingZero ) { str += '0'.repeat( leadingZero - exposant ) ; }
+	str += digits.slice( 0 , exposant ) + '.' + digits.slice( exposant ) ;
 
-	if ( decimalDigits.length ) {
-		str += this.decimalSeparator + (
-			this.decimalGroupSeparator ?
-				this.groupDigits( decimalDigits , this.decimalGroupSeparator ) :
-				decimalDigits.join( '' )
-		) ;
+	if (
+		trailingZero && digits.length - exposant < trailingZero
+		&& ( ! onlyIfDecimal || digits.length - exposant > 0 )
+	) {
+		str += '0'.repeat( trailingZero - digits.length + exposant ) ;
 	}
 
 	return str ;
@@ -5452,7 +5497,7 @@ const SUB_MUL_PREFIX = [ '' , 'm' , 'µ' , 'n' , 'p' , 'f' , 'a' , 'z' , 'y' ] ;
 
 
 StringNumber.prototype.toMetric =
-StringNumber.prototype.toMetricString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , forcePlusSign = false ) {
+StringNumber.prototype.toMetricString = function() {
 	if ( this.special !== null ) { return '' + this.special ; }
 	if ( ! this.digits.length ) { return this.sign > 0 ? '0' : '-0' ; }
 
@@ -5471,7 +5516,7 @@ StringNumber.prototype.toMetricString = function( leadingZero = 1 , trailingZero
 		if ( prefix === undefined ) { return this.toScientificString() ; }
 	}
 
-	return this.toNoExpString( leadingZero , trailingZero , onlyIfDecimal , forcePlusSign , fakeExposant ) + prefix ;
+	return this.toNoExpString( undefined , undefined , undefined , fakeExposant ) + prefix ;
 } ;
 
 
@@ -5522,37 +5567,6 @@ StringNumber.prototype.removeTrailingZero = function() {
 	while( i >= 0 && this.digits[ i ] === 0 ) { i -- ; }
 	this.digits.length = i + 1 ;
 } ;
-
-
-
-const GROUP_SIZE = 3 ;
-
-StringNumber.prototype.groupDigits = function( digits , separator , inverseOrder = false ) {
-	var str = '' ,
-		offset = inverseOrder ? 0 : GROUP_SIZE - ( digits.length % GROUP_SIZE ) ,
-		i = 0 ,
-		iMax = digits.length ;
-
-	for ( ; i < iMax ; i ++ ) {
-		str += i && ( ( i + offset ) % GROUP_SIZE === 0 ) ? separator + digits[ i ] : digits[ i ] ;
-	}
-
-	return str ;
-} ;
-
-
-
-function arrayFill( intoArray , value , repeat ) {
-	while ( repeat -- ) { intoArray[ intoArray.length ] = value ; }
-	return intoArray ;
-}
-
-
-
-function arrayConcatSlice( intoArray , sourceArray , start = 0 , end = sourceArray.length ) {
-	for ( let i = start ; i < end ; i ++ ) { intoArray[ intoArray.length ] = sourceArray[ i ] ; }
-	return intoArray ;
-}
 
 
 },{}],19:[function(require,module,exports){
@@ -5798,14 +5812,11 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%n		natural: output the most natural representation for this type, object entries are sorted by keys
 	%N		even more natural: avoid type hinting marks like bracket for array
 	%f		float
-	%k		number with metric system prefixes
-	%e		for exponential notation (e.g. 1.23e+2)
-	%K		for scientific notation (e.g. 1.23 × 10²)
-	%i	%d	integer
+	%e		for scientific notation
+	%d	%i	integer
 	%u		unsigned integer
 	%U		unsigned positive integer (>0)
-	%P		number to (absolute) percent (e.g.: 0.75 -> 75%)
-	%p		number to relative percent (e.g.: 1.25 -> +25% ; 0.75 -> -25%)
+	%k		number with metric system prefixes
 	%t		time duration, convert ms into H:min:s
 	%m		convert degree into degree, minutes and seconds
 	%h		hexadecimal (input is a number)
@@ -6035,12 +6046,8 @@ modes.S.noCommonModeArg = true ;
 modes.N = ( arg , isSubCall ) => {
 	if ( typeof arg === 'string' ) { return arg ; }
 
-	if ( arg === null || arg === undefined || arg === true || arg === false ) {
+	if ( arg === null || arg === undefined || arg === true || arg === false || typeof arg === 'number' ) {
 		return '' + arg ;
-	}
-
-	if ( typeof arg === 'number' ) {
-		return modes.f( arg , '.3g ' ) ;
 	}
 
 	if ( Array.isArray( arg ) ) {
@@ -6088,117 +6095,105 @@ modes.n = arg => modes.N( arg , true ) ;
 
 // float
 modes.f = ( arg , modeArg ) => {
+	var match , k , v , lv , sn ,
+		leftPadding = 1 ,
+		rightPadding = 0 ,
+		rightPaddingOnlyIfDecimal = false ,
+		rounding = null ,
+		precision = null ;
+
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	if ( modeArg ) {
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
 
-	return sn.toString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
+			if ( k === 'z' ) {
+				// Zero-left padding
+				leftPadding = + v ;
+			}
+			else if ( ! k ) {
+				if ( v[ 0 ] === '.' ) {
+					// Rounding after the decimal
+					lv = v[ v.length - 1 ] ;
+
+					// Zero-right padding?
+					if ( lv === '!' ) {
+						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+					}
+					else if ( lv === '?' ) {
+						rounding = rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) ;
+						rightPaddingOnlyIfDecimal = true ;
+					}
+					else {
+						rounding = parseInt( v.slice( 1 ) , 10 ) ;
+					}
+				}
+				else if ( v[ v.length - 1 ] === '.' ) {
+					// Rounding before the decimal
+					rounding = -parseInt( v.slice( 0 , -1 ) , 10 ) ;
+				}
+				else {
+					// Precision
+					precision = parseInt( v , 10 ) ;
+				}
+			}
+		}
+	}
+
+	sn = new StringNumber( arg ) ;
+	if ( rounding !== null ) { sn.round( rounding ) ; }
+	if ( precision !== null ) { sn.precision( precision ) ; }
+	return sn.toString( leftPadding , rightPadding , rightPaddingOnlyIfDecimal ) ;
 } ;
 
 modes.f.noSanitize = true ;
 
 
 
-// absolute percent
-modes.P = ( arg , modeArg ) => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { arg = 0 ; }
-
-	arg *= 100 ;
-
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
-
-	// Force rounding to zero by default
-	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
-
-	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) + '%' ;
-} ;
-
-modes.P.noSanitize = true ;
-
-
-
-// relative percent
-modes.p = ( arg , modeArg ) => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { arg = 0 ; }
-
-	arg = ( arg - 1 ) * 100 ;
-
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
-
-	// Force rounding to zero by default
-	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
-
-	// 4th argument force a '+' sign
-	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal , true ) + '%' ;
-} ;
-
-modes.p.noSanitize = true ;
-
-
-
 // metric system
-modes.k = ( arg , modeArg ) => {
+modes.k = arg => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { return '0' ; }
+	//return metricPrefix( arg ) ;
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
-
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	// Default to 3 numbers precision
-	if ( modes.precision || modes.rounding === null ) { sn.precision( modes.precision || 3 ) ; }
-
-	return sn.toMetricString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
+	var sn = new StringNumber( arg ) ;
+	sn.precision( 3 ) ;
+	return sn.toMetricString() ;
 } ;
 
 modes.k.noSanitize = true ;
 
 
 
-// exponential notation, a.k.a. "E notation" (e.g. 1.23e+2)
+// /!\ Should use StringNumber
+// scientific notation
 modes.e = ( arg , modeArg ) => {
+	var match , k , v ;
+
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	if ( modeArg ) {
+		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+		if ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
+			[ , k , v ] = match ;
 
-	return sn.toExponential() ;
+			if ( ! k ) {
+				return '' + arg.toExponential( parseInt( v , 10 ) - 1 ) ;
+			}
+		}
+	}
+
+	return '' + arg.toExponential() ;
+
 } ;
 
 modes.e.noSanitize = true ;
-
-
-
-// scientific notation (e.g. 1.23 × 10²)
-modes.K = ( arg , modeArg ) => {
-	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
-	if ( typeof arg !== 'number' ) { arg = 0 ; }
-
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
-
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
-
-	return sn.toScientific() ;
-} ;
-
-modes.K.noSanitize = true ;
 
 
 
@@ -6658,78 +6653,6 @@ function commonModeArg( str , modeArg ) {
 
 
 
-const FLOAT_MODES = {
-	leftPadding: 1 ,
-	rightPadding: 0 ,
-	rightPaddingOnlyIfDecimal: false ,
-	rounding: null ,
-	precision: null ,
-	groupSeparator: ''
-} ;
-
-// Generic number modes
-function floatModeArg( modeArg ) {
-	var match , k , v , lv ;
-
-	FLOAT_MODES.leftPadding = 1 ;
-	FLOAT_MODES.rightPadding = 0 ;
-	FLOAT_MODES.rightPaddingOnlyIfDecimal = false ;
-	FLOAT_MODES.rounding = null ;
-	FLOAT_MODES.precision = null ;
-	FLOAT_MODES.groupSeparator = '' ;
-
-	if ( modeArg ) {
-		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
-
-		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-			[ , k , v ] = match ;
-
-			if ( k === 'z' ) {
-				// Zero-left padding
-				FLOAT_MODES.leftPadding = + v ;
-			}
-			else if ( k === 'g' ) {
-				// Group separator
-				FLOAT_MODES.groupSeparator = v || ' ' ;
-			}
-			else if ( ! k ) {
-				if ( v === 'g' ) {
-					// Group separator
-					FLOAT_MODES.groupSeparator = ' ' ;
-				}
-				else if ( v[ 0 ] === '.' ) {
-					// Rounding after the decimal
-					lv = v[ v.length - 1 ] ;
-
-					// Zero-right padding?
-					if ( lv === '!' ) {
-						FLOAT_MODES.rounding = FLOAT_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
-					}
-					else if ( lv === '?' ) {
-						FLOAT_MODES.rounding = FLOAT_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
-						FLOAT_MODES.rightPaddingOnlyIfDecimal = true ;
-					}
-					else {
-						FLOAT_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
-					}
-				}
-				else if ( v[ v.length - 1 ] === '.' ) {
-					// Rounding before the decimal
-					FLOAT_MODES.rounding = -parseInt( v.slice( 0 , -1 ) , 10 ) || 0 ;
-				}
-				else {
-					// Precision, but only if integer
-					FLOAT_MODES.precision = parseInt( v , 10 ) || null ;
-				}
-			}
-		}
-	}
-
-	return FLOAT_MODES ;
-}
-
-
-
 // Generic inspect
 function genericInspectMode( arg , modeArg , options , modeOptions , isInspectError = false ) {
 	var match , k , v ,
@@ -6838,7 +6761,6 @@ const escape = require( './escape.js' ) ;
 const ansi = require( './ansi.js' ) ;
 
 const EMPTY = {} ;
-const TRIVIAL_CONSTRUCTOR = new Set( [ Object , Array ] ) ;
 
 
 
@@ -6860,14 +6782,12 @@ const TRIVIAL_CONSTRUCTOR = new Set( [ Object , Array ] ) ;
 		* noArrayProperty: do not display array properties
 		* noIndex: do not display array indexes
 		* noType: do not display type and constructor
-		* noTypeButConstructor: do not display type, display non-trivial constructor (not Object or Array, but all others)
 		* enumOnly: only display enumerable properties
 		* funcDetails: display function's details
 		* proto: display object's prototype
 		* sort: sort the keys
 		* minimal: imply noFunc: true, noDescriptor: true, noType: true, noArrayProperty: true, enumOnly: true, proto: false and funcDetails: false.
 		  Display a minimal JSON-like output
-		* minimalPlusConstructor: like minimal, but output non-trivial constructor
 		* protoBlackList: `Set` of blacklisted object prototype (will not recurse inside it)
 		* propertyBlackList: `Set` of blacklisted property names (will not even display it)
 		* useInspect: use .inspect() method when available on an object (default to false)
@@ -6903,16 +6823,6 @@ function inspect( options , variable ) {
 		options.funcDetails = false ;
 	}
 
-	if ( options.minimalPlusConstructor ) {
-		options.noFunc = true ;
-		options.noDescriptor = true ;
-		options.noTypeButConstructor = true ;
-		options.noArrayProperty = true ;
-		options.enumOnly = true ;
-		options.proto = false ;
-		options.funcDetails = false ;
-	}
-
 	var str = inspect_( runtime , options , variable ) ;
 
 	if ( str.length > options.outputMaxLength ) {
@@ -6925,7 +6835,7 @@ function inspect( options , variable ) {
 
 
 function inspect_( runtime , options , variable ) {
-	var i , funcName , length , proto , propertyList , isTrivialConstructor , constructor , keyIsProperty ,
+	var i , funcName , length , proto , propertyList , constructor , keyIsProperty ,
 		type , pre , indent , isArray , isFunc , specialObject ,
 		str = '' , key = '' , descriptorStr = '' , descriptor , nextAncestors ;
 
@@ -6990,18 +6900,18 @@ function inspect_( runtime , options , variable ) {
 	}
 	else if ( type === 'number' ) {
 		str += pre + options.style.number( variable.toString() ) +
-			( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'number' ) ) +
+			( options.noType ? '' : ' ' + options.style.type( 'number' ) ) +
 			descriptorStr + options.style.newline ;
 	}
 	else if ( type === 'string' ) {
 		if ( variable.length > options.maxLength ) {
 			str += pre + '"' + options.style.string( escape.control( variable.slice( 0 , options.maxLength - 1 ) ) ) + '…"' +
-				( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ' - TRUNCATED)' ) ) +
+				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ' - TRUNCATED)' ) ) +
 				descriptorStr + options.style.newline ;
 		}
 		else {
 			str += pre + '"' + options.style.string( escape.control( variable ) ) + '"' +
-				( options.noType || options.noTypeButConstructor ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ')' ) ) +
+				( options.noType ? '' : ' ' + options.style.type( 'string' ) + options.style.length( '(' + variable.length + ')' ) ) +
 				descriptorStr + options.style.newline ;
 		}
 	}
@@ -7031,23 +6941,14 @@ function inspect_( runtime , options , variable ) {
 		else if ( ! variable.constructor.name ) { constructor = '(anonymous)' ; }
 		else { constructor = variable.constructor.name ; }
 
-		isTrivialConstructor = ! variable.constructor || TRIVIAL_CONSTRUCTOR.has( variable.constructor ) ;
-
 		constructor = options.style.constructorName( constructor ) ;
 		proto = Object.getPrototypeOf( variable ) ;
 
 		str += pre ;
 
-		if ( ! options.noType && ( ! options.noTypeButConstructor || ! isTrivialConstructor ) ) {
-			if ( runtime.forceType && ! options.noType && ! options.noTypeButConstructor ) {
-				str += options.style.type( runtime.forceType ) ;
-			}
-			else if ( options.noTypeButConstructor ) {
-				str += constructor ;
-			}
-			else {
-				str += constructor + funcName + length + ' ' + options.style.type( type ) + descriptorStr ;
-			}
+		if ( ! options.noType ) {
+			if ( runtime.forceType ) { str += options.style.type( runtime.forceType ) ; }
+			else { str += constructor + funcName + length + ' ' + options.style.type( type ) + descriptorStr ; }
 
 			if ( ! isFunc || options.funcDetails ) { str += ' ' ; }	// if no funcDetails imply no space here
 		}
@@ -7096,7 +6997,7 @@ function inspect_( runtime , options , variable ) {
 			str += options.style.limit( '[circular]' ) + options.style.newline ;
 		}
 		else {
-			str += ( isArray ? '[' : '{' ) + options.style.newline ;
+			str += ( isArray && options.noType && options.noArrayProperty ? '[' : '{' ) + options.style.newline ;
 
 			// Do not use .concat() here, it doesn't works as expected with arrays...
 			nextAncestors = runtime.ancestors.slice() ;
@@ -7189,7 +7090,7 @@ function inspect_( runtime , options , variable ) {
 				) ;
 			}
 
-			str += indent + ( isArray ? ']' : '}' ) ;
+			str += indent + ( isArray && options.noType && options.noArrayProperty ? ']' : '}' ) ;
 			str += options.style.newline ;
 		}
 	}

@@ -1776,46 +1776,46 @@ should validate ipv6 accordingly.
 
 ```js
 doormen( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
-		doormen.not( { type: 'ipv6' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
-		doormen.not( { type: 'ipv6' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen( { type: 'ipv6' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
-		doormen( { type: 'ipv6' } , '2001:db8::ff00:0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , '2001:db8:::0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , '2001:db8::ff00::0042:8329' ) ;
-		doormen.not( { type: 'ipv6' } , '2001::ff00::0042:8329' ) ;
-		doormen( { type: 'ipv6' } , '::1' ) ;
-		doormen( { type: 'ipv6' } , '1::' ) ;
+doormen.not( { type: 'ipv6' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ipv6' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ipv6' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+doormen( { type: 'ipv6' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+doormen( { type: 'ipv6' } , '2001:db8::ff00:0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:db8:::0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001:db8::ff00::0042:8329' ) ;
+doormen.not( { type: 'ipv6' } , '2001::ff00::0042:8329' ) ;
+doormen( { type: 'ipv6' } , '::1' ) ;
+doormen( { type: 'ipv6' } , '1::' ) ;
 ```
 
 should validate ip accordingly.
 
 ```js
 doormen( { type: 'ip' } , '127.0.0.1' ) ;
-		doormen( { type: 'ip' } , '127.000.00.001' ) ;
-		doormen.not( { type: 'ip' } , '127.0000.00.001' ) ;
-		doormen.not( { type: 'ip' } , '0127.000.00.001' ) ;
-		doormen.not( { type: 'ip' } , '127.0.0.0001' ) ;
-		doormen.not( { type: 'ip' } , '127.0.0.' ) ;
-		doormen.not( { type: 'ip' } , '127.0.0.256' ) ;
-		doormen.not( { type: 'ip' } , '127.0.0.1.' ) ;
-		doormen.not( { type: 'ip' } , '.127.0.0.1' ) ;
-		doormen.not( { type: 'ip' } , '.127.0.0.' ) ;
-		doormen( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ip' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ip' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen.not( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
-		doormen.not( { type: 'ip' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
-		doormen.not( { type: 'ip' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
-		doormen( { type: 'ip' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
-		doormen( { type: 'ip' } , '2001:db8::ff00:0042:8329' ) ;
-		doormen.not( { type: 'ip' } , '2001:db8:::0042:8329' ) ;
-		doormen.not( { type: 'ip' } , '2001:db8::ff00::0042:8329' ) ;
-		doormen.not( { type: 'ip' } , '2001::ff00::0042:8329' ) ;
-		doormen( { type: 'ip' } , '::1' ) ;
-		doormen( { type: 'ip' } , '1::' ) ;
+doormen( { type: 'ip' } , '127.000.00.001' ) ;
+doormen.not( { type: 'ip' } , '127.0000.00.001' ) ;
+doormen.not( { type: 'ip' } , '0127.000.00.001' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.0001' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.256' ) ;
+doormen.not( { type: 'ip' } , '127.0.0.1.' ) ;
+doormen.not( { type: 'ip' } , '.127.0.0.1' ) ;
+doormen.not( { type: 'ip' } , '.127.0.0.' ) ;
+doormen( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:0db8:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ip' } , '2001:0000:0000:0000:ff00:0042:8329:' ) ;
+doormen.not( { type: 'ip' } , ':2001:0000:0000:0000:ff00:0042:8329' ) ;
+doormen( { type: 'ip' } , '2001:db8:0:0:0:ff00:0042:8329' ) ;
+doormen( { type: 'ip' } , '2001:db8::ff00:0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:db8:::0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001:db8::ff00::0042:8329' ) ;
+doormen.not( { type: 'ip' } , '2001::ff00::0042:8329' ) ;
+doormen( { type: 'ip' } , '::1' ) ;
+doormen( { type: 'ip' } , '1::' ) ;
 ```
 
 should validate url accordingly.
@@ -2851,6 +2851,14 @@ doormen.expect( { b: 2 , a: 1 } ).not.to.equal( Object.assign( Object.create( nu
 doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 ```
 
+expect a value to be equal around.
+
+```js
+doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.equal( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).to.equal.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.equal.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+```
+
 expect a value to be like.
 
 ```js
@@ -2873,6 +2881,14 @@ doormen.expect( { b: 2 , a: 1 } ).to.be.like( Object.assign( Object.create( null
 doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.not.be.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 ```
 
+expect a value to be like around.
+
+```js
+doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+```
+
 expect a value to be partially equal.
 
 ```js
@@ -2889,7 +2905,15 @@ doormen.expect( { b: 2 , a: 1 } ).not.to.partially.equal( Object.assign( Object.
 doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.partially.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 ```
 
-expect a value to be partially equal.
+expect a value to be partially equal around.
+
+```js
+doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.partially.equal( { a: 1 , nested: { c: 3 } } ) ;
+doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).to.partially.equal.around( { a: 1 , nested: { c: 3 } } ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.partially.equal.around( { a: 1 , nested: { c: 3 } } ) ) ;
+```
+
+expect a value to be partially like.
 
 ```js
 doormen.expect( {} ).to.be.partially.like( {} ) ;
@@ -2903,6 +2927,14 @@ doormen.shouldThrowAssertion( () => doormen.expect( { a: 1 , nested: { c: 3 } } 
 // not the same prototype
 doormen.expect( { b: 2 , a: 1 } ).to.be.partially.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.not.be.partially.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
+```
+
+expect a value to be partially like around.
+
+```js
+doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.partially.like( { a: 1 , nested: { c: 3 } } ) ;
+doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.partially.like.around( { a: 1 , nested: { c: 3 } } ) ;
+doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.partially.like.around( { a: 1 , nested: { c: 3 } } ) ) ;
 ```
 
 expect a value to map.

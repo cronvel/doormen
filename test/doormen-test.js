@@ -1884,7 +1884,6 @@ describe( "Strings meta types" , () => {
 	} ) ;
 
 	it( "should validate ipv6 accordingly" , () => {
-
 		doormen( { type: 'ipv6' } , '2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
 		doormen.not( { type: 'ipv6' } , ':2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
 		doormen.not( { type: 'ipv6' } , 'abcd:2001:0db8:0000:0000:0000:ff00:0042:8329' ) ;
@@ -1901,7 +1900,6 @@ describe( "Strings meta types" , () => {
 	} ) ;
 
 	it( "should validate ip accordingly" , () => {
-
 		doormen( { type: 'ip' } , '127.0.0.1' ) ;
 		doormen( { type: 'ip' } , '127.000.00.001' ) ;
 		doormen.not( { type: 'ip' } , '127.0000.00.001' ) ;
@@ -3393,6 +3391,12 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 	} ) ;
 
+	it( "expect a value to be equal around" , () => {
+		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.equal( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).to.equal.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.equal.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+	} ) ;
+
 	it( "expect a value to be like" , () => {
 		doormen.expect( "bob" ).to.be.like( "bob" ) ;
 		doormen.expect( "bob" ).to.be.not.like( "bobby" ) ;
@@ -3414,6 +3418,12 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.not.be.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 	} ) ;
 
+	it( "expect a value to be like around" , () => {
+		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+	} ) ;
+
 	it( "expect a value to be partially equal" , () => {
 		doormen.expect( {} ).to.partially.equal( {} ) ;
 		doormen.expect( [] ).to.partially.equal( [] ) ;
@@ -3429,7 +3439,13 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.partially.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 	} ) ;
 
-	it( "expect a value to be partially equal" , () => {
+	it( "expect a value to be partially equal around" , () => {
+		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.partially.equal( { a: 1 , nested: { c: 3 } } ) ;
+		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).to.partially.equal.around( { a: 1 , nested: { c: 3 } } ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.partially.equal.around( { a: 1 , nested: { c: 3 } } ) ) ;
+	} ) ;
+
+	it( "expect a value to be partially like" , () => {
 		doormen.expect( {} ).to.be.partially.like( {} ) ;
 		doormen.expect( [] ).to.be.partially.like( [] ) ;
 		doormen.expect( { b: 2 , a: 1 } ).to.be.partially.like( { a: 1 , b: 2 } ) ;
@@ -3442,6 +3458,12 @@ describe( "Expect BDD assertion library" , () => {
 		// not the same prototype
 		doormen.expect( { b: 2 , a: 1 } ).to.be.partially.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.not.be.partially.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
+	} ) ;
+
+	it( "expect a value to be partially like around" , () => {
+		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.partially.like( { a: 1 , nested: { c: 3 } } ) ;
+		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.partially.like.around( { a: 1 , nested: { c: 3 } } ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.partially.like.around( { a: 1 , nested: { c: 3 } } ) ) ;
 	} ) ;
 
 	it( "expect a value to map" , () => {
