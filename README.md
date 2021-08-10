@@ -2958,6 +2958,8 @@ expect a value to be like around.
 doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
 doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
 doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+doormen.expect( Object.assign( Object.create( null ) , { value: 0.2 - 0.05 } ) ).to.be.like.around( { value: 0.15 } ) ;
+doormen.expect( Object.assign( Object.create( null ) , { value: - 0.2 + 0.05 } ) ).to.be.like.around( { value: - 0.15 } ) ;
 ```
 
 expect a value to be partially equal.
@@ -3024,7 +3026,7 @@ doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ { a: 1 } , 1 ] 
 doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ { a: 1 } , 1 ] , [ { b: 2 } , { "two": 2 } ] ] ) ).to.map( [ [ { a: 1 } , 1 ] , [ { b: 2 } , { "two": 3 } ] ] ) ) ;
 ```
 
-expect a value to be close to (epsilon-aware).
+expect a value to be around/close to (epsilon-aware).
 
 ```js
 // 0.1 + 0.2 is not equal to 0.3 due to epsilon error in floating point numbers
@@ -3055,6 +3057,8 @@ doormen.shouldThrowAssertion( () => doormen.expect( 0 - 5 * Number.MIN_VALUE ).t
 
 // Historical bug with negative numbers
 doormen.expect( -1 ).to.be.around( -1 ) ;
+doormen.expect( 0.2 - 0.05 ).to.be.around( 0.15 ) ;
+doormen.expect( - 0.2 + 0.05 ).to.be.around( - 0.15 ) ;
 ```
 
 expect a value to be above/below/at least/at most.

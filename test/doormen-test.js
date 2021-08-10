@@ -288,6 +288,9 @@ describe( "Equality checker" , () => {
 
 		expect( doormen.isEqual( { a: 8 } , { a: 8 + 32 * Number.EPSILON } , { around: true } ) ).to.be( true ) ;
 		expect( doormen.isEqual( { a: 8 } , { a: 8 + 64 * Number.EPSILON } , { around: true } ) ).to.be( false ) ;
+
+		expect( doormen.isEqual( { a: 0.2 - 0.05 } , { a: 0.15 } , { around: true } ) ).to.be( true ) ;
+		expect( doormen.isEqual( { a: - 0.2 + 0.05 } , { a: - 0.15 } , { around: true } ) ).to.be( true ) ;
 	} ) ;
 
 	it( ".isEqual.getLastPath() should return the offending path of the last .isEqual() call that had returned false" , () => {
@@ -3422,6 +3425,9 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
 		doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( Object.assign( Object.create( null ) , { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ) ).not.to.be.like.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ) ;
+
+		doormen.expect( Object.assign( Object.create( null ) , { value: 0.2 - 0.05 } ) ).to.be.like.around( { value: 0.15 } ) ;
+		doormen.expect( Object.assign( Object.create( null ) , { value: - 0.2 + 0.05 } ) ).to.be.like.around( { value: - 0.15 } ) ;
 	} ) ;
 
 	it( "expect a value to be partially equal" , () => {
@@ -3481,7 +3487,7 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( new Map( [ [ { a: 1 } , 1 ] , [ { b: 2 } , { "two": 2 } ] ] ) ).to.map( [ [ { a: 1 } , 1 ] , [ { b: 2 } , { "two": 3 } ] ] ) ) ;
 	} ) ;
 
-	it( "expect a value to be close to (epsilon-aware)" , () => {
+	it( "expect a value to be around/close to (epsilon-aware)" , () => {
 		// 0.1 + 0.2 is not equal to 0.3 due to epsilon error in floating point numbers
 		doormen.expect( 0.1 + 0.2 ).not.to.be( 0.3 ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( 0.1 + 0.2 ).to.be( 0.3 ) ) ;
@@ -3514,6 +3520,8 @@ describe( "Expect BDD assertion library" , () => {
 		
 		// Historical bug with negative numbers
 		doormen.expect( -1 ).to.be.around( -1 ) ;
+		doormen.expect( 0.2 - 0.05 ).to.be.around( 0.15 ) ;
+		doormen.expect( - 0.2 + 0.05 ).to.be.around( - 0.15 ) ;
 	} ) ;
 
 	it( "expect a value to be above/below/at least/at most" , () => {

@@ -1,4 +1,10 @@
 
+v0.13.2
+-------
+
+Fix around assertion and .isEqual() with around option
+
+
 v0.13.1
 -------
 
