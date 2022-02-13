@@ -3,6 +3,9 @@
   "version": "0.13.2",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
+  "engines": {
+    "node": ">=14.15.0"
+  },
   "directories": {
     "test": "test"
   },

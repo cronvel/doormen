@@ -4229,12 +4229,12 @@ describe( "Extract constraint-only schema" , () => {
 
 describe( "Forms" , () => {
 
-	it.skip( "zzz form" , () => {
-		var schema , data , form , structure ;
+	it( "zzz form" , () => {
+		var schema , data , form ;
 		
 		schema = {
 			properties: {
-				id: { type: 'string' , tags: [ 'id' ] } ,
+				id: { type: 'string' , tags: [ 'id' ] , noInput: true } ,
 				firstName: { type: 'string' , tags: [ 'content' ] } ,
 				lastName: { type: 'string' , tags: [ 'content' ] } ,
 				age: { type: 'integer' , tags: [ 'content' ] } ,
@@ -4250,30 +4250,29 @@ describe( "Forms" , () => {
 
 		// Proxy mode
 		
-		form = new doormen.Form( schema , data ) ;
-		console.log( form ) ;
-		
-		structure = form.createFlatObjectStructure( true ) ;
-		console.log( structure ) ;
-		//structure.firstName.value = {} ;
-		structure.firstName.value = 'Joey' ;
-		structure.age.value = '33' ;
-		
+		form = new doormen.Form( schema , data , true ) ;
+		//console.log( form ) ;
+		console.log( form.shared ) ;
+
+		//form.shared.firstName.value = {} ;
+		form.shared.firstName.value = 'Joey' ;
+		form.shared.age.value = '33' ;
 		console.log( form.getPatch() ) ;
+
 
 		// .update() mode
 		
 		form = new doormen.Form( schema , data ) ;
-		console.log( form ) ;
-		
-		structure = form.createFlatObjectStructure() ;
-		console.log( structure ) ;
-		//structure.firstName.value = {} ;
-		structure.firstName.value = 'Joey' ;
-		structure.age.value = '33' ;
+		//console.log( form ) ;
+		console.log( form.shared ) ;
+
+		//form.shared.firstName.value = {} ;
+		form.shared.firstName.value = 'Joey' ;
+		form.shared.age.value = '33' ;
 		form.update() ;
 		
 		console.log( form.getPatch() ) ;
+		return ;
 	} ) ;
 } ) ;
 
