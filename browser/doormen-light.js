@@ -1233,9 +1233,7 @@ assert.notLengthOf = ( from , actual , notExpected ) => {
 
 
 assert['to contain'] =
-assert['to have'] =
 assert['to include'] =
-assert.has =
 assert.includes = assert.include =
 assert.contains = assert.contain = ( from , actual , ... expected ) => {
 	var has = false ;
@@ -1257,9 +1255,7 @@ assert.contain.inspect = true ;
 
 
 assert['to contain not'] = assert['to not contain'] = assert['not to contain'] =
-assert['to have not'] = assert['to not have'] = assert['not to have'] =
 assert['to include not'] = assert['to not include'] = assert['not to include'] =
-assert.hasNot =
 assert.notInclude =
 assert.notContain = ( from , actual , ... notExpected ) => {
 	var has = false ;
@@ -1318,7 +1314,6 @@ assert.hasNot.inspect = true ;
 
 
 assert['to only contain'] = assert['to contain only'] =
-assert['to only have'] = assert['to have only'] =
 assert['to only include'] = assert['to include only'] =
 assert.includeOnly = assert.includesOnly =
 assert.containOnly = assert.containsOnly = ( from , actual , ... expected ) => {
@@ -5705,7 +5700,7 @@ function arrayConcatSlice( intoArray , sourceArray , start = 0 , end = sourceArr
 
 
 // To solve dependency hell, we do not rely on terminal-kit anymore.
-module.exports = {
+const ansi = {
 	reset: '\x1b[0m' ,
 	bold: '\x1b[1m' ,
 	dim: '\x1b[2m' ,
@@ -5752,6 +5747,193 @@ module.exports = {
 	bgBrightMagenta: '\x1b[105m' ,
 	bgBrightCyan: '\x1b[106m' ,
 	bgBrightWhite: '\x1b[107m'
+} ;
+
+module.exports = ansi ;
+
+
+
+ansi.fgColor = {
+	defaultColor: ansi.defaultColor ,
+	black: ansi.black ,
+	red: ansi.red ,
+	green: ansi.green ,
+	yellow: ansi.yellow ,
+	blue: ansi.blue ,
+	magenta: ansi.magenta ,
+	cyan: ansi.cyan ,
+	white: ansi.white ,
+	grey: ansi.grey ,
+	gray: ansi.gray ,
+	brightBlack: ansi.brightBlack ,
+	brightRed: ansi.brightRed ,
+	brightGreen: ansi.brightGreen ,
+	brightYellow: ansi.brightYellow ,
+	brightBlue: ansi.brightBlue ,
+	brightMagenta: ansi.brightMagenta ,
+	brightCyan: ansi.brightCyan ,
+	brightWhite: ansi.brightWhite
+} ;
+
+
+
+ansi.bgColor = {
+	defaultColor: ansi.defaultBgColor ,
+	black: ansi.bgBlack ,
+	red: ansi.bgRed ,
+	green: ansi.bgGreen ,
+	yellow: ansi.bgYellow ,
+	blue: ansi.bgBlue ,
+	magenta: ansi.bgMagenta ,
+	cyan: ansi.bgCyan ,
+	white: ansi.bgWhite ,
+	grey: ansi.bgGrey ,
+	gray: ansi.bgGray ,
+	brightBlack: ansi.bgBrightBlack ,
+	brightRed: ansi.bgBrightRed ,
+	brightGreen: ansi.bgBrightGreen ,
+	brightYellow: ansi.bgBrightYellow ,
+	brightBlue: ansi.bgBrightBlue ,
+	brightMagenta: ansi.bgBrightMagenta ,
+	brightCyan: ansi.bgBrightCyan ,
+	brightWhite: ansi.bgBrightWhite
+} ;
+
+
+
+ansi.trueColor = ( r , g , b ) => {
+	if ( g === undefined && typeof r === 'string' ) {
+		let hex = r ;
+		if ( hex[ 0 ] === '#' ) { hex = hex.slice( 1 ) ; }	// Strip the # if necessary
+		if ( hex.length === 3 ) { hex = hex[ 0 ] + hex[ 0 ] + hex[ 1 ] + hex[ 1 ] + hex[ 2 ] + hex[ 2 ] ; }
+		r = parseInt( hex.slice( 0 , 2 ) , 16 ) || 0 ;
+		g = parseInt( hex.slice( 2 , 4 ) , 16 ) || 0 ;
+		b = parseInt( hex.slice( 4 , 6 ) , 16 ) || 0 ;
+	}
+
+	return '\x1b[38;2;' + r + ';' + g + ';' + b + 'm' ;
+} ;
+
+
+
+ansi.bgTrueColor = ( r , g , b ) => {
+	if ( g === undefined && typeof r === 'string' ) {
+		let hex = r ;
+		if ( hex[ 0 ] === '#' ) { hex = hex.slice( 1 ) ; }	// Strip the # if necessary
+		if ( hex.length === 3 ) { hex = hex[ 0 ] + hex[ 0 ] + hex[ 1 ] + hex[ 1 ] + hex[ 2 ] + hex[ 2 ] ; }
+		r = parseInt( hex.slice( 0 , 2 ) , 16 ) || 0 ;
+		g = parseInt( hex.slice( 2 , 4 ) , 16 ) || 0 ;
+		b = parseInt( hex.slice( 4 , 6 ) , 16 ) || 0 ;
+	}
+
+	return '\x1b[48;2;' + r + ';' + g + ';' + b + 'm' ;
+} ;
+
+
+
+const ANSI_CODES = {
+	'0': null ,
+
+	'1': { bold: true } ,
+	'2': { dim: true } ,
+	'22': { bold: false , dim: false } ,
+	'3': { italic: true } ,
+	'23': { italic: false } ,
+	'4': { underline: true } ,
+	'24': { underline: false } ,
+	'5': { blink: true } ,
+	'25': { blink: false } ,
+	'7': { inverse: true } ,
+	'27': { inverse: false } ,
+	'8': { hidden: true } ,
+	'28': { hidden: false } ,
+	'9': { strike: true } ,
+	'29': { strike: false } ,
+
+	'30': { color: 0 } ,
+	'31': { color: 1 } ,
+	'32': { color: 2 } ,
+	'33': { color: 3 } ,
+	'34': { color: 4 } ,
+	'35': { color: 5 } ,
+	'36': { color: 6 } ,
+	'37': { color: 7 } ,
+	//'39': { defaultColor: true } ,
+	'39': { color: 'default' } ,
+
+	'90': { color: 8 } ,
+	'91': { color: 9 } ,
+	'92': { color: 10 } ,
+	'93': { color: 11 } ,
+	'94': { color: 12 } ,
+	'95': { color: 13 } ,
+	'96': { color: 14 } ,
+	'97': { color: 15 } ,
+
+	'40': { bgColor: 0 } ,
+	'41': { bgColor: 1 } ,
+	'42': { bgColor: 2 } ,
+	'43': { bgColor: 3 } ,
+	'44': { bgColor: 4 } ,
+	'45': { bgColor: 5 } ,
+	'46': { bgColor: 6 } ,
+	'47': { bgColor: 7 } ,
+	//'49': { bgDefaultColor: true } ,
+	'49': { bgColor: 'default' } ,
+
+	'100': { bgColor: 8 } ,
+	'101': { bgColor: 9 } ,
+	'102': { bgColor: 10 } ,
+	'103': { bgColor: 11 } ,
+	'104': { bgColor: 12 } ,
+	'105': { bgColor: 13 } ,
+	'106': { bgColor: 14 } ,
+	'107': { bgColor: 15 }
+} ;
+
+
+
+// Parse ANSI codes, output is compatible with the markup parser
+ansi.parse = str => {
+	var ansiCodes , raw , part , style , output = [] ;
+
+	for ( [ , ansiCodes , raw ] of str.matchAll( /\x1b\[([0-9;]+)m|(.[^\x1b]*)/g ) ) {
+		if ( raw ) {
+			if ( output.length ) { output[ output.length - 1 ].text += raw ; }
+			else { output.push( { text: raw } ) ; }
+		}
+		else {
+			ansiCodes.split( ';' ).forEach( ansiCode => {
+				style = ANSI_CODES[ ansiCode ] ;
+				if ( style === undefined ) { return ; }
+
+				if ( ! output.length || output[ output.length - 1 ].text ) {
+					if ( ! style ) {
+						part = { text: '' } ;
+					}
+					else {
+						part = Object.assign( {} , part , style ) ;
+						part.text = '' ;
+					}
+
+					output.push( part ) ;
+				}
+				else {
+					// There is no text, no need to create a new part
+					if ( ! style ) {
+						// Replace the last part
+						output[ output.length - 1 ] = { text: '' } ;
+					}
+					else {
+						// update the last part
+						Object.assign( part , style ) ;
+					}
+				}
+			} ) ;
+		}
+	}
+
+	return output ;
 } ;
 
 
@@ -5950,7 +6132,10 @@ const StringNumber = require( './StringNumber.js' ) ;
 */
 
 exports.formatMethod = function( ... args ) {
-	var str = args[ 0 ] ;
+	var arg ,
+		str = args[ 0 ] ,
+		autoIndex = 1 ,
+		length = args.length ;
 
 	if ( typeof str !== 'string' ) {
 		if ( ! str ) { str = '' ; }
@@ -5958,72 +6143,32 @@ exports.formatMethod = function( ... args ) {
 		else { str = '' ; }
 	}
 
-	var arg , autoIndex = 1 , length = args.length ,
-		hasMarkup = false , shift = null , markupStack = [] ;
+	var runtime = {
+		hasMarkup: false ,
+		shift: null ,
+		markupStack: []
+	} ;
 
 	if ( this.markupReset && this.startingMarkupReset ) {
-		str = ( typeof this.markupReset === 'function' ? this.markupReset( markupStack ) : this.markupReset ) + str ;
+		str = ( typeof this.markupReset === 'function' ? this.markupReset( runtime.markupStack ) : this.markupReset ) + str ;
 	}
 
 	//console.log( 'format args:' , arguments ) ;
 
 	// /!\ each changes here should be reported on string.format.count() and string.format.hasFormatting() too /!\
-	//str = str.replace( /\^(.?)|%(?:([+-]?)([0-9]*)(?:\/([^\/]*)\/)?([a-zA-Z%])|\[([a-zA-Z0-9_]+)(?::([^\]]*))?\])/g ,
-	str = str.replace( /\^(.?)|(%%)|%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-Z])/g ,
-		( match , markup , doublePercent , relative , index , modeArg , mode ) => {
-
+	// Note: the closing bracket is optional to prevent ReDoS
+	str = str.replace( /\^\[([^\]]*)]?|\^(.)|(%%)|%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-Z])/g ,
+		( match , complexMarkup , markup , doublePercent , relative , index , modeArg , mode ) => {
 			var replacement , i , tmp , fn , fnArgString , argMatches , argList = [] ;
 
 			//console.log( 'replaceArgs:' , arguments ) ;
 			if ( doublePercent ) { return '%' ; }
 
+			if ( complexMarkup ) { markup = complexMarkup ; }
 			if ( markup ) {
 				if ( this.noMarkup ) { return '^' + markup ; }
-				if ( markup === '^' ) { return '^' ; }
-
-				if ( this.shiftMarkup && this.shiftMarkup[ markup ] ) {
-					shift = this.shiftMarkup[ markup ] ;
-					return '' ;
-				}
-
-				if ( shift ) {
-					if ( ! this.shiftedMarkup || ! this.shiftedMarkup[ shift ] || ! this.shiftedMarkup[ shift ][ markup ] ) {
-						return '' ;
-					}
-
-					hasMarkup = true ;
-
-					if ( typeof this.shiftedMarkup[ shift ][ markup ] === 'function' ) {
-						replacement = this.shiftedMarkup[ shift ][ markup ]( markupStack ) ;
-						// method should manage markup stack themselves
-					}
-					else {
-						replacement = this.shiftedMarkup[ shift ][ markup ] ;
-						markupStack.push( replacement ) ;
-					}
-
-					shift = null ;
-				}
-				else {
-					if ( ! this.markup || ! this.markup[ markup ] ) {
-						return '' ;
-					}
-
-					hasMarkup = true ;
-
-					if ( typeof this.markup[ markup ] === 'function' ) {
-						replacement = this.markup[ markup ]( markupStack ) ;
-						// method should manage markup stack themselves
-					}
-					else {
-						replacement = this.markup[ markup ] ;
-						markupStack.push( replacement ) ;
-					}
-				}
-
-				return replacement ;
+				return markupReplace.call( this , runtime , match , markup ) ;
 			}
-
 
 			if ( index ) {
 				index = parseInt( index , 10 ) ;
@@ -6093,8 +6238,8 @@ exports.formatMethod = function( ... args ) {
 		}
 	) ;
 
-	if ( hasMarkup && this.markupReset && this.endingMarkupReset ) {
-		str += typeof this.markupReset === 'function' ? this.markupReset( markupStack ) : this.markupReset ;
+	if ( runtime.hasMarkup && this.markupReset && this.endingMarkupReset ) {
+		str += typeof this.markupReset === 'function' ? this.markupReset( runtime.markupStack ) : this.markupReset ;
 	}
 
 	if ( this.extraArguments ) {
@@ -6112,9 +6257,326 @@ exports.formatMethod = function( ... args ) {
 
 
 
-// --- MODES ---
+exports.markupMethod = function( str ) {
+	if ( typeof str !== 'string' ) {
+		if ( ! str ) { str = '' ; }
+		else if ( typeof str.toString === 'function' ) { str = str.toString() ; }
+		else { str = '' ; }
+	}
+
+	var runtime = {
+		hasMarkup: false ,
+		shift: null ,
+		markupStack: []
+	} ;
+
+	if ( this.parse ) {
+		let markupObjects , markupObject , match , complexMarkup , markup , raw , lastChunk ,
+			output = [] ;
+
+		// Note: the closing bracket is optional to prevent ReDoS
+		for ( [ match , complexMarkup , markup , raw ] of str.matchAll( /\^\[([^\]]*)]?|\^(.)|([^^]+)/g ) ) {
+			if ( raw ) {
+				if ( output.length ) { output[ output.length - 1 ].text += raw ; }
+				else { output.push( { text: raw } ) ; }
+				continue ;
+			}
+
+			if ( complexMarkup ) { markup = complexMarkup ; }
+			markupObjects = markupReplace.call( this , runtime , match , markup ) ;
+
+			if ( ! Array.isArray( markupObjects ) ) { markupObjects = [ markupObjects ] ; }
+
+			for ( markupObject of markupObjects ) {
+				lastChunk = output.length ? output[ output.length - 1 ] : null ;
+				if ( typeof markupObject === 'string' ) {
+					// This markup is actually a text to add to the last chunk (e.g. "^^" markup is converted to a single "^")
+					if ( lastChunk ) { lastChunk.text += markupObject ; }
+					else { output.push( { text: markupObject } ) ; }
+				}
+				else if ( ! markupObject ) {
+					// Null is for a markup's style reset
+					if ( lastChunk && lastChunk.text.length && Object.keys( lastChunk ).length > 1 ) {
+						// If there was style and text on the last chunk, then this means that the new markup starts a new chunk
+						// markupObject can be null for markup reset function, but we have to create a new chunk
+						output.push( { text: '' } ) ;
+					}
+				}
+				else {
+					if ( lastChunk && lastChunk.text.length ) {
+						// If there was text on the last chunk, then this means that the new markup starts a new chunk
+						output.push( Object.assign( { text: '' } , ... runtime.markupStack ) ) ;
+					}
+					else {
+						// There wasn't any text added, so append the current markup style to the current chunk
+						if ( lastChunk ) { Object.assign( lastChunk , markupObject ) ; }
+						else { output.push( Object.assign( { text: '' } , markupObject ) ) ; }
+					}
+				}
+			}
+		}
+
+		return output ;
+	}
+
+	if ( this.markupReset && this.startingMarkupReset ) {
+		str = ( typeof this.markupReset === 'function' ? this.markupReset( runtime.markupStack ) : this.markupReset ) + str ;
+	}
+
+	str = str.replace( /\^\[([^\]]*)]?|\^(.)/g , ( match , complexMarkup , markup ) => markupReplace.call( this , runtime , match , complexMarkup || markup ) ) ;
+
+	if ( runtime.hasMarkup && this.markupReset && this.endingMarkupReset ) {
+		str += typeof this.markupReset === 'function' ? this.markupReset( runtime.markupStack ) : this.markupReset ;
+	}
+
+	return str ;
+} ;
+
+
+
+// Used by both formatMethod and markupMethod
+function markupReplace( runtime , match , markup ) {
+	var markupTarget , key , value , replacement , colonIndex ;
+
+	if ( markup === '^' ) { return '^' ; }
+
+	if ( this.shiftMarkup && this.shiftMarkup[ markup ] ) {
+		runtime.shift = this.shiftMarkup[ markup ] ;
+		return '' ;
+	}
+
+	if ( markup.length > 1 && this.dataMarkup && ( colonIndex = markup.indexOf( ':' ) ) !== -1 ) {
+		key = markup.slice( 0 , colonIndex ) ;
+		markupTarget = this.dataMarkup[ key ] ;
+
+		if ( markupTarget === undefined ) {
+			if ( this.markupCatchAll === undefined ) { return '' ; }
+			markupTarget = this.markupCatchAll ;
+		}
+
+		runtime.hasMarkup = true ;
+		value = markup.slice( colonIndex + 1 ) ;
+
+		if ( typeof markupTarget === 'function' ) {
+			replacement = markupTarget( runtime.markupStack , key , value ) ;
+			// method should manage markup stack themselves
+		}
+		else {
+			replacement = { [ markupTarget ]: value } ;
+			stackMarkup( runtime , replacement ) ;
+		}
+
+		return replacement ;
+	}
+
+	if ( runtime.shift ) {
+		markupTarget = this.shiftedMarkup?.[ runtime.shift ]?.[ markup ] ;
+		runtime.shift = null ;
+	}
+	else {
+		markupTarget = this.markup?.[ markup ] ;
+	}
+
+	if ( markupTarget === undefined ) {
+		if ( this.markupCatchAll === undefined ) { return '' ; }
+		markupTarget = this.markupCatchAll ;
+	}
+
+	runtime.hasMarkup = true ;
+
+	if ( typeof markupTarget === 'function' ) {
+		replacement = markupTarget( runtime.markupStack , markup ) ;
+		// method should manage markup stack themselves
+	}
+	else {
+		replacement = markupTarget ;
+		stackMarkup( runtime , replacement ) ;
+	}
+
+	return replacement ;
+}
+
+
+
+// internal method for markupReplace()
+function stackMarkup( runtime , replacement ) {
+	if ( Array.isArray( replacement ) ) {
+		for ( let item of replacement ) {
+			if ( item === null ) { runtime.markupStack.length = 0 ; }
+			else { runtime.markupStack.push( item ) ; }
+		}
+	}
+	else {
+		if ( replacement === null ) { runtime.markupStack.length = 0 ; }
+		else { runtime.markupStack.push( replacement ) ; }
+	}
+}
+
+
+
+// Note: the closing bracket is optional to prevent ReDoS
+exports.stripMarkup = str => str.replace( /\^\[[^\]]*]?|\^./g , match =>
+	match === '^^' ? '^' :
+	match === '^ ' ? ' ' :
+	''
+) ;
+
+
+
+const DEFAULT_FORMATTER = {
+	argumentSanitizer: str => escape.control( str , true ) ,
+	extraArguments: true ,
+	color: false ,
+	noMarkup: false ,
+	endingMarkupReset: true ,
+	startingMarkupReset: false ,
+	markupReset: ansi.reset ,
+	shiftMarkup: {
+		'#': 'background'
+	} ,
+	markup: {
+		":": ansi.reset ,
+		" ": ansi.reset + " " ,
+
+		"-": ansi.dim ,
+		"+": ansi.bold ,
+		"_": ansi.underline ,
+		"/": ansi.italic ,
+		"!": ansi.inverse ,
+
+		"b": ansi.blue ,
+		"B": ansi.brightBlue ,
+		"c": ansi.cyan ,
+		"C": ansi.brightCyan ,
+		"g": ansi.green ,
+		"G": ansi.brightGreen ,
+		"k": ansi.black ,
+		"K": ansi.brightBlack ,
+		"m": ansi.magenta ,
+		"M": ansi.brightMagenta ,
+		"r": ansi.red ,
+		"R": ansi.brightRed ,
+		"w": ansi.white ,
+		"W": ansi.brightWhite ,
+		"y": ansi.yellow ,
+		"Y": ansi.brightYellow
+	} ,
+	shiftedMarkup: {
+		background: {
+			":": ansi.reset ,
+			" ": ansi.reset + " " ,
+
+			"b": ansi.bgBlue ,
+			"B": ansi.bgBrightBlue ,
+			"c": ansi.bgCyan ,
+			"C": ansi.bgBrightCyan ,
+			"g": ansi.bgGreen ,
+			"G": ansi.bgBrightGreen ,
+			"k": ansi.bgBlack ,
+			"K": ansi.bgBrightBlack ,
+			"m": ansi.bgMagenta ,
+			"M": ansi.bgBrightMagenta ,
+			"r": ansi.bgRed ,
+			"R": ansi.bgBrightRed ,
+			"w": ansi.bgWhite ,
+			"W": ansi.bgBrightWhite ,
+			"y": ansi.bgYellow ,
+			"Y": ansi.bgBrightYellow
+		}
+	} ,
+	dataMarkup: {
+		fg: ( markupStack , key , value ) => {
+			var str = ansi.fgColor[ value ] || ansi.trueColor( value ) ;
+			markupStack.push( str ) ;
+			return str ;
+		} ,
+		bg: ( markupStack , key , value ) => {
+			var str = ansi.bgColor[ value ] || ansi.bgTrueColor( value ) ;
+			markupStack.push( str ) ;
+			return str ;
+		}
+	} ,
+	markupCatchAll: ( markupStack , key , value ) => {
+		var str = '' ;
+
+		if ( value === undefined ) {
+			if ( key[ 0 ] === '#' ) {
+				str = ansi.trueColor( key ) ;
+			}
+			else if ( typeof ansi[ key ] === 'string' ) {
+				str = ansi[ key ] ;
+			}
+		}
+
+		markupStack.push( str ) ;
+		return str ;
+	}
+} ;
+
+// Aliases
+DEFAULT_FORMATTER.dataMarkup.color = DEFAULT_FORMATTER.dataMarkup.c = DEFAULT_FORMATTER.dataMarkup.fgColor = DEFAULT_FORMATTER.dataMarkup.fg ;
+DEFAULT_FORMATTER.dataMarkup.bgColor = DEFAULT_FORMATTER.dataMarkup.bg ;
+
+
+
+exports.createFormatter = ( options ) => exports.formatMethod.bind( Object.assign( {} , DEFAULT_FORMATTER , options ) ) ;
+exports.format = exports.formatMethod.bind( DEFAULT_FORMATTER ) ;
+exports.format.default = DEFAULT_FORMATTER ;
+
+exports.createMarkup = ( options ) => exports.markupMethod.bind( Object.assign( {} , DEFAULT_FORMATTER , options ) ) ;
+exports.markup = exports.markupMethod.bind( DEFAULT_FORMATTER ) ;
+
+
+
+// Count the number of parameters needed for this string
+exports.format.count = function( str , noMarkup = false ) {
+	var markup , index , relative , autoIndex = 1 , maxIndex = 0 ;
+
+	if ( typeof str !== 'string' ) { return 0 ; }
+
+	// This regex differs slightly from the main regex: we do not count '%%' and %F is excluded
+	// Note: the closing bracket is optional to prevent ReDoS
+	var regexp = noMarkup ?
+		/%([+-]?)([0-9]*)(?:\[[^\]]*\])?[a-zA-EG-Z]/g :
+		/%([+-]?)([0-9]*)(?:\[[^\]]*\])?[a-zA-EG-Z]|(\^\[[^\]]*]?|\^.)/g ;
+
+	for ( [ , relative , index , markup ] of str.matchAll( regexp ) ) {
+		if ( markup ) { continue ; }
+
+		if ( index ) {
+			index = parseInt( index , 10 ) ;
+
+			if ( relative ) {
+				if ( relative === '+' ) { index = autoIndex + index ; }
+				else if ( relative === '-' ) { index = autoIndex - index ; }
+			}
+		}
+		else {
+			index = autoIndex ;
+		}
+
+		autoIndex ++ ;
+
+		if ( maxIndex < index ) { maxIndex = index ; }
+	}
+
+	return maxIndex ;
+} ;
+
+
+
+// Tell if this string contains formatter chars
+exports.format.hasFormatting = function( str ) {
+	if ( str.search( /\^(.?)|(%%)|%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-Z])/ ) !== -1 ) { return true ; }
+	return false ;
+} ;
+
+
+
+// --- Format MODES ---
 
 const modes = {} ;
+exports.format.modes = modes ;	// <-- expose modes, used by Babel-Tower for String Kit interop'
 
 
 
@@ -6209,13 +6671,13 @@ modes.f = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
 
-	return sn.toString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
+	return sn.toString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
 } ;
 
 modes.f.noSanitize = true ;
@@ -6229,14 +6691,14 @@ modes.P = ( arg , modeArg ) => {
 
 	arg *= 100 ;
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
 	// Force rounding to zero by default
-	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+	if ( subModes.rounding !== null || ! subModes.precision ) { sn.round( subModes.rounding || 0 ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
 
-	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) + '%' ;
+	return sn.toNoExpString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) + '%' ;
 } ;
 
 modes.P.noSanitize = true ;
@@ -6250,15 +6712,15 @@ modes.p = ( arg , modeArg ) => {
 
 	arg = ( arg - 1 ) * 100 ;
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
 	// Force rounding to zero by default
-	if ( modes.rounding !== null || ! modes.precision ) { sn.round( modes.rounding || 0 ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+	if ( subModes.rounding !== null || ! subModes.precision ) { sn.round( subModes.rounding || 0 ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
 
 	// 4th argument force a '+' sign
-	return sn.toNoExpString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal , true ) + '%' ;
+	return sn.toNoExpString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal , true ) + '%' ;
 } ;
 
 modes.p.noSanitize = true ;
@@ -6270,14 +6732,14 @@ modes.k = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { return '0' ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
 	// Default to 3 numbers precision
-	if ( modes.precision || modes.rounding === null ) { sn.precision( modes.precision || 3 ) ; }
+	if ( subModes.precision || subModes.rounding === null ) { sn.precision( subModes.precision || 3 ) ; }
 
-	return sn.toMetricString( modes.leftPadding , modes.rightPadding , modes.rightPaddingOnlyIfDecimal ) ;
+	return sn.toMetricString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
 } ;
 
 modes.k.noSanitize = true ;
@@ -6289,11 +6751,11 @@ modes.e = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
 
 	return sn.toExponential() ;
 } ;
@@ -6307,11 +6769,11 @@ modes.K = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
-	var modes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , modes.groupSeparator ) ;
+	var subModes = floatModeArg( modeArg ) ,
+		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
 
-	if ( modes.rounding !== null ) { sn.round( modes.rounding ) ; }
-	if ( modes.precision ) { sn.precision( modes.precision ) ; }
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
 
 	return sn.toScientific() ;
 } ;
@@ -6530,200 +6992,6 @@ modes.J = arg => arg === undefined ? 'null' : JSON.stringify( arg ) ;
 // drop
 modes.D = () => '' ;
 modes.D.noSanitize = true ;
-
-
-
-var defaultFormatter = {
-	argumentSanitizer: str => escape.control( str , true ) ,
-	extraArguments: true ,
-	color: false ,
-	noMarkup: false ,
-	endingMarkupReset: true ,
-	startingMarkupReset: false ,
-	markupReset: ansi.reset ,
-	shiftMarkup: {
-		'#': 'background'
-	} ,
-	markup: {
-		":": ansi.reset ,
-		" ": ansi.reset + " " ,
-
-		"-": ansi.dim ,
-		"+": ansi.bold ,
-		"_": ansi.underline ,
-		"/": ansi.italic ,
-		"!": ansi.inverse ,
-
-		"b": ansi.blue ,
-		"B": ansi.brightBlue ,
-		"c": ansi.cyan ,
-		"C": ansi.brightCyan ,
-		"g": ansi.green ,
-		"G": ansi.brightGreen ,
-		"k": ansi.black ,
-		"K": ansi.brightBlack ,
-		"m": ansi.magenta ,
-		"M": ansi.brightMagenta ,
-		"r": ansi.red ,
-		"R": ansi.brightRed ,
-		"w": ansi.white ,
-		"W": ansi.brightWhite ,
-		"y": ansi.yellow ,
-		"Y": ansi.brightYellow
-	} ,
-	shiftedMarkup: {
-		background: {
-			":": ansi.reset ,
-			" ": ansi.reset + " " ,
-
-			"b": ansi.bgBlue ,
-			"B": ansi.bgBrightBlue ,
-			"c": ansi.bgCyan ,
-			"C": ansi.bgBrightCyan ,
-			"g": ansi.bgGreen ,
-			"G": ansi.bgBrightGreen ,
-			"k": ansi.bgBlack ,
-			"K": ansi.bgBrightBlack ,
-			"m": ansi.bgMagenta ,
-			"M": ansi.bgBrightMagenta ,
-			"r": ansi.bgRed ,
-			"R": ansi.bgBrightRed ,
-			"w": ansi.bgWhite ,
-			"W": ansi.bgBrightWhite ,
-			"y": ansi.bgYellow ,
-			"Y": ansi.bgBrightYellow
-		}
-	}
-} ;
-
-exports.createFormatter = ( options ) => exports.formatMethod.bind( Object.assign( {} , defaultFormatter , options ) ) ;
-exports.format = exports.formatMethod.bind( defaultFormatter ) ;
-exports.format.default = defaultFormatter ;
-
-
-
-// /!\ Should upgrade that with Terminal-Kit Markup parser /!\
-// It supports complex markup, see: Terminal-Kit/lib/misc.js misc.parseMarkup().
-
-exports.markupMethod = function( str ) {
-	if ( typeof str !== 'string' ) {
-		if ( ! str ) { str = '' ; }
-		else if ( typeof str.toString === 'function' ) { str = str.toString() ; }
-		else { str = '' ; }
-	}
-
-	var hasMarkup = false , shift = null , markupStack = [] ;
-
-	if ( this.markupReset && this.startingMarkupReset ) {
-		str = ( typeof this.markupReset === 'function' ? this.markupReset( markupStack ) : this.markupReset ) + str ;
-	}
-
-	//console.log( 'format args:' , arguments ) ;
-
-	str = str.replace( /\^(.?)/g , ( match , markup ) => {
-		var replacement ;
-
-		if ( markup === '^' ) { return '^' ; }
-
-		if ( this.shiftMarkup && this.shiftMarkup[ markup ] ) {
-			shift = this.shiftMarkup[ markup ] ;
-			return '' ;
-		}
-
-		if ( shift ) {
-			if ( ! this.shiftedMarkup || ! this.shiftedMarkup[ shift ] || ! this.shiftedMarkup[ shift ][ markup ] ) {
-				return '' ;
-			}
-
-			hasMarkup = true ;
-
-			if ( typeof this.shiftedMarkup[ shift ][ markup ] === 'function' ) {
-				replacement = this.shiftedMarkup[ shift ][ markup ]( markupStack ) ;
-				// method should manage markup stack themselves
-			}
-			else {
-				replacement = this.shiftedMarkup[ shift ][ markup ] ;
-				markupStack.push( replacement ) ;
-			}
-
-			shift = null ;
-		}
-		else {
-			if ( ! this.markup || ! this.markup[ markup ] ) {
-				return '' ;
-			}
-
-			hasMarkup = true ;
-
-			if ( typeof this.markup[ markup ] === 'function' ) {
-				replacement = this.markup[ markup ]( markupStack ) ;
-				// method should manage markup stack themselves
-			}
-			else {
-				replacement = this.markup[ markup ] ;
-				markupStack.push( replacement ) ;
-			}
-		}
-
-		return replacement ;
-	} ) ;
-
-	if ( hasMarkup && this.markupReset && this.endingMarkupReset ) {
-		str += typeof this.markupReset === 'function' ? this.markupReset( markupStack ) : this.markupReset ;
-	}
-
-	return str ;
-} ;
-
-
-
-exports.createMarkup = ( options ) => exports.markupMethod.bind( Object.assign( {} , defaultFormatter , options ) ) ;
-exports.markup = exports.markupMethod.bind( defaultFormatter ) ;
-
-
-
-// Count the number of parameters needed for this string
-exports.format.count = function( str ) {
-	var match , index , relative , autoIndex = 1 , maxIndex = 0 ;
-
-	if ( typeof str !== 'string' ) { return 0 ; }
-
-	// This regex differs slightly from the main regex: we do not count '%%' and %F is excluded
-	var regexp = /%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-EG-Z])/g ;
-
-
-	while ( ( match = regexp.exec( str ) ) !== null ) {
-		//console.log( match ) ;
-		relative = match[ 1 ] ;
-		index = match[ 2 ] ;
-
-		if ( index ) {
-			index = parseInt( index , 10 ) ;
-
-			if ( relative ) {
-				if ( relative === '+' ) { index = autoIndex + index ; }
-				else if ( relative === '-' ) { index = autoIndex - index ; }
-			}
-		}
-		else {
-			index = autoIndex ;
-		}
-
-		autoIndex ++ ;
-
-		if ( maxIndex < index ) { maxIndex = index ; }
-	}
-
-	return maxIndex ;
-} ;
-
-
-
-// Tell if this string contains formatter chars
-exports.format.hasFormatting = function( str ) {
-	if ( str.search( /\^(.?)|(%%)|%([+-]?)([0-9]*)(?:\[([^\]]*)\])?([a-zA-Z])/ ) !== -1 ) { return true ; }
-	return false ;
-} ;
 
 
 
@@ -6970,6 +7238,7 @@ const TRIVIAL_CONSTRUCTOR = new Set( [ Object , Array ] ) ;
 			* 'color': colorful output suitable for terminal
 			* 'html': html output
 			* any object: full controle, inheriting from 'none'
+		* tab: `string` override the tab of the style
 		* depth: depth limit, default: 3
 		* maxLength: length limit for strings, default: 250
 		* outputMaxLength: length limit for the inspect output string, default: 5000
@@ -7040,6 +7309,8 @@ function inspect( options , variable ) {
 	return str ;
 }
 
+exports.inspect = inspect ;
+
 
 
 function inspect_( runtime , options , variable ) {
@@ -7047,11 +7318,11 @@ function inspect_( runtime , options , variable ) {
 		type , pre , indent , isArray , isFunc , specialObject ,
 		str = '' , key = '' , descriptorStr = '' , descriptor , nextAncestors ;
 
-
 	// Prepare things (indentation, key, descriptor, ... )
 
 	type = typeof variable ;
-	indent = options.style.tab.repeat( runtime.depth ) ;
+
+	indent = ( options.tab ?? options.style.tab ).repeat( runtime.depth ) ;
 
 	if ( type === 'function' && options.noFunc ) { return '' ; }
 
@@ -7323,8 +7594,6 @@ function inspect_( runtime , options , variable ) {
 
 	return str ;
 }
-
-exports.inspect = inspect ;
 
 
 
@@ -7707,59 +7976,120 @@ module.exports = function( str ) {
 
 
 
-/*
- * Natural Sort algorithm for Javascript - Version 0.8 - Released under MIT license
- * Author: Jim Palmer (based on chunking idea from Dave Koelle)
- */
-module.exports = function( a , b ) {
-	var re = /(^([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)?$|^0x[\da-fA-F]+$|\d+)/g ,
-		sre = /^\s+|\s+$/g ,   // trim pre-post whitespace
-		snre = /\s+/g ,        // normalize all whitespace to single ' ' character
-		dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[/-]\d{1,4}[/-]\d{1,4}|^\w+, \w+ \d+, \d{4})/ ,
-		hre = /^0x[0-9a-f]+$/i ,
-		ore = /^0/ ,
-		i = function( s ) {
-			return ( '' + s ).toLowerCase().replace( sre , '' ) ;
-		} ,
-		// convert all to strings strip whitespace
-		x = i( a ) || '' ,
-		y = i( b ) || '' ,
-		// chunk/tokenize
-		xN = x.replace( re , '\0$1\0' ).replace( /\0$/ , '' )
-			.replace( /^\0/ , '' )
-			.split( '\0' ) ,
-		yN = y.replace( re , '\0$1\0' ).replace( /\0$/ , '' )
-			.replace( /^\0/ , '' )
-			.split( '\0' ) ,
-		// numeric, hex or date detection
-		xD = parseInt( x.match( hre ) , 16 ) || ( xN.length !== 1 && Date.parse( x ) ) ,
-		yD = parseInt( y.match( hre ) , 16 ) || xD && y.match( dre ) && Date.parse( y ) || null ,
-		normChunk = function( s , l ) {
-			// normalize spaces; find floats not starting with '0', string or 0 if not defined (Clint Priest)
-			return ( ! s.match( ore ) || l === 1 ) && parseFloat( s ) || s.replace( snre , ' ' ).replace( sre , '' ) || 0 ;	// jshint ignore:line
-		} ,
-		oFxNcL , oFyNcL ;
-	// first try and sort Hex codes or Dates
-	if ( yD ) {
-		if ( xD < yD ) { return -1 ; }
-		else if ( xD > yD ) { return 1 ; }
+const CONTROL_CLASS = 1 ;
+const WORD_SEPARATOR_CLASS = 2 ;
+const LETTER_CLASS = 3 ;
+const NUMBER_CLASS = 4 ;
+const SYMBOL_CLASS = 5 ;
+
+
+
+function getCharacterClass( char , code ) {
+	if ( isWordSeparator( code ) ) { return WORD_SEPARATOR_CLASS ; }
+	if ( code <= 0x1f || code === 0x7f ) { return CONTROL_CLASS ; }
+	if ( isNumber( code ) ) { return NUMBER_CLASS ; }
+	// Here we assume that a letter is a char with a “case”
+	if ( char.toUpperCase() !== char.toLowerCase() ) { return LETTER_CLASS ; }
+	return SYMBOL_CLASS ;
+}
+
+
+
+function isWordSeparator( code ) {
+	if (
+		// space, tab, no-break space
+		code === 0x20 || code === 0x09 || code === 0xa0 ||
+		// hyphen, underscore
+		code === 0x2d || code === 0x5f
+	) {
+		return true ;
 	}
-	// natural sorting through split numeric strings and default strings
-	for( var cLoc = 0 , xNl = xN.length , yNl = yN.length , numS = Math.max( xNl , yNl ) ; cLoc < numS ; cLoc ++ ) {
-		oFxNcL = normChunk( xN[cLoc] , xNl ) ;
-		oFyNcL = normChunk( yN[cLoc] , yNl ) ;
-		// handle numeric vs string comparison - number < string - (Kyle Adams)
-		if ( isNaN( oFxNcL ) !== isNaN( oFyNcL ) ) { return ( isNaN( oFxNcL ) ) ? 1 : -1 ; }
-		// rely on string comparison if different types - i.e. '02' < 2 != '02' < '2'
-		else if ( typeof oFxNcL !== typeof oFyNcL ) {
-			oFxNcL += '' ;
-			oFyNcL += '' ;
+
+	return false ;
+}
+
+
+
+function isNumber( code ) {
+	if ( code >= 0x30 && code <= 0x39 ) { return true ; }
+	return false ;
+}
+
+
+
+function naturalSort( a , b ) {
+	a = '' + a ;
+	b = '' + b ;
+
+	var aIndex , aEndIndex , aChar , aCode , aClass , aCharLc , aNumber ,
+		aTrim = a.trim() ,
+		aLength = aTrim.length ,
+		bIndex , bEndIndex , bChar , bCode , bClass , bCharLc , bNumber ,
+		bTrim = b.trim() ,
+		bLength = bTrim.length ,
+		advantage = 0 ;
+
+	for ( aIndex = bIndex = 0 ; aIndex < aLength && bIndex < bLength ; aIndex ++ , bIndex ++ ) {
+		aChar = aTrim[ aIndex ] ;
+		bChar = bTrim[ bIndex ] ;
+		aCode = aTrim.charCodeAt( aIndex ) ;
+		bCode = bTrim.charCodeAt( bIndex ) ;
+		aClass = getCharacterClass( aChar , aCode ) ;
+		bClass = getCharacterClass( bChar , bCode ) ;
+		if ( aClass !== bClass ) { return aClass - bClass ; }
+
+		switch ( aClass ) {
+			case WORD_SEPARATOR_CLASS :
+				// Eat all white chars and continue
+				while ( isWordSeparator( aTrim.charCodeAt( aIndex + 1 ) ) ) { aIndex ++ ; }
+				while ( isWordSeparator( bTrim.charCodeAt( bIndex + 1 ) ) ) { bIndex ++ ; }
+				break ;
+
+			case CONTROL_CLASS :
+			case SYMBOL_CLASS :
+				if ( aCode !== bCode ) { return aCode - bCode ; }
+				break ;
+
+			case LETTER_CLASS :
+				aCharLc = aChar.toLowerCase() ;
+				bCharLc = bChar.toLowerCase() ;
+				if ( aCharLc !== bCharLc ) { return aCharLc > bCharLc ? 1 : -1 ; }
+
+				// As a last resort, we would sort uppercase first
+				if ( ! advantage && aChar !== bChar ) { advantage = aChar !== aCharLc ? -1 : 1 ; }
+
+				break ;
+
+			case NUMBER_CLASS :
+				// Lookup for a whole number and parse it
+				aEndIndex = aIndex + 1 ;
+				while ( isNumber( aTrim.charCodeAt( aEndIndex ) ) ) { aEndIndex ++ ; }
+				aNumber = parseFloat( aTrim.slice( aIndex , aEndIndex ) ) ;
+
+				bEndIndex = bIndex + 1 ;
+				while ( isNumber( bTrim.charCodeAt( bEndIndex ) ) ) { bEndIndex ++ ; }
+				bNumber = parseFloat( bTrim.slice( bIndex , bEndIndex ) ) ;
+
+				if ( aNumber !== bNumber ) { return aNumber - bNumber ; }
+
+				// As a last resort, we would sort the number with the less char first
+				if ( ! advantage && aEndIndex - aIndex !== bEndIndex - bIndex ) { advantage = ( aEndIndex - aIndex ) - ( bEndIndex - bIndex ) ; }
+
+				// Advance the index at the end of the number area
+				aIndex = aEndIndex - 1 ;
+				bIndex = bEndIndex - 1 ;
+				break ;
 		}
-		if ( oFxNcL < oFyNcL ) { return -1 ; }
-		if ( oFxNcL > oFyNcL ) { return 1 ; }
 	}
-	return 0 ;
-} ;
+
+	// If there was an “advantage”, use it now
+	if ( advantage ) { return advantage ; }
+
+	// Finally, sort by remaining char, or by trimmed length or by full length
+	return ( aLength - aIndex ) - ( bLength - bIndex ) || aLength - bLength || a.length - b.length ;
+}
+
+module.exports = naturalSort ;
 
 
 },{}],26:[function(require,module,exports){
@@ -7853,6 +8183,9 @@ module.exports = function toTitleCase( str , options ) {
 
 	Since the punycode module is deprecated in Node.js v8.x, this is an adaptation of punycode.ucs2.x
 	as found on Aug 16th 2017 at: https://github.com/bestiejs/punycode.js/blob/master/punycode.js.
+
+	2021 note -- Modern Javascript is way more unicode friendly since many years, e.g. `Array.from( string )` and `for ( char of string )` are unicode aware.
+	Some methods here are now useless, but have been modernized to use the correct ES features.
 */
 
 
@@ -7865,162 +8198,50 @@ module.exports = unicode ;
 
 unicode.encode = array => String.fromCodePoint( ... array ) ;
 
+// Decode a string into an array of unicode codepoints.
+// The 2nd argument of Array.from() is a map function, it avoids creating intermediate array.
+unicode.decode = str => Array.from( str , c => c.codePointAt( 0 ) ) ;
 
+// DEPRECATED: This function is totally useless now, with modern JS.
+unicode.firstCodePoint = str => str.codePointAt( 0 ) ;
 
-// Decode a string into an array of unicode codepoints
-unicode.decode = str => {
-	var value , extra , counter = 0 , output = [] ,
-		length = str.length ;
+// Extract only the first char.
+unicode.firstChar = str => str.length ? String.fromCodePoint( str.codePointAt( 0 ) ) : undefined ;
 
-	while ( counter < length ) {
-		value = str.charCodeAt( counter ++ ) ;
-
-		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
-			// It's a high surrogate, and there is a next character.
-			extra = str.charCodeAt( counter ++ ) ;
-
-			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-				output.push( ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ) ;
-			}
-			else {
-				// It's an unmatched surrogate; only append this code unit, in case the
-				// next code unit is the high surrogate of a surrogate pair.
-				output.push( value ) ;
-				counter -- ;
-			}
-		}
-		else {
-			output.push( value ) ;
-		}
-	}
-
-	return output ;
-} ;
+// DEPRECATED: This function is totally useless now, with modern JS.
+unicode.toArray = str => Array.from( str ) ;
 
 
 
-// Decode only the first char
-// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
-unicode.firstCodePoint = str => {
-	var extra ,
-		value = str.charCodeAt( 0 ) ;
-
-	if ( value >= 0xD800 && value <= 0xDBFF && str.length >= 2 ) {
-		// It's a high surrogate, and there is a next character.
-		extra = str.charCodeAt( 1 ) ;
-
-		if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-			return ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
-		}
-	}
-
-	return value ;
-} ;
-
-
-
-// Extract only the first char
-// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
-unicode.firstChar = str => {
-	var extra ,
-		value = str.charCodeAt( 0 ) ;
-
-	if ( value >= 0xD800 && value <= 0xDBFF && str.length >= 2 ) {
-		// It's a high surrogate, and there is a next character.
-		extra = str.charCodeAt( 1 ) ;
-
-		if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-			return str.slice( 0 , 2 ) ;
-		}
-	}
-
-	return str[ 0 ] ;
-} ;
-
-
-
-// Decode a string into an array of unicode characters
-// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
-unicode.toArray = str => {
-	var value , extra , counter = 0 , output = [] ,
-		length = str.length ;
-
-	while ( counter < length ) {
-		value = str.charCodeAt( counter ++ ) ;
-
-		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
-			// It's a high surrogate, and there is a next character.
-			extra = str.charCodeAt( counter ++ ) ;
-
-			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-				output.push( str.slice( counter - 2 , counter ) ) ;
-			}
-			else {
-				// It's an unmatched surrogate; only append this code unit, in case the
-				// next code unit is the high surrogate of a surrogate pair.
-				output.push( str[ counter - 2 ] ) ;
-				counter -- ;
-			}
-		}
-		else {
-			output.push( str[ counter - 1 ] ) ;
-		}
-	}
-
-	return output ;
-} ;
-
-
-
-// Decode a string into an array of unicode characters
+// Decode a string into an array of Cell (used by Terminal-kit).
 // Wide chars have an additionnal filler cell, so position is correct
-// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
 unicode.toCells = ( Cell , str , tabWidth = 4 , linePosition = 0 , ... extraCellArgs ) => {
-	var value , extra , counter = 0 , output = [] ,
-		fillSize ,
-		length = str.length ;
+	var char , code , fillSize , width ,
+		output = [] ;
 
-	while ( counter < length ) {
-		value = str.charCodeAt( counter ++ ) ;
+	for ( char of str ) {
+		code = char.codePointAt( 0 ) ;
 
-		if ( value === 0x0a ) {	// New line
+		if ( code === 0x0a ) {	// New line
 			linePosition = 0 ;
 		}
-		else if ( value === 0x09 ) {	// Tab
+		else if ( code === 0x09 ) {	// Tab
 			// Depends upon the next tab-stop
 			fillSize = tabWidth - ( linePosition % tabWidth ) - 1 ;
-			output.push( new Cell( '\t' , ... extraCellArgs ) ) ;
+			//output.push( new Cell( '\t' , ... extraCellArgs ) ) ;
+			output.push( new Cell( '\t' , 1 , ... extraCellArgs ) ) ;
 			linePosition += 1 + fillSize ;
-			while ( fillSize -- ) { output.push( new Cell( null , ... extraCellArgs ) ) ; }
-		}
-		else if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
-			// It's a high surrogate, and there is a next character.
-			extra = str.charCodeAt( counter ++ ) ;
 
-			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-				value = ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
-				output.push(  new Cell( str.slice( counter - 2 , counter ) , ... extraCellArgs )  ) ;
-				linePosition ++ ;
-
-				if ( unicode.codePointWidth( value ) === 2 ) {
-					linePosition ++ ;
-					output.push( new Cell( null , ... extraCellArgs ) ) ;
-				}
-			}
-			else {
-				// It's an unmatched surrogate, remove it.
-				// Preserve current char in case the next code unit is the high surrogate of a surrogate pair.
-				counter -- ;
-			}
+			// Add a filler cell
+			while ( fillSize -- ) { output.push( new Cell( ' ' , -2 , ... extraCellArgs ) ) ; }
 		}
 		else {
-			output.push(  new Cell( str[ counter - 1 ] , ... extraCellArgs )  ) ;
-			linePosition ++ ;
+			width = unicode.codePointWidth( code ) ,
+			output.push( new Cell( char , width , ... extraCellArgs ) ) ;
+			linePosition += width ;
 
-			if ( unicode.codePointWidth( value ) === 2 ) {
-				output.push( new Cell( null , ... extraCellArgs ) ) ;
-				linePosition ++ ;
-			}
+			// Add an anti-filler cell (a cell with 0 width, following a wide char)
+			while ( -- width > 0 ) { output.push( new Cell( ' ' , -1 , ... extraCellArgs ) ) ; }
 		}
 	}
 
@@ -8030,43 +8251,34 @@ unicode.toCells = ( Cell , str , tabWidth = 4 , linePosition = 0 , ... extraCell
 
 
 unicode.fromCells = ( cells ) => {
-	return cells.map( cell => cell.filler ? '' : cell.char ).join( '' ) ;
+	var cell , str = '' ;
+
+	for ( cell of cells ) {
+		if ( ! cell.filler ) { str += cell.char ; }
+	}
+
+	return str ;
 } ;
 
 
 
 // Get the length of an unicode string
 // Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+// /!\ Use Array.from().length instead??? Not using it is potentially faster, but it needs benchmark to be sure.
 unicode.length = str => {
-	var value , extra , counter = 0 , uLength = 0 ,
-		length = str.length ;
-
-	while ( counter < length ) {
-		value = str.charCodeAt( counter ++ ) ;
-
-		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
-			// It's a high surrogate, and there is a next character.
-			extra = str.charCodeAt( counter ++ ) ;
-
-			if ( ( extra & 0xFC00 ) !== 0xDC00 ) {
-				// It's an unmatched surrogate; only append this code unit, in case the
-				// next code unit is the high surrogate of a surrogate pair.
-				counter -- ;
-			}
-		}
-
-		uLength ++ ;
-	}
-
-	return uLength ;
+	// for ... of is unicode-aware
+	var char , length = 0 ;
+	for ( char of str ) { length ++ ; }		/* eslint-disable-line no-unused-vars */
+	return length ;
 } ;
 
 
 
 // Return the width of a string in a terminal/monospace font
 unicode.width = str => {
-	var count = 0 ;
-	unicode.decode( str ).forEach( code => count += unicode.codePointWidth( code ) ) ;
+	// for ... of is unicode-aware
+	var char , count = 0 ;
+	for ( char of str ) { count += unicode.codePointWidth( char.codePointAt( 0 ) ) ; }
 	return count ;
 } ;
 
@@ -8094,40 +8306,23 @@ unicode.getLastTruncateWidth = () => lastTruncateWidth ;
 
 
 
-// Return a string that does not exceed the limit
-// Mostly an adaptation of .decode(), not factorized for performance's sake (used by Terminal-kit)
+// Return a string that does not exceed the limit.
 unicode.widthLimit =	// DEPRECATED
 unicode.truncateWidth = ( str , limit ) => {
-	var value , extra , charWidth , counter = 0 , lastCounter = 0 ,
-		length = str.length ;
+	var char , charWidth , position = 0 ;
 
+	// Module global:
 	lastTruncateWidth = 0 ;
 
-	while ( counter < length ) {
-		value = str.charCodeAt( counter ++ ) ;
-
-		if ( value >= 0xD800 && value <= 0xDBFF && counter < length ) {
-			// It's a high surrogate, and there is a next character.
-			extra = str.charCodeAt( counter ++ ) ;
-
-			if ( ( extra & 0xFC00 ) === 0xDC00 ) {	// Low surrogate.
-				value = ( ( value & 0x3FF ) << 10 ) + ( extra & 0x3FF ) + 0x10000 ;
-			}
-			else {
-				// It's an unmatched surrogate; only append this code unit, in case the
-				// next code unit is the high surrogate of a surrogate pair.
-				counter -- ;
-			}
-		}
-
-		charWidth = unicode.codePointWidth( value ) ;
+	for ( char of str ) {
+		charWidth = unicode.codePointWidth( char.codePointAt( 0 ) ) ;
 
 		if ( lastTruncateWidth + charWidth > limit ) {
-			return str.slice( 0 , lastCounter ) ;
+			return str.slice( 0 , position ) ;
 		}
 
 		lastTruncateWidth += charWidth ;
-		lastCounter = counter ;
+		position += char.length ;
 	}
 
 	// The string remains unchanged
@@ -8137,6 +8332,10 @@ unicode.truncateWidth = ( str , limit ) => {
 
 
 /*
+	** PROBABLY DEPRECATED **
+
+	Check if a UCS2 char is a surrogate pair.
+
 	Returns:
 		0: single char
 		1: leading surrogate
@@ -8154,60 +8353,53 @@ unicode.surrogatePair = char => {
 
 
 
-/*
-	Check if a character is a full-width char or not.
-*/
-unicode.isFullWidth = char => {
-	if ( char.length <= 1 ) { return unicode.isFullWidthCodePoint( char.codePointAt( 0 ) ) ; }
-	return unicode.isFullWidthCodePoint( unicode.firstCodePoint( char ) ) ;
-} ;
-
+// Check if a character is a full-width char or not
+unicode.isFullWidth = char => unicode.isFullWidthCodePoint( char.codePointAt( 0 ) ) ;
 
 // Return the width of a char, leaner than .width() for one char
-unicode.charWidth = char => {
-	if ( char.length <= 1 ) { return unicode.codePointWidth( char.codePointAt( 0 ) ) ; }
-	return unicode.codePointWidth( unicode.firstCodePoint( char ) ) ;
-} ;
+unicode.charWidth = char => unicode.codePointWidth( char.codePointAt( 0 ) ) ;
 
 
 
 /*
 	Check if a codepoint represent a full-width char or not.
-
-	Borrowed from Node.js source, from readline.js.
 */
 unicode.codePointWidth = code => {
+	// Assuming all emoji are wide here
+	if ( unicode.isEmojiCodePoint( code ) ) { return 2 ; }
+
 	// Code points are derived from:
 	// http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
 	if ( code >= 0x1100 && (
 		code <= 0x115f ||	// Hangul Jamo
-			0x2329 === code || // LEFT-POINTING ANGLE BRACKET
-			0x232a === code || // RIGHT-POINTING ANGLE BRACKET
-			// CJK Radicals Supplement .. Enclosed CJK Letters and Months
-			( 0x2e80 <= code && code <= 0x3247 && code !== 0x303f ) ||
-			// Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
-			0x3250 <= code && code <= 0x4dbf ||
-			// CJK Unified Ideographs .. Yi Radicals
-			0x4e00 <= code && code <= 0xa4c6 ||
-			// Hangul Jamo Extended-A
-			0xa960 <= code && code <= 0xa97c ||
-			// Hangul Syllables
-			0xac00 <= code && code <= 0xd7a3 ||
-			// CJK Compatibility Ideographs
-			0xf900 <= code && code <= 0xfaff ||
-			// Vertical Forms
-			0xfe10 <= code && code <= 0xfe19 ||
-			// CJK Compatibility Forms .. Small Form Variants
-			0xfe30 <= code && code <= 0xfe6b ||
-			// Halfwidth and Fullwidth Forms
-			0xff01 <= code && code <= 0xff60 ||
-			0xffe0 <= code && code <= 0xffe6 ||
-			// Kana Supplement
-			0x1b000 <= code && code <= 0x1b001 ||
-			// Enclosed Ideographic Supplement
-			0x1f200 <= code && code <= 0x1f251 ||
-			// CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
-			0x20000 <= code && code <= 0x3fffd ) ) {
+		code === 0x2329 || // LEFT-POINTING ANGLE BRACKET
+		code === 0x232a || // RIGHT-POINTING ANGLE BRACKET
+		// CJK Radicals Supplement .. Enclosed CJK Letters and Months
+		( 0x2e80 <= code && code <= 0x3247 && code !== 0x303f ) ||
+		// Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
+		( 0x3250 <= code && code <= 0x4dbf ) ||
+		// CJK Unified Ideographs .. Yi Radicals
+		( 0x4e00 <= code && code <= 0xa4c6 ) ||
+		// Hangul Jamo Extended-A
+		( 0xa960 <= code && code <= 0xa97c ) ||
+		// Hangul Syllables
+		( 0xac00 <= code && code <= 0xd7a3 ) ||
+		// CJK Compatibility Ideographs
+		( 0xf900 <= code && code <= 0xfaff ) ||
+		// Vertical Forms
+		( 0xfe10 <= code && code <= 0xfe19 ) ||
+		// CJK Compatibility Forms .. Small Form Variants
+		( 0xfe30 <= code && code <= 0xfe6b ) ||
+		// Halfwidth and Fullwidth Forms
+		( 0xff01 <= code && code <= 0xff60 ) ||
+		( 0xffe0 <= code && code <= 0xffe6 ) ||
+		// Kana Supplement
+		( 0x1b000 <= code && code <= 0x1b001 ) ||
+		// Enclosed Ideographic Supplement
+		( 0x1f200 <= code && code <= 0x1f251 ) ||
+		// CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
+		( 0x20000 <= code && code <= 0x3fffd )
+	) ) {
 		return 2 ;
 	}
 
@@ -8221,10 +8413,58 @@ unicode.isFullWidthCodePoint = code => unicode.codePointWidth( code ) === 2 ;
 
 // Convert normal ASCII chars to their full-width counterpart
 unicode.toFullWidth = str => {
-	return String.fromCodePoint( ... unicode.decode( str ).map( code =>
-		code >= 33 && code <= 126  ?  0xff00 + code - 0x20  :  code
-	) ) ;
+	return String.fromCodePoint( ... Array.from( str , char => {
+		var code = char.codePointAt( 0 ) ;
+		return code >= 33 && code <= 126  ?  0xff00 + code - 0x20  :  code ;
+	} ) ) ;
 } ;
+
+
+
+// Check if a character is a diacritic with zero-width or not
+unicode.isZeroWidthDiacritic = char => unicode.isZeroWidthDiacriticCodePoint( char.codePointAt( 0 ) ) ;
+
+// Some doc found here: https://en.wikipedia.org/wiki/Combining_character
+// Diacritics and other characters that combines with previous one (zero-width)
+unicode.isZeroWidthDiacriticCodePoint = code =>
+	// Combining Diacritical Marks
+	( 0x300 <= code && code <= 0x36f ) ||
+	// Combining Diacritical Marks Extended
+	( 0x1ab0 <= code && code <= 0x1aff ) ||
+	// Combining Diacritical Marks Supplement
+	( 0x1dc0 <= code && code <= 0x1dff ) ||
+	// Combining Diacritical Marks for Symbols
+	( 0x20d0 <= code && code <= 0x20ff ) ||
+	// Combining Half Marks
+	( 0xfe20 <= code && code <= 0xfe2f ) ||
+	// Dakuten and handakuten (japanese)
+	code === 0x3099 || code === 0x309a ||
+	// Devanagari
+	( 0x900 <= code && code <= 0x903 ) ||
+	( 0x93a <= code && code <= 0x957 && code !== 0x93d && code !== 0x950 ) ||
+	code === 0x962 || code === 0x963 ||
+	// Thai
+	code === 0xe31 ||
+	( 0xe34 <= code && code <= 0xe3a ) ||
+	( 0xe47 <= code && code <= 0xe4e ) ;
+
+// Check if a character is an emoji or not
+unicode.isEmoji = char => unicode.isEmojiCodePoint( char.codePointAt( 0 ) ) ;
+
+// Some doc found here: https://stackoverflow.com/questions/30470079/emoji-value-range
+unicode.isEmojiCodePoint = code =>
+	// Miscellaneous symbols
+	( 0x2600 <= code && code <= 0x26ff ) ||
+	// Dingbats
+	( 0x2700 <= code && code <= 0x27bf ) ||
+	// Emoji
+	( 0x1f000 <= code && code <= 0x1f1ff ) ||
+	( 0x1f300 <= code && code <= 0x1f3fa ) ||
+	( 0x1f400 <= code && code <= 0x1faff ) ;
+
+// Emoji modifier (Fitzpatrick): https://en.wikipedia.org/wiki/Miscellaneous_Symbols_and_Pictographs#Emoji_modifiers
+unicode.isEmojiModifier = char => unicode.isEmojiModifierCodePoint( char.codePointAt( 0 ) ) ;
+unicode.isEmojiModifierCodePoint = code => 0x1f3fb <= code && code <= 0x1f3ff ;
 
 
 },{}],28:[function(require,module,exports){
@@ -8373,14 +8613,25 @@ module.exports = dotPath ;
 
 
 const EMPTY_PATH = [] ;
-const PROTO_POLLUTION_MESSAGE = 'This would pollute prototype' ;
+const PROTO_POLLUTION_MESSAGE = 'This would cause prototype pollution' ;
 
 
 
 function toPathArray( path ) {
-	if ( Array.isArray( path ) ) { return path ; }
-	else if ( ! path ) { return EMPTY_PATH ; }
-	else if ( typeof path === 'string' ) { return path.split( '.' ) ; }
+	if ( Array.isArray( path ) ) {
+		/*
+		let i , iMax = path.length ;
+		for ( i = 0 ; i < iMax ; i ++ ) {
+			if ( typeof path[ i ] !== 'string' || typeof path[ i ] !== 'number' ) { path[ i ] = '' + path[ i ] ; }
+		}
+		//*/
+		return path ;
+	}
+
+	if ( ! path ) { return EMPTY_PATH ; }
+	if ( typeof path === 'string' ) {
+		return path[ path.length - 1 ] === '.' ? path.slice( 0 , -1 ).split( '.' ) : path.split( '.' ) ;
+	}
 
 	throw new TypeError( '[tree.dotPath]: the path argument should be a string or an array' ) ;
 }
@@ -8395,7 +8646,7 @@ function walk( object , pathArray , maxOffset = 0 ) {
 	for ( i = 0 , iMax = pathArray.length + maxOffset ; i < iMax ; i ++ ) {
 		key = pathArray[ i ] ;
 
-		if ( key === '__proto__' || typeof pointer === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+		if ( typeof key === 'object' || key === '__proto__' || typeof pointer === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 		if ( ! pointer || typeof pointer !== 'object' ) { return undefined ; }
 
 		pointer = pointer[ key ] ;
@@ -8416,7 +8667,7 @@ function pave( object , pathArray ) {
 	for ( i = 0 , iMax = pathArray.length - 1 ; i < iMax ; i ++ ) {
 		key = pathArray[ i ] ;
 
-		if ( key === '__proto__' || typeof pointer[ key ] === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+		if ( typeof key === 'object' || key === '__proto__' || typeof pointer[ key ] === 'function' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 		if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = {} ; }
 
 		pointer = pointer[ key ] ;
@@ -8440,7 +8691,7 @@ dotPath.set = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8460,7 +8711,7 @@ dotPath.define = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8480,7 +8731,7 @@ dotPath.inc = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8501,7 +8752,7 @@ dotPath.dec = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8522,7 +8773,7 @@ dotPath.concat = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8546,7 +8797,7 @@ dotPath.insert = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8565,7 +8816,7 @@ dotPath.delete = ( object , path ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = walk( object , pathArray , -1 ) ;
 
@@ -8585,7 +8836,7 @@ dotPath.autoPush = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8607,7 +8858,7 @@ dotPath.append = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 
@@ -8629,7 +8880,7 @@ dotPath.prepend = ( object , path , value ) => {
 	var pathArray = toPathArray( path ) ,
 		key = pathArray[ pathArray.length - 1 ] ;
 
-	if ( key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
+	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
 	var pointer = pave( object , pathArray ) ;
 

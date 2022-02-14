@@ -32,7 +32,6 @@ logs
 results
 build
 .grunt
-package-lock.json
 
 node_modules
 
