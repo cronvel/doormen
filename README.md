@@ -69,6 +69,174 @@ Common meta types:
 
 
 
+<ref *1> {
+  firstName: <ref *2> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'firstName',
+    index: 0,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'string',
+    value: 'Joe',
+    localValue: 'Joe',
+    remoteValue: 'Joe',
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'string', tags: [Array] },
+    proxy: [Circular *2]
+  },
+  lastName: <ref *3> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'lastName',
+    index: 1,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'string',
+    value: 'Doe',
+    localValue: 'Doe',
+    remoteValue: 'Doe',
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'string', tags: [Array] },
+    proxy: [Circular *3]
+  },
+  age: <ref *4> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'age',
+    index: 2,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'integer',
+    value: 29,
+    localValue: 29,
+    remoteValue: 29,
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'integer', tags: [Array], sanitize: [Array] },
+    proxy: [Circular *4]
+  }
+}
+{ firstName: 'Joey', age: 33 }
+<ref *1> {
+  firstName: <ref *2> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'firstName',
+    index: 0,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'string',
+    value: 'Joe',
+    localValue: 'Joe',
+    remoteValue: 'Joe',
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'string', tags: [Array] },
+    proxy: [Circular *2]
+  },
+  lastName: <ref *3> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'lastName',
+    index: 1,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'string',
+    value: 'Doe',
+    localValue: 'Doe',
+    remoteValue: 'Doe',
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'string', tags: [Array] },
+    proxy: [Circular *3]
+  },
+  age: <ref *4> Input {
+    form: Form {
+      schema: [Object],
+      data: [Object],
+      patch: null,
+      inputs: [Array],
+      inputIndex: 3,
+      shared: [Circular *1],
+      error: null
+    },
+    property: 'age',
+    index: 2,
+    method: 'text',
+    hidden: false,
+    readOnly: false,
+    type: 'integer',
+    value: 29,
+    localValue: 29,
+    remoteValue: 29,
+    order: 0,
+    label: null,
+    placeholder: null,
+    description: null,
+    error: null,
+    schema: { type: 'integer', tags: [Array], sanitize: [Array] },
+    proxy: [Circular *4]
+  }
+}
+{ firstName: 'Joey', age: 33 }
 # TOC
    - [Assertion utilities](#assertion-utilities)
    - [Equality checker](#equality-checker)
@@ -3715,6 +3883,50 @@ doormen.equals(
 # Extract constraint-only schema
 <a name="forms"></a>
 # Forms
+zzz form.
+
+```js
+var schema , data , form ;
+
+schema = {
+	properties: {
+		id: { type: 'string' , tags: [ 'id' ] , noInput: true } ,
+		firstName: { type: 'string' , tags: [ 'content' ] } ,
+		lastName: { type: 'string' , tags: [ 'content' ] } ,
+		age: { type: 'integer' , tags: [ 'content' ] } ,
+	}
+} ;
+
+data = {
+	id: '489312' ,
+	firstName: 'Joe' ,
+	lastName: 'Doe' ,
+	age: 29
+} ;
+// Proxy mode
+
+form = new doormen.Form( schema , data , true ) ;
+//console.log( form ) ;
+console.log( form.shared ) ;
+//form.shared.firstName.value = {} ;
+form.shared.firstName.value = 'Joey' ;
+form.shared.age.value = '33' ;
+console.log( form.getPatch() ) ;
+
+// .update() mode
+
+form = new doormen.Form( schema , data ) ;
+//console.log( form ) ;
+console.log( form.shared ) ;
+//form.shared.firstName.value = {} ;
+form.shared.firstName.value = 'Joey' ;
+form.shared.age.value = '33' ;
+form.update() ;
+
+console.log( form.getPatch() ) ;
+return ;
+```
+
 <a name="mongodbs-objectid"></a>
 # MongoDB's ObjectID
 should validate MongoDB's ObjectID.
