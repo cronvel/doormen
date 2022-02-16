@@ -238,22 +238,13 @@ function inspectVar( variable , extraExpectations ) {
 
 
 
-const doormen = require( './core.js' ) ;
+//const doormen = require( './core.js' ) ;
 const Input = require( './Input.js' ) ;
 
 
 
 /*
-	TODO/IDEAS:
-		* [OK] Proxy on Input
-		* [?] Proxy on Form
-		* [?] Proxies would be NextGen Event emitter, with 'change' event
-		* [TODO] client UI can change any value, triggering validation
-		* [?] code can change any value, emitting event for the client
-*/
-
-/*
-	* builder contains all the form creation hooks:
+	* gui contains all the form creation hooks:
 		* constructor: a constructor to instanciate a client's form object
 		* main: hook for the main form creation (e.g. web: <form>)
 		* label: hook for the text-label creation
@@ -261,28 +252,27 @@ const Input = require( './Input.js' ) ;
 		* preview: object, key being the type of preview, value being the hook for the preview creation (e.g. web image preview: <img src="path/to/image" />)
 	* remote contains all the hook to communicate with the remote data holder, if any
 */
-function Form_( schema , data , builder , remote , options = {} ) {
-}
 
-function Form( schema , data , proxyMode = false ) {
+function Form( schema , data , gui , remote ) {
 	this.schema = schema ;
 	this.data = data ;
+	this.gui = gui ;
+	this.remote = remote ;
 	this.patch = null ;			// A patch to modify the current data
 	this.inputs = [] ;			// The list of Input instances
 	this.inputIndex = 0 ;		// The auto-increment
 	this.shared = null ;		// The form structure to be used by third-party (HTML, Vue, etc), it's a proxy
 
 	this.error = null ;
-
-	this.createInputs() ;
-	this.createFlatObjectSharedStructure( !! proxyMode ) ;
 }
 
 module.exports = Form ;
 
 
 
-Form.prototype.createInputs = function() {
+Form.prototype.init = function() {
+	if ( this.remote?.init ) { this.remote.init( this ) ; }
+	if ( this.gui?.init ) { this.gui.init( this ) ; }
 	this.createInputsRecursive( this.schema , this.data , '' ) ;
 } ;
 
@@ -308,6 +298,7 @@ Form.prototype.createInputsRecursive = function( schema , data , prefix ) {
 			property: prefix ,
 			index: this.inputIndex ++ ,
 			method: schema.input?.method ,
+			previewMethod: schema.input?.previewMethod ,
 			hidden: !! schema.input?.hidden ,
 			readOnly: !! schema.input?.readOnly ,
 			type: schema.type ,
@@ -321,32 +312,27 @@ Form.prototype.createInputsRecursive = function( schema , data , prefix ) {
 		} ) ;
 
 		this.inputs.push( input ) ;
+
+		if ( this.gui ) {
+			this.gui.addInput( input ) ;
+		}
 	}
 } ;
 
 
 
-// if ofProxies:true then the shared structure contains proxies of Input instances, else it contains Input instances
-Form.prototype.createFlatObjectSharedStructure = function( ofProxies ) {
-	this.shared = {} ;
-
-	for ( let input of this.inputs ) {
-		this.shared[ input.property ] = ofProxies ? input.proxy : input ;
-	}
-} ;
-
-
-
-Form.prototype.update = function() {
-	for ( let input of this.inputs ) {
-		input.update() ;
-	}
+// Mark all local values as remote values
+Form.prototype.commit = function() {
+	if ( ! this.remote ) { return ; }
+	var patch = this.getPatch() ;
+	if ( ! patch ) { return ; }
+	this.remote.commit( patch ) ;
 } ;
 
 
 
 Form.prototype.getPatch = function() {
-	var count = 0 , patch = null , input ;
+	var patch = null , input ;
 
 	for ( input of this.inputs ) {
 		if ( input.localValue !== input.remoteValue ) {
@@ -359,16 +345,7 @@ Form.prototype.getPatch = function() {
 } ;
 
 
-
-// Mark all local values as remote values
-Form.prototype.commit = function() {
-	for ( let input of this.inputs ) {
-		input.remoteValue = input.localValue ;
-	}
-} ;
-
-
-},{"./Input.js":3,"./core.js":9}],3:[function(require,module,exports){
+},{"./Input.js":3}],3:[function(require,module,exports){
 /*
 	Doormen
 
@@ -409,12 +386,14 @@ function Input( form , options = {} ) {
 	this.property = options.property ;
 	this.index = options.index || 0 ;	// Index in the parent form
 	this.method = options.method || null ;	// The method (type) of the input field
+	this.previewMethod = options.previewMethod || null ;	// The method (type) of the preview (e.g. for image)
 	this.hidden = !! options.hidden ;	// The field somewhat exists but is hidden to the user
 	this.readOnly = !! options.readOnly ;	// The field cannot be changed but is still shown (unless hidden) to the user
 	this.type = options.type ;	// The type of the data, same than in the schema
-	this.value = options.value ;		// Current value of the UI input element
-	this.localValue = options.localValue || options.value ;		// The real behind-the-scene value
+	this.localValue = options.localValue || options.value ;		// The local value
+	this.localChanged = false ;
 	this.remoteValue = options.remoteValue || options.value ;	// Value at creation, useful for creating a patch for the data
+	this.remoteChanged = false ;
 	this.order = options.order || 0 ;	// Custom order, ordering should be done by order first, and index as a tie-breaker
 	this.label = options.label || null ;	// A label for this field
 	this.placeholder = options.placeholder || null ;	// Something to display inside the input before user's entry
@@ -423,6 +402,11 @@ function Input( form , options = {} ) {
 	this.schema = clone( options.schema ) ;	// The schema for this input
 
 	this.proxy = null ;
+
+	Object.defineProperty( this , 'value' , {
+		get: function() { return this.localValue ; } ,
+		set: function( value ) { this.setValue( value ) ; }
+	} ) ;
 
 	this.init() ;
 }
@@ -443,8 +427,6 @@ Input.prototype.init = function() {
 
 		if ( this.schema.sanitize[ 0 ] !== sanitizer ) { this.schema.sanitize.unshift( sanitizer ) ; }
 	}
-
-	this.proxy = this.createProxy() ;
 } ;
 
 
@@ -469,22 +451,9 @@ Input.guessSanitizer = function( type ) { return TYPE_TO_SANITIZER[ type ] || nu
 
 
 
-Input.prototype.createProxy = function() {
-	return new Proxy( this , {
-		set: function( target , property , value , receiver ) {
-			if ( property !== 'value' ) { return false ; }
-			target.value = value ;
-			target.update() ;
-			return true ;
-		}
-	} ) ;
-} ;
-
-
-
-Input.prototype.update = function() {
+Input.prototype.setValue = function( value ) {
 	try {
-		this.localValue = doormen( this.schema , this.value ) ;
+		this.localValue = doormen( this.schema , value ) ;
 	}
 	catch ( error ) {
 		//console.log( error ) ;
@@ -492,9 +461,12 @@ Input.prototype.update = function() {
 		return ;
 	}
 
+	this.localChanged = true ;
 	this.error = null ;
 
 	// Check global errors
+
+	return this.localValue ;
 } ;
 
 
