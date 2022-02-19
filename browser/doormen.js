@@ -239,18 +239,19 @@ function inspectVar( variable , extraExpectations ) {
 
 
 //const doormen = require( './core.js' ) ;
+const dotPath = require( 'tree-kit/lib/dotPath.js' ) ;
 const Input = require( './Input.js' ) ;
 
 
 
 /*
-	* gui contains all the form creation hooks:
-		* constructor: a constructor to instanciate a client's form object
-		* main: hook for the main form creation (e.g. web: <form>)
-		* label: hook for the text-label creation
-		* input: object, key being the method of input, value being the hook for the input creation (e.g. web: <input type="text" />)
-		* preview: object, key being the type of preview, value being the hook for the preview creation (e.g. web image preview: <img src="path/to/image" />)
-	* remote contains all the hook to communicate with the remote data holder, if any
+	* gui is an object used to display the form in the client, with methods:
+		init(): optional
+		addInput(): add an input for the user
+	* remote is an object used to communicate with the remote data holder, with methods:
+		init(): optional
+		commit(): send a patch
+		send(): send the whole data
 */
 
 function Form( schema , data , gui , remote ) {
@@ -258,10 +259,9 @@ function Form( schema , data , gui , remote ) {
 	this.data = data ;
 	this.gui = gui ;
 	this.remote = remote ;
-	this.patch = null ;			// A patch to modify the current data
+
 	this.inputs = [] ;			// The list of Input instances
 	this.inputIndex = 0 ;		// The auto-increment
-	this.shared = null ;		// The form structure to be used by third-party (HTML, Vue, etc), it's a proxy
 
 	this.error = null ;
 }
@@ -273,28 +273,40 @@ module.exports = Form ;
 Form.prototype.init = function() {
 	if ( this.remote?.init ) { this.remote.init( this ) ; }
 	if ( this.gui?.init ) { this.gui.init( this ) ; }
-	this.createInputsRecursive( this.schema , this.data , '' ) ;
+	this.createInputs( this.schema , this.data ) ;
 } ;
 
 
 
-Form.prototype.createInputsRecursive = function( schema , data , prefix ) {
-	var key , input ;
-
+Form.prototype.createInputs = function( schema , data , prefix = '' , parentInput = null , depth = 0 ) {
 	// 0) Arrays are alternatives
 	if ( Array.isArray( schema ) ) { throw new Error( "Schema alternatives are not supported for forms ATM." ) ; }
 
-	// 1) Recursivity
-	if ( schema.properties && typeof schema.properties === 'object' ) {
-		for ( key in schema.properties ) {
-			this.createInputsRecursive( schema.properties[ key ] , data[ key ] , prefix ? prefix + '.' + key : key ) ;
-		}
+	if ( schema.noInput ) { return ; }
 
-		return ;
+	var input = null ,
+		subInputs = null ,
+		variableSubInputs = false ,
+		// Top-level object never create an input
+		createInput = depth || ( ! schema.of && ! schema.properties && ! schema.type === 'object' ) ;
+
+	if ( createInput ) {
+		if ( schema.of && typeof schema.of === 'object' ) {
+			variableSubInputs = true ;
+			subInputs = schema.type === 'array' ? [] : {} ;
+		}
+		else if ( schema.properties && typeof schema.properties === 'object' ) {
+			subInputs = {} ;
+		}
 	}
 
-	if ( ! schema.noInput ) {
+	if ( createInput ) {
 		input = new Input( this , {
+			parent: parentInput ,
+			depth ,
+			subInputs ,
+			variableSubInputs ,
+			schema ,
 			property: prefix ,
 			index: this.inputIndex ++ ,
 			method: schema.input?.method ,
@@ -307,16 +319,89 @@ Form.prototype.createInputsRecursive = function( schema , data , prefix ) {
 			order: schema.input?.order ,
 			label: schema.input?.label ,
 			placeholder: schema.input?.placeholder ,
-			description: schema.input?.description ,
-			schema: schema
+			description: schema.input?.description
 		} ) ;
 
 		this.inputs.push( input ) ;
 
 		if ( this.gui ) {
-			this.gui.addInput( input ) ;
+			input.guiEntry = this.gui.addInput( input , parentInput ) ;
 		}
 	}
+
+	// 1) Recursivity
+	if ( schema.of && typeof schema.of === 'object' ) {
+		if ( schema.type === 'array' ) {
+			if ( Array.isArray( data ) ) {
+				for ( let index = 0 ; index < data.length ; index ++ ) {
+					let subInput = this.createInputs( schema.of , data[ index ] , prefix ? prefix + '.' + index : index , input , depth + 1 ) ;
+					input.subInputs[ index ] = subInput ;
+				}
+			}
+		}
+		else {
+			if ( ! Array.isArray( data ) ) {
+				for ( let key in data ) {
+					let subInput = this.createInputs( schema.of , data[ key ] , prefix ? prefix + '.' + key : key , input , depth + 1 ) ;
+					if ( input ) { input.subInputs[ key ] = subInput ; }
+				}
+			}
+		}
+	}
+
+	if ( schema.properties && typeof schema.properties === 'object' ) {
+		for ( let key in schema.properties ) {
+			let subInput = this.createInputs( schema.properties[ key ] , data[ key ] , prefix ? prefix + '.' + key : key , input , depth + 1 ) ;
+			if ( input ) { input.subInputs[ key ] = subInput ; }
+		}
+	}
+
+	return input ;
+} ;
+
+
+
+Form.prototype.addSubInput = function( input ) {
+	if ( ! input.variableSubInputs ) { return ; }
+
+	var index = input.subInputs.length ;
+	//console.warn( "Add subInput details" , input.schema.of , null , input.property + '.' + index , input , input.depth + 1 ) ;
+	var subInput = this.createInputs( input.schema.of , null , input.property + '.' + index , input , input.depth + 1 ) ;
+
+	var container = dotPath.get( this.data , input.property ) ;
+	container[ index ] = undefined ;
+
+	input.subInputs[ index ] = subInput ;
+} ;
+
+
+
+Form.prototype.removeInput = function( input ) {
+	if ( ! input.removable || ! input.parent ) { return ; }
+
+	var index = input.parent.subInputs.indexOf( input ) ;
+	if ( index < 0 ) { return ; }
+
+	if ( this.gui ) { this.gui.removeInput( input ) ; }
+
+	var container = dotPath.get( this.data , input.parent.property ) ;
+
+	if ( Array.isArray( input.parent.subInputs ) ) {
+		input.parent.subInputs.splice( index , 1 ) ;
+		container.splice( index , 1 ) ;
+	}
+	else {
+		delete input.parent.subInputs[ index ] ;
+		delete container[ index ] ;
+	}
+} ;
+
+
+
+// Mark all local values as remote values
+Form.prototype.send = function() {
+	if ( ! this.remote ) { return ; }
+	this.remote.send( this.data ) ;
 } ;
 
 
@@ -331,6 +416,7 @@ Form.prototype.commit = function() {
 
 
 
+// This method is not perfect ATM
 Form.prototype.getPatch = function() {
 	var patch = null , input ;
 
@@ -345,7 +431,7 @@ Form.prototype.getPatch = function() {
 } ;
 
 
-},{"./Input.js":3}],3:[function(require,module,exports){
+},{"./Input.js":3,"tree-kit/lib/dotPath.js":33}],3:[function(require,module,exports){
 /*
 	Doormen
 
@@ -377,12 +463,18 @@ Form.prototype.getPatch = function() {
 
 
 const doormen = require( './core.js' ) ;
+const dotPath = require( 'tree-kit/lib/dotPath.js' ) ;
 const clone = require( 'tree-kit/lib/clone.js' ) ;
 
 
 
 function Input( form , options = {} ) {
 	this.form = form ;
+	this.parent = options.parent || null ;
+	this.depth = options.depth || 0 ;
+	this.subInputs = options.subInputs || null ;
+	this.variableSubInputs = options.variableSubInputs ;	// true if new subInput can be created
+
 	this.property = options.property ;
 	this.index = options.index || 0 ;	// Index in the parent form
 	this.method = options.method || null ;	// The method (type) of the input field
@@ -401,7 +493,9 @@ function Input( form , options = {} ) {
 	this.error = null ;					// An error message for this field, if it does not validate
 	this.schema = clone( options.schema ) ;	// The schema for this input
 
-	this.proxy = null ;
+	this.removable = !! this.parent?.variableSubInputs ;
+
+	this.guiEntry = null ;
 
 	Object.defineProperty( this , 'value' , {
 		get: function() { return this.localValue ; } ,
@@ -416,10 +510,10 @@ module.exports = Input ;
 
 
 Input.prototype.init = function() {
-	if ( ! this.method ) { this.method = Input.guessMethod( this.type ) ; }
+	if ( ! this.method ) { this.method = this.guessMethod( this.type ) ; }
 
 	// Force a sanitizer for the input, since most of input returns string
-	var sanitizer = Input.guessSanitizer( this.type ) ;
+	var sanitizer = this.guessSanitizer( this.type ) ;
 
 	if ( sanitizer ) {
 		if ( ! this.schema.sanitize ) { this.schema.sanitize = [] ; }
@@ -434,7 +528,13 @@ Input.prototype.init = function() {
 const TYPE_TO_METHOD = {
 	string: 'text' ,
 	number: 'text' ,
-	integer: 'text'
+	integer: 'text' ,
+	array: 'inputList' ,
+	object: null
+} ;
+
+Input.prototype.guessMethod = function( type ) {
+	return type in TYPE_TO_METHOD ? TYPE_TO_METHOD[ type ] : 'text' ;
 } ;
 
 
@@ -444,10 +544,9 @@ const TYPE_TO_SANITIZER = {
 	integer: 'toInteger'
 } ;
 
-
-
-Input.guessMethod = function( type ) { return TYPE_TO_METHOD[ type ] || 'text' ; } ;
-Input.guessSanitizer = function( type ) { return TYPE_TO_SANITIZER[ type ] || null ; } ;
+Input.prototype.guessSanitizer = function( type ) {
+	return TYPE_TO_SANITIZER[ type ] || null ;
+} ;
 
 
 
@@ -466,11 +565,14 @@ Input.prototype.setValue = function( value ) {
 
 	// Check global errors
 
+	// Set the form data
+	dotPath.set( this.form.data , this.property , this.localValue ) ;
+
 	return this.localValue ;
 } ;
 
 
-},{"./core.js":9,"tree-kit/lib/clone.js":32}],4:[function(require,module,exports){
+},{"./core.js":9,"tree-kit/lib/clone.js":32,"tree-kit/lib/dotPath.js":33}],4:[function(require,module,exports){
 /*
 	Doormen
 
