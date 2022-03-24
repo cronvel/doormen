@@ -248,6 +248,7 @@ const Input = require( './Input.js' ) ;
 	* gui is an object used to display the form in the client, with methods:
 		init(): optional
 		addInput(): add an input for the user
+		removeInput(): remove an input (probably an optional one, or an array element)
 	* remote is an object used to communicate with the remote data holder, with methods:
 		init(): optional
 		commit(): send a patch
@@ -4025,9 +4026,10 @@ doormen.assert = require( './assert.js' ) ;
 doormen.expect = require( './expect.js' ) ;
 
 doormen.Form = require( './Form.js' ) ;
+doormen.Input = require( './Input.js' ) ;
 
 
-},{"./Form.js":2,"./assert.js":6,"./core.js":9,"./expect.js":12}],12:[function(require,module,exports){
+},{"./Form.js":2,"./Input.js":3,"./assert.js":6,"./core.js":9,"./expect.js":12}],12:[function(require,module,exports){
 /*
 	Doormen
 
