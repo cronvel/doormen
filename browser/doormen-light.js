@@ -1180,6 +1180,7 @@ assert.startWith = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , null , 'to start with' , expected ) ;
 	}
 } ;
+assert.startWith.inspect = true ;
 
 
 
@@ -1194,6 +1195,7 @@ assert.notStartWith = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , null , 'not to start with' , expected ) ;
 	}
 } ;
+assert.notStartWith.inspect = true ;
 
 
 
@@ -1208,6 +1210,7 @@ assert.endWith = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , null , 'to end with' , expected ) ;
 	}
 } ;
+assert.endWith.inspect = true ;
 
 
 
@@ -1222,6 +1225,7 @@ assert.notEndWith = ( from , actual , expected ) => {
 		throw AssertionError.create( from , actual , null , 'not to end with' , expected ) ;
 	}
 } ;
+assert.notEndWith.inspect = true ;
 
 
 
