@@ -3568,6 +3568,20 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( "bob" ).to.match( /^[ba]+$/ ) ) ;
 	} ) ;
 
+	it( "expect a value to start with/not start with" , () => {
+		doormen.expect( "abcdefgh" ).to.start.with( "abc" ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "abcdefgh" ).to.not.start.with( "abc" ) ) ;
+		doormen.expect( "abcdefgh" ).not.to.start.with( "bcd" ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "abcdefgh" ).to.start.with( "bcd" ) ) ;
+	} ) ;
+
+	it( "expect a value to end with/not end with" , () => {
+		doormen.expect( "abcdefgh" ).to.end.with( "fgh" ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "abcdefgh" ).to.not.end.with( "fgh" ) ) ;
+		doormen.expect( "abcdefgh" ).not.to.end.with( "efg" ) ;
+		doormen.shouldThrowAssertion( () => doormen.expect( "abcdefgh" ).to.end.with( "efg" ) ) ;
+	} ) ;
+
 	it( "expect a value to have a length of/not have a length of" , () => {
 		doormen.expect( "Hello Bob!" ).to.have.length.of( 10 ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( "Hello Bob!" ).not.to.have.length.of( 10 ) ) ;

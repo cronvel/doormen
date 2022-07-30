@@ -1169,6 +1169,62 @@ assert.notWithin = ( from , actual , lower , higher ) => {
 
 
 
+assert['to start with'] =
+assert.startsWith =
+assert.startWith = ( from , actual , expected ) => {
+	if ( typeof actual !== 'string' ) {
+		throw AssertionError.create( from , actual , null , 'to be a string' ) ;
+	}
+
+	if ( ! actual.startsWith( expected ) ) {
+		throw AssertionError.create( from , actual , null , 'to start with' , expected ) ;
+	}
+} ;
+
+
+
+assert['to not start with'] =
+assert['not to start with'] =
+assert.notStartWith = ( from , actual , expected ) => {
+	if ( typeof actual !== 'string' ) {
+		throw AssertionError.create( from , actual , null , 'to be a string' ) ;
+	}
+
+	if ( actual.startsWith( expected ) ) {
+		throw AssertionError.create( from , actual , null , 'not to start with' , expected ) ;
+	}
+} ;
+
+
+
+assert['to end with'] =
+assert.endsWith =
+assert.endWith = ( from , actual , expected ) => {
+	if ( typeof actual !== 'string' ) {
+		throw AssertionError.create( from , actual , null , 'to be a string' ) ;
+	}
+
+	if ( ! actual.endsWith( expected ) ) {
+		throw AssertionError.create( from , actual , null , 'to end with' , expected ) ;
+	}
+} ;
+
+
+
+assert['to not end with'] =
+assert['not to end with'] =
+assert.notEndWith = ( from , actual , expected ) => {
+	if ( typeof actual !== 'string' ) {
+		throw AssertionError.create( from , actual , null , 'to be a string' ) ;
+	}
+
+	if ( actual.endsWith( expected ) ) {
+		throw AssertionError.create( from , actual , null , 'not to end with' , expected ) ;
+	}
+} ;
+
+
+
 // String regexp match
 assert['to match'] =
 assert.match = ( from , actual , expected ) => {
@@ -5342,13 +5398,14 @@ process.umask = function() { return 0; };
 
 
 
-function StringNumber( number , decimalSeparator = '.' , groupSeparator = '' ) {
+function StringNumber( number , decimalSeparator = '.' , groupSeparator = '' , forceDecimalSeparator = false ) {
 	this.sign = 1 ;
 	this.digits = [] ;
 	this.exposant = 0 ;
 	this.special = null ;	// 'special' store special values like NaN, Infinity, etc
 
 	this.decimalSeparator = decimalSeparator ;
+	this.forceDecimalSeparator = !! forceDecimalSeparator ;
 	this.groupSeparator = groupSeparator ;
 
 	this.set( number ) ;
@@ -5362,6 +5419,12 @@ StringNumber.prototype.set = function( number ) {
 	var matches , digits , exposant , v , i , iMax , index , hasNonZeroHead , tailIndex ;
 
 	number = + number ;
+
+	// Reset anything, if it was already used...
+	this.sign = 1 ;
+	this.digits.length = 0 ;
+	this.exposant = 0 ;
+	this.special = null ;
 
 	if ( ! Number.isFinite( number ) ) {
 		this.special = number ;
@@ -5488,8 +5551,8 @@ StringNumber.prototype.toScientificString = function() {
 
 
 
-// leadingZero = minimal number of number before the dot, they will be left-padded with zero if needed.
-// trailingZero = minimal number of number after the dot, they will be right-padded with zero if needed.
+// leadingZero = minimal number of numbers before the dot, they will be left-padded with zero if needed.
+// trailingZero = minimal number of numbers after the dot, they will be right-padded with zero if needed.
 // onlyIfDecimal: set it to true if you don't want right padding zero when there is no decimal
 StringNumber.prototype.toNoExp =
 StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero = 0 , onlyIfDecimal = false , forcePlusSign = false , exposant = this.exposant ) {
@@ -5552,6 +5615,9 @@ StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero 
 				decimalDigits.join( '' )
 		) ;
 	}
+	else if ( this.forceDecimalSeparator ) {
+		str += this.decimalSeparator ;
+	}
 
 	return str ;
 } ;
@@ -5589,12 +5655,36 @@ StringNumber.prototype.toMetricString = function( leadingZero = 1 , trailingZero
 
 
 
-StringNumber.prototype.precision = function( n ) {
+/*
+	type: 0=round, -1=floor, 1=ceil
+	Floor if < .99999
+	Ceil if >= .00001
+*/
+StringNumber.prototype.precision = function( n , type = 0 ) {
+	var roundUp ;
+
 	if ( this.special !== null || n >= this.digits.length ) { return this ; }
 
 	if ( n < 0 ) { this.digits.length = 0 ; return this ; }
 
-	if ( this.digits[ n ] >= 5 ) {
+	type *= this.sign ;
+
+	if ( type < 0 ) {
+		roundUp =
+			this.digits.length > n + 4
+			&& this.digits[ n ] === 9 && this.digits[ n + 1 ] === 9
+			&& this.digits[ n + 2 ] === 9 && this.digits[ n + 3 ] === 9 && this.digits[ n + 4 ] === 9 ;
+	}
+	else if ( type > 0 ) {
+		roundUp =
+			this.digits[ n ] > 0 || this.digits[ n + 1 ] > 0
+			|| this.digits[ n + 2 ] > 0 || this.digits[ n + 3 ] > 0 || this.digits[ n + 4 ] > 0 ;
+	}
+	else {
+		roundUp = this.digits[ n ] >= 5 ;
+	}
+
+	if ( roundUp ) {
 		let i = n - 1 ,
 			done = false ;
 
@@ -5623,9 +5713,23 @@ StringNumber.prototype.precision = function( n ) {
 
 
 
-StringNumber.prototype.round = function( decimalPlace = 0 ) {
+StringNumber.prototype.round = function( decimalPlace = 0 , type = 0 ) {
 	var n = this.exposant + decimalPlace ;
-	return this.precision( n ) ;
+	return this.precision( n , type ) ;
+} ;
+
+
+
+StringNumber.prototype.floor = function( decimalPlace = 0 ) {
+	var n = this.exposant + decimalPlace ;
+	return this.precision( n , -1 ) ;
+} ;
+
+
+
+StringNumber.prototype.ceil = function( decimalPlace = 0 ) {
+	var n = this.exposant + decimalPlace ;
+	return this.precision( n , 1 ) ;
 } ;
 
 
@@ -6106,7 +6210,7 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%U		unsigned positive integer (>0)
 	%P		number to (absolute) percent (e.g.: 0.75 -> 75%)
 	%p		number to relative percent (e.g.: 1.25 -> +25% ; 0.75 -> -25%)
-	%t		time duration, convert ms into H:min:s
+	%t		time duration, convert ms into h min s, e.g.: 2h14min52s or 2:14:52
 	%m		convert degree into degree, minutes and seconds
 	%h		hexadecimal (input is a number)
 	%x		hexadecimal (input is a number), force pair of symbols (e.g. 'f' -> '0f')
@@ -6845,26 +6949,69 @@ modes.m.noSanitize = true ;
 
 
 
-// /!\ Should use StringNumber???
 // time duration, transform ms into H:min:s
 // Later it should format Date as well: number=duration, date object=date
 // Note that it would not replace moment.js, but it could uses it.
-modes.t = arg => {
+modes.t = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { return '(NaN)' ; }
 
-	var s = Math.floor( arg / 1000 ) ;
-	if ( s < 60 ) { return s + 's' ; }
+	var h , min , s , sn , sStr ,
+		sign = '' ,
+		subModes = timeModeArg( modeArg ) ,
+		roundingType = subModes.roundingType ,
+		hSeparator = subModes.useAbbreviation ? 'h' : ':' ,
+		minSeparator = subModes.useAbbreviation ? 'min' : ':' ,
+		sSeparator = subModes.useAbbreviation ? 's' : '.' ,
+		forceDecimalSeparator = subModes.useAbbreviation ;
 
-	var min = Math.floor( s / 60 ) ;
+	s = arg / 1000 ;
+
+	if ( s < 0 ) {
+		s = -s ;
+		roundingType *= -1 ;
+		sign = '-' ;
+	}
+
+	if ( s < 60 && ! subModes.forceMinutes ) {
+		sn = new StringNumber( s , sSeparator , undefined , forceDecimalSeparator ) ;
+		sn.round( subModes.rounding , roundingType ) ;
+
+		// Check if rounding has made it reach 60
+		if ( sn.toNumber() < 60 ) {
+			sStr = sn.toString( 1 , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
+			return sign + sStr ;
+		}
+
+		s = 60 ;
+
+	}
+
+	min = Math.floor( s / 60 ) ;
 	s = s % 60 ;
-	if ( min < 60 ) { return min + 'min' + ( '' + s ).padStart( 2 , '0' ) + 's' ; }
 
-	var h = Math.floor( min / 60 ) ;
+	sn = new StringNumber( s , sSeparator , undefined , forceDecimalSeparator ) ;
+	sn.round( subModes.rounding , roundingType ) ;
+
+	// Check if rounding has made it reach 60
+	if ( sn.toNumber() < 60 ) {
+		sStr = sn.toString( 2 , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
+	}
+	else {
+		min ++ ;
+		s = 0 ;
+		sn.set( s ) ;
+		sStr = sn.toString( 2 , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
+	}
+
+	if ( min < 60 && ! subModes.forceHours ) {
+		return sign + min + minSeparator + sStr ;
+	}
+
+	h = Math.floor( min / 60 ) ;
 	min = min % 60 ;
-	//if ( h < 24 ) { return h + 'h' + zeroPadding( min ) +'min' + zeroPadding( s ) + 's' ; }
 
-	return h + 'h' + ( '' + min ).padStart( 2 , '0' ) + 'min' + ( '' + s ).padStart( 2 , '0' ) + 's' ;
+	return sign + h + hSeparator + ( '' + min ).padStart( 2 , '0' ) + minSeparator + sStr ;
 } ;
 
 modes.t.noSanitize = true ;
@@ -7001,20 +7148,14 @@ modes.D.noSanitize = true ;
 const COMMON_MODE_ARG_FORMAT_REGEX = /([a-zA-Z])(.[^a-zA-Z]*)/g ;
 
 // The format for specific mode arg
-const MODE_ARG_FORMAT_REGEX = /([a-zA-Z]|^)(.[^a-zA-Z]*)/g ;
+const MODE_ARG_FORMAT_REGEX = /([a-zA-Z]|^)([^a-zA-Z]*)/g ;
 
 
 
 // Called when there is a modeArg and the mode allow common mode arg
 // CONVENTION: reserve upper-cased letters for common mode arg
 function commonModeArg( str , modeArg ) {
-	var match , k , v ;
-
-	COMMON_MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
-
-	while ( ( match = COMMON_MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-		[ , k , v ] = match ;
-
+	for ( let [ , k , v ] of modeArg.matchAll( COMMON_MODE_ARG_FORMAT_REGEX ) ) {
 		if ( k === 'L' ) {
 			let width = unicode.width( str ) ;
 			v = + v || 1 ;
@@ -7055,8 +7196,6 @@ const FLOAT_MODES = {
 
 // Generic number modes
 function floatModeArg( modeArg ) {
-	var match , k , v , lv ;
-
 	FLOAT_MODES.leftPadding = 1 ;
 	FLOAT_MODES.rightPadding = 0 ;
 	FLOAT_MODES.rightPaddingOnlyIfDecimal = false ;
@@ -7065,11 +7204,7 @@ function floatModeArg( modeArg ) {
 	FLOAT_MODES.groupSeparator = '' ;
 
 	if ( modeArg ) {
-		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
-
-		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-			[ , k , v ] = match ;
-
+		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
 			if ( k === 'z' ) {
 				// Zero-left padding
 				FLOAT_MODES.leftPadding = + v ;
@@ -7079,13 +7214,9 @@ function floatModeArg( modeArg ) {
 				FLOAT_MODES.groupSeparator = v || ' ' ;
 			}
 			else if ( ! k ) {
-				if ( v === 'g' ) {
-					// Group separator
-					FLOAT_MODES.groupSeparator = ' ' ;
-				}
-				else if ( v[ 0 ] === '.' ) {
+				if ( v[ 0 ] === '.' ) {
 					// Rounding after the decimal
-					lv = v[ v.length - 1 ] ;
+					let lv = v[ v.length - 1 ] ;
 
 					// Zero-right padding?
 					if ( lv === '!' ) {
@@ -7116,20 +7247,79 @@ function floatModeArg( modeArg ) {
 
 
 
+const TIME_MODES = {
+	useAbbreviation: false ,
+	rightPadding: 0 ,
+	rightPaddingOnlyIfDecimal: false ,
+	rounding: 0 ,
+	roundingType: -1 ,	// -1: floor, 0: round, 1: ceil
+	forceHours: false ,
+	forceMinutes: false
+} ;
+
+// Generic number modes
+function timeModeArg( modeArg ) {
+	TIME_MODES.rightPadding = 0 ;
+	TIME_MODES.rightPaddingOnlyIfDecimal = false ;
+	TIME_MODES.rounding = 0 ;
+	TIME_MODES.roundingType = -1 ;
+	TIME_MODES.useAbbreviation = TIME_MODES.forceHours = TIME_MODES.forceMinutes = false ;
+
+	if ( modeArg ) {
+		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
+			if ( k === 'h' ) {
+				TIME_MODES.forceHours = TIME_MODES.forceMinutes = true ;
+			}
+			else if ( k === 'm' ) {
+				TIME_MODES.forceMinutes = true ;
+			}
+			else if ( k === 'r' ) {
+				TIME_MODES.roundingType = 0 ;
+			}
+			else if ( k === 'f' ) {
+				TIME_MODES.roundingType = -1 ;
+			}
+			else if ( k === 'c' ) {
+				TIME_MODES.roundingType = 1 ;
+			}
+			else if ( k === 'a' ) {
+				TIME_MODES.useAbbreviation = true ;
+			}
+			else if ( ! k ) {
+				if ( v[ 0 ] === '.' ) {
+					// Rounding after the decimal
+					let lv = v[ v.length - 1 ] ;
+
+					// Zero-right padding?
+					if ( lv === '!' ) {
+						TIME_MODES.rounding = TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+					}
+					else if ( lv === '?' ) {
+						TIME_MODES.rounding = TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+						TIME_MODES.rightPaddingOnlyIfDecimal = true ;
+					}
+					else {
+						TIME_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
+					}
+				}
+			}
+		}
+	}
+
+	return TIME_MODES ;
+}
+
+
+
 // Generic inspect
 function genericInspectMode( arg , modeArg , options , modeOptions , isInspectError = false ) {
-	var match , k , v ,
-		outputMaxLength ,
+	var outputMaxLength ,
 		maxLength ,
 		depth = 3 ,
 		style = options && options.color ? 'color' : 'none' ;
 
 	if ( modeArg ) {
-		MODE_ARG_FORMAT_REGEX.lastIndex = 0 ;
-
-		while ( ( match = MODE_ARG_FORMAT_REGEX.exec( modeArg ) ) ) {
-			[ , k , v ] = match ;
-
+		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
 			if ( k === 'c' ) {
 				if ( v === '+' ) { style = 'color' ; }
 				else if ( v === '-' ) { style = 'none' ; }
@@ -7708,12 +7898,34 @@ function inspectError( options , error ) {
 	if ( arguments.length < 2 ) { error = options ; options = {} ; }
 	else if ( ! options || typeof options !== 'object' ) { options = {} ; }
 
-	if ( ! ( error instanceof Error ) ) {
-		return "inspectError(): it's not an error, using regular variable inspection: " + inspect( options , error ) ;
-	}
-
 	if ( ! options.style ) { options.style = inspectStyle.none ; }
 	else if ( typeof options.style === 'string' ) { options.style = inspectStyle[ options.style ] ; }
+
+	if ( ! ( error instanceof Error ) ) {
+		str += '[not an Error] ' ;
+
+		if ( typeof error === 'string' ) {
+			let maxLength = 5000 ;
+
+			if ( error.length > maxLength ) {
+				str += options.style.errorMessage( escape.control( error.slice( 0 , maxLength - 1 ) , true ) ) + '…'
+					+ options.style.length( '(' + error.length + ' - TRUNCATED)' )
+					+ options.style.newline ;
+			}
+			else {
+				str += options.style.errorMessage( escape.control( error , true ) )
+					+ options.style.newline ;
+			}
+
+			return str ;
+		}
+		else if ( ! error || typeof error !== 'object' || ! error.name || typeof error.name !== 'string' || ! error.message || typeof error.message !== 'string' ) {
+			str += inspect( options , error ) ;
+			return str ;
+		}
+
+		// It's an object, but it's compatible with Error, so we can move on...
+	}
 
 	if ( error.stack && ! options.noErrorStack ) { stack = inspectStack( options , error.stack ) ; }
 
@@ -8123,27 +8335,62 @@ module.exports = naturalSort ;
 
 
 
-module.exports = function toTitleCase( str , options ) {
+const DEFAULT_OPTIONS = {
+	underscoreToSpace: true ,
+	lowerCaseWords: new Set( [
+		// Articles
+		'a' , 'an' , 'the' ,
+		// Conjunctions (only coordinating conjunctions, maybe we will have to add subordinating and correlative conjunctions)
+		'for' , 'and' , 'nor' , 'but' , 'or' , 'yet' , 'so' ,
+		// Prepositions (there are more, but usually only preposition with 2 or 3 letters are lower-cased)
+		'of' , 'on' , 'off' , 'in' , 'into' , 'by' , 'with' , 'to' , 'at' , 'up' , 'down' , 'as'
+	] )
+} ;
+
+
+
+module.exports = ( str , options = DEFAULT_OPTIONS ) => {
 	if ( ! str || typeof str !== 'string' ) { return '' ; }
 
-	options = options || {} ;
+	// Manage options
+	var dashToSpace = options.dashToSpace ?? DEFAULT_OPTIONS.dashToSpace ,
+		underscoreToSpace = options.underscoreToSpace ?? DEFAULT_OPTIONS.underscoreToSpace ,
+		zealous = options.zealous ?? DEFAULT_OPTIONS.zealous ,
+		preserveAllCaps = options.preserveAllCaps ?? DEFAULT_OPTIONS.preserveAllCaps ,
+		lowerCaseWords = options.lowerCaseWords ?? DEFAULT_OPTIONS.lowerCaseWords ;
 
-	return str.replace( /[^\s_-]+/g , ( part ) => {
-		if ( options.zealous ) {
-			if ( options.preserveAllCaps && part === part.toUpperCase() ) {
+	lowerCaseWords =
+		lowerCaseWords instanceof Set ? lowerCaseWords :
+		Array.isArray( lowerCaseWords ) ? new Set( lowerCaseWords ) :
+		null ;
+
+
+	if ( dashToSpace ) { str = str.replace( /-+/g , ' ' ) ; }
+	if ( underscoreToSpace ) { str = str.replace( /_+/g , ' ' ) ; }
+
+	// Squash multiple spaces into only one, and trim
+	str = str.replace( / +/g , ' ' ).trim() ;
+
+
+	return str.replace( /[^\s_-]+/g , ( part , position ) => {
+		// Check word that must be lower-cased (excluding the first and the last word)
+		if ( lowerCaseWords && position && position + part.length < str.length ) {
+			let lowerCased = part.toLowerCase() ;
+			if ( lowerCaseWords.has( lowerCased ) ) { return lowerCased ; }
+		}
+
+		if ( zealous ) {
+			if ( preserveAllCaps && part === part.toUpperCase() ) {
 				// This is a ALLCAPS word
 				return part ;
 			}
 
 			return part[ 0 ].toUpperCase() + part.slice( 1 ).toLowerCase() ;
-
 		}
 
 		return part[ 0 ].toUpperCase() + part.slice( 1 ) ;
-
 	} ) ;
 } ;
-
 
 
 },{}],27:[function(require,module,exports){
