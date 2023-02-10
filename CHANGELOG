@@ -1,4 +1,10 @@
 
+v0.14.7
+-------
+
+Avoid browser's builders to discover third party modules
+
+
 v0.14.6
 -------
 

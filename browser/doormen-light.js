@@ -4717,13 +4717,22 @@ sanitizers.nullToUndefined = data => data === null ? undefined : data ;
 
 
 
+/* Third party sanitizers */
+
+
+
+// We will fool browser's builders, avoiding discovery of unwanted third party modules
+const req = id => require( id ) ;
+
+
+
 // Convert a string to a MongoDB ObjectID
 sanitizers.mongoId = data => {
 	if ( typeof data !== 'string' ) { return data ; }
 	if ( doormen.isBrowser ) { return data ; }
 
 	try {
-		var mongodb = require( 'mongodb' ) ;
+		let mongodb = req( 'mongodb' ) ;
 		return mongodb.ObjectID( data ) ;
 	}
 	catch ( error ) {
@@ -4733,7 +4742,7 @@ sanitizers.mongoId = data => {
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./core.js":7,"mongodb":15,"string-kit/lib/latinize.js":24,"string-kit/lib/toTitleCase.js":26}],13:[function(require,module,exports){
+},{"./core.js":7,"string-kit/lib/latinize.js":24,"string-kit/lib/toTitleCase.js":26}],13:[function(require,module,exports){
 /*
 	Doormen
 
