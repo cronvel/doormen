@@ -45,8 +45,8 @@ clean: clean-all
 # Variables
 
 MOCHA=mocha -c
-BROWSERIFY=./node_modules/.bin/browserify
-UGLIFY=./node_modules/.bin/uglifyjs
+BROWSERIFY=browserify
+UGLIFY=uglifyjs
 
 
 

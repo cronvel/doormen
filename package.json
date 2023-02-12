@@ -13,10 +13,6 @@
     "string-kit": "^0.17.8",
     "tree-kit": "^0.7.4"
   },
-  "devDependencies": {
-    "browserify": "^17.0.0",
-    "uglify-js": "^3.17.4"
-  },
   "scripts": {
     "test": "tea-time -R dot"
   },
