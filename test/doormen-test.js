@@ -4294,40 +4294,28 @@ describe( "Forms" , () => {
 
 
 if ( ! process.browser ) {
-	describe( "MongoDB's ObjectID" , () => {
+	var mongodb ;
 
-		it( "should validate MongoDB's ObjectID" , () => {
+	try {
+		mongodb = require( 'mongodb' ) ;
+	}
+	catch ( error ) {
+		//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
+	}	// skip the remaining tests if the module is not found
 
-			var mongodb ;
+	if ( mongodb ) {
+		describe( "MongoDB's ObjectId" , () => {
 
-			doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
+			it( "should validate MongoDB's ObjectId" , () => {
+				doormen( { type: 'mongoId' } , '1234567890abcd1234567890' ) ;
+				doormen( { type: 'mongoId' } , new mongodb.ObjectId() ) ;
+			} ) ;
 
-			try {
-				mongodb = require( 'mongodb' ) ;
-			}
-			catch ( error ) {
-				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
-				return ;
-			}	// skip the remaining tests if the module is not found
-
-			doormen( { type: 'mongoId' } , new mongodb.ObjectID() ) ;
+			it( "should sanitize string to MongoDB's ObjectId" , () => {
+				doormen( { instanceOf: mongodb.ObjectId } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;
+			} ) ;
 		} ) ;
-
-		it( "should sanitize string to MongoDB's ObjectID" , () => {
-
-			var mongodb ;
-
-			try {
-				mongodb = require( 'mongodb' ) ;
-			}
-			catch ( error ) {
-				//console.log( 'WARNING: MongoDB module not found, the end of the test is skipped.' ) ;
-				return ;
-			}	// skip the remaining tests if the module is not found
-
-			doormen( { instanceOf: mongodb.ObjectID } , doormen( { type: 'mongoId' , sanitize: 'mongoId' } , '1234567890abcd1234567890' ) ) ;
-		} ) ;
-	} ) ;
+	}
 }
 
 
