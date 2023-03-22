@@ -625,6 +625,32 @@ describe( "Optional, default and forced data" , () => {
 		) ;
 	} ) ;
 
+	it( "when the 'fakeFn' is specified in the schema and is a function, it has priority over 'defaultFn' only if fake-mode is turned on" , () => {
+		var count = 0 ,
+			fakeCount = 100 ;
+
+		doormen.equals(
+			doormen(
+				{ properties: {
+					a: { type: 'integer' , fakeFn: () => ++ fakeCount , defaultFn: () => ++ count } ,
+					b: { type: 'integer' , fakeFn: () => ++ fakeCount , defaultFn: () => ++ count }
+				} } ,
+				{ a: null } ) ,
+			{ a: 1 , b: 2 }
+		) ;
+
+		doormen.equals(
+			doormen(
+				{ fake: true } ,
+				{ properties: {
+					a: { type: 'integer' , fakeFn: () => ++ fakeCount , defaultFn: () => ++ count } ,
+					b: { type: 'integer' , fakeFn: () => ++ fakeCount , defaultFn: () => ++ count }
+				} } ,
+				{ a: null } ) ,
+			{ a: 101 , b: 102 }
+		) ;
+	} ) ;
+
 	it( "if 'nullIsValue' is set and a 'default' value is set, null values are not replaced by the default value" , () => {
 		doormen.not( { type: 'string' , nullIsValue: true , "default": 'default!' } , null ) ;
 		doormen.equals( doormen( { nullIsValue: true , "default": 'default!' } , null ) , null ) ;

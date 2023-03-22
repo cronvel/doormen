@@ -2375,6 +2375,7 @@ constraints.extraction = function( data , params , element , clone ) {
 
 	options:
 		* userContext: a context that can be accessed by user-land type-checker and sanitizer
+		* fake: activate the fake mode: everywhere a 'fakeFn' property is defined, it is used instead of a defaultFn
 		* report: activate the report mode: report as many error as possible (same as doormen.report())
 		* export: activate the export mode: sanitizers export into a new object (same as doormen.export())
 		* onlyConstraints: only check constraints, typically: validate a patch, apply it, then check complex constraints only
@@ -2406,6 +2407,7 @@ function doormen( ... args ) {
 		patch: options.patch ,
 		check: check ,
 		validatorError: validatorError ,
+		fake: !! options.fake ,
 		report: !! options.report ,
 		export: !! options.export
 	} ;
@@ -2522,7 +2524,10 @@ function check( schema , data_ , element , isPatch ) {
 				data = undefined ;
 			}
 			else if ( ! schema.nullIsValue ) {
-				if ( schema.defaultFn ) {
+				if ( this.fake && typeof schema.fakeFn === 'function' ) {
+					return schema.fakeFn( schema ) ;
+				}
+				else if ( schema.defaultFn ) {
 					if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
 
 					if ( doormen.defaultFunctions[ schema.defaultFn ] ) { return doormen.defaultFunctions[ schema.defaultFn ]( schema ) ; }
@@ -2535,7 +2540,10 @@ function check( schema , data_ , element , isPatch ) {
 
 		if ( data === undefined ) {
 			// if the data has default value or is optional and its value is null or undefined, it's ok!
-			if ( schema.defaultFn ) {
+			if ( this.fake && typeof schema.fakeFn === 'function' ) {
+				return schema.fakeFn( schema ) ;
+			}
+			else if ( schema.defaultFn ) {
 				if ( typeof schema.defaultFn === 'function' ) { return schema.defaultFn( schema ) ; }
 
 				if ( doormen.defaultFunctions[ schema.defaultFn ] ) { return doormen.defaultFunctions[ schema.defaultFn ]( schema ) ; }

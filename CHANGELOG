@@ -1,4 +1,10 @@
 
+v0.14.9
+-------
+
+New: fakeFn that is used instead of defaultFn when fake-mode is turned-on
+
+
 v0.14.8
 -------
 
