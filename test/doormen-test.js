@@ -4201,6 +4201,30 @@ describe( "Sub-schema path" , () => {
 
 
 
+describe( "www Data walker" , () => {
+
+	it( "should walk the data and the schema together" , () => {
+		var schema = {
+			properties: {
+				a: { optional: true , type: 'string' } ,
+				b: { optional: true , type: 'string' } ,
+				c: {
+					optional: true ,
+					properties: {
+						d: { optional: true , type: 'string' }
+					}
+				}
+			}
+		} ;
+		
+		doormen.dataWalker( schema , { a: "Alice" , b: "Bob" } , ( subData , subSchema ) => {
+			log( "SubData: %Y\nSubSchema: %Y" , subData , subSchema ) ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Extract constraint-only schema" , () => {
 
 	it( "Extract constraint-only schema from a complete schema" , () => {
