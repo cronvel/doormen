@@ -1,4 +1,10 @@
 
+v0.15.0
+-------
+
+BREAKING: Dependency upgrade requires node >= v16.13
+
+
 v0.14.9
 -------
 

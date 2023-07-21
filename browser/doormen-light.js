@@ -7354,16 +7354,21 @@ function inspect_( runtime , options , variable ) {
 		if ( runtime.descriptor ) {
 			descriptorStr = [] ;
 
-			if ( ! runtime.descriptor.configurable ) { descriptorStr.push( '-conf' ) ; }
-			if ( ! runtime.descriptor.enumerable ) { descriptorStr.push( '-enum' ) ; }
+			if ( runtime.descriptor.error ) {
+				descriptorStr = '[' + runtime.descriptor.error + ']' ;
+			}
+			else {
+				if ( ! runtime.descriptor.configurable ) { descriptorStr.push( '-conf' ) ; }
+				if ( ! runtime.descriptor.enumerable ) { descriptorStr.push( '-enum' ) ; }
 
-			// Already displayed by runtime.forceType
-			//if ( runtime.descriptor.get || runtime.descriptor.set ) { descriptorStr.push( 'getter/setter' ) ; } else
-			if ( ! runtime.descriptor.writable ) { descriptorStr.push( '-w' ) ; }
+				// Already displayed by runtime.forceType
+				//if ( runtime.descriptor.get || runtime.descriptor.set ) { descriptorStr.push( 'getter/setter' ) ; } else
+				if ( ! runtime.descriptor.writable ) { descriptorStr.push( '-w' ) ; }
 
-			//if ( descriptorStr.length ) { descriptorStr = '(' + descriptorStr.join( ' ' ) + ')' ; }
-			if ( descriptorStr.length ) { descriptorStr = descriptorStr.join( ' ' ) ; }
-			else { descriptorStr = '' ; }
+				//if ( descriptorStr.length ) { descriptorStr = '(' + descriptorStr.join( ' ' ) + ')' ; }
+				if ( descriptorStr.length ) { descriptorStr = descriptorStr.join( ' ' ) ; }
+				else { descriptorStr = '' ; }
+			}
 		}
 
 		if ( runtime.keyIsProperty ) {
@@ -7550,7 +7555,10 @@ function inspect_( runtime , options , variable ) {
 				else {
 					try {
 						descriptor = Object.getOwnPropertyDescriptor( variable , propertyList[ i ] ) ;
-						if ( ! descriptor.enumerable && options.enumOnly ) { continue ; }
+						// Note: descriptor can be undefined, this happens when the object is a Proxy with a bad implementation:
+						// it reports that key (Object.keys()) but doesn't give the descriptor for it.
+
+						if ( descriptor && ! descriptor.enumerable && options.enumOnly ) { continue ; }
 						keyIsProperty = ! isArray || ! descriptor.enumerable || isNaN( propertyList[ i ] ) ;
 
 						if ( ! options.noDescriptor && descriptor && ( descriptor.get || descriptor.set ) ) {
@@ -7574,7 +7582,7 @@ function inspect_( runtime , options , variable ) {
 									ancestors: nextAncestors ,
 									key: propertyList[ i ] ,
 									keyIsProperty: keyIsProperty ,
-									descriptor: options.noDescriptor ? undefined : descriptor
+									descriptor: options.noDescriptor ? undefined : descriptor || { error: "Bad Proxy Descriptor" }
 								} ,
 								options ,
 								variable[ propertyList[ i ] ]
@@ -8750,7 +8758,7 @@ function toPathArray( path ) {
 
 	if ( ! path ) { return EMPTY_PATH ; }
 	if ( typeof path === 'string' ) {
-		return path[ path.length - 1 ] === '.' ? path.slice( 0 , -1 ).split( '.' ) : path.split( '.' ) ;
+		return path[ path.length - 1 ] === '.' ? path.slice( 0 , - 1 ).split( '.' ) : path.split( '.' ) ;
 	}
 
 	throw new TypeError( '[tree.dotPath]: the path argument should be a string or an array' ) ;
@@ -8877,7 +8885,7 @@ dotPath.dec = ( object , path , value ) => {
 	var pointer = pave( object , pathArray ) ;
 
 	if ( typeof pointer[ key ] === 'number' ) { pointer[ key ] -- ; }
-	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = -1 ; }
+	else if ( ! pointer[ key ] || typeof pointer[ key ] !== 'object' ) { pointer[ key ] = - 1 ; }
 
 	return value ;
 } ;
@@ -8938,7 +8946,7 @@ dotPath.delete = ( object , path ) => {
 
 	if ( typeof key === 'object' || key === '__proto__' ) { throw new Error( PROTO_POLLUTION_MESSAGE ) ; }
 
-	var pointer = walk( object , pathArray , -1 ) ;
+	var pointer = walk( object , pathArray , - 1 ) ;
 
 	if ( ! pointer || typeof pointer !== 'object' ) { return false ; }
 
