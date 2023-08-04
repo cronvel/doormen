@@ -255,6 +255,17 @@ describe( "Equality checker" , () => {
 	it( ".isEqual() 'like' option" ) ;
 	it( ".isEqual() 'oneWay' option" ) ;
 	
+	it( ".isEqual() and Symbol instances" , () => {
+		var o1 = {} , o2 = {} , symbol = Symbol( 'symbol' ) ;
+		expect( doormen.isEqual( o1 , o2 ) ).to.be( true ) ;
+		o1[ symbol ] = 'v1' ;
+		expect( doormen.isEqual( o1 , o2 ) ).to.be( false ) ;
+		o2[ symbol ] = 'v1' ;
+		expect( doormen.isEqual( o1 , o2 ) ).to.be( true ) ;
+		o2[ symbol ] = 'v2' ;
+		expect( doormen.isEqual( o1 , o2 ) ).to.be( false ) ;
+	} ) ;
+
 	it( ".isEqual() 'unordered' option" , () => {
 		expect( doormen.isEqual( [1,2,3] , [1,2,3] , { unordered: true } ) ).to.be( true ) ;
 		expect( doormen.isEqual( [2,3,1] , [1,2,3] , { unordered: true } ) ).to.be( true ) ;

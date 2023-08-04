@@ -4724,7 +4724,7 @@ const DEFAULT_OPTIONS = {} ;
 const EPSILON_DELTA_RATE = 1 + 4 * Number.EPSILON ;
 const EPSILON_ZERO_DELTA = 4 * Number.MIN_VALUE ;
 
-var lastDiffPath = '' ;
+
 
 /*
 	Should be FAST! Some critical application parts are depending on it.
@@ -4752,16 +4752,16 @@ function isEqual( left , right , options = DEFAULT_OPTIONS ) {
 	return isEqual_( runtime , left , right , '' ) ;
 }
 
+module.exports = isEqual ;
 
 
+
+var lastDiffPath = '' ;
 isEqual.getLastPath = () => lastDiffPath ;
 
 
 
 function isEqual_( runtime , left , right , path ) {
-	var index , indexMax , index2 , index2Max , found , indexUsed , keys , key , leftIndexOf , rightIndexOf , recursiveTest ,
-		valueOfLeft , valueOfRight , leftProto , rightProto , leftConstructor , rightConstructor ;
-
 	// If it's strictly equals, then early exit now.
 	if ( left === right ) { return true ; }
 
@@ -4807,8 +4807,8 @@ function isEqual_( runtime , left , right , path ) {
 	// Objects and arrays
 	if ( typeof left === 'object' ) {
 		// First, check circular references
-		leftIndexOf = runtime.leftStack.indexOf( left ) ;
-		rightIndexOf = runtime.rightStack.indexOf( right ) ;
+		let leftIndexOf = runtime.leftStack.indexOf( left ) ;
+		let rightIndexOf = runtime.rightStack.indexOf( right ) ;
 
 		if ( leftIndexOf >= 0 ) { runtime.leftCircular = true ; }
 		if ( rightIndexOf >= 0 ) { runtime.rightCircular = true ; }
@@ -4823,13 +4823,12 @@ function isEqual_( runtime , left , right , path ) {
 			if ( left.length !== right.length ) { lastDiffPath = path + '.' + Math.min( left.length , right.length ) ; return false ; }
 
 			if ( runtime.unordered ) {
-				if ( indexUsed ) { indexUsed.length = 0 ; }
-				else { indexUsed = new Array( left.length ) ; }
+				let indexUsed = new Array( left.length ) ;
 
-				indexMax = left.length ;
-				index2Max = right.length ;
+				let indexMax = left.length ;
+				let index2Max = right.length ;
 
-				for ( index = 0 ; index < indexMax ; index ++ ) {
+				for ( let index = 0 ; index < indexMax ; index ++ ) {
 					// Optimization heuristic: first search using the same index, because when using this option blindly,
 					// both array may be ordered or almost ordered.
 					// Since unordered comparison is O(2n), it can help a lot...
@@ -4838,7 +4837,7 @@ function isEqual_( runtime , left , right , path ) {
 
 						runtime.leftStack.push( left ) ;
 						runtime.rightStack.push( right ) ;
-						recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] , path + '.' + index ) ;
+						let recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] , path + '.' + index ) ;
 						runtime.leftStack.pop() ;
 						runtime.rightStack.pop() ;
 
@@ -4848,9 +4847,9 @@ function isEqual_( runtime , left , right , path ) {
 						}
 					}
 
-					found = false ;
+					let found = false ;
 
-					for ( index2 = 0 ; index2 < index2Max ; index2 ++ ) {
+					for ( let index2 = 0 ; index2 < index2Max ; index2 ++ ) {
 						// Continue if already checked just above (in the optimization heuristic part)
 						// or if the index have been used already.
 						if ( index === index2 || indexUsed[ index2 ] ) {
@@ -4865,7 +4864,7 @@ function isEqual_( runtime , left , right , path ) {
 
 						runtime.leftStack.push( left ) ;
 						runtime.rightStack.push( right ) ;
-						recursiveTest = isEqual_( runtime , left[ index ] , right[ index2 ] , path + '.' + index ) ;
+						let recursiveTest = isEqual_( runtime , left[ index ] , right[ index2 ] , path + '.' + index ) ;
 						runtime.leftStack.pop() ;
 						runtime.rightStack.pop() ;
 
@@ -4880,12 +4879,12 @@ function isEqual_( runtime , left , right , path ) {
 				}
 			}
 			else {
-				for ( index = 0 , indexMax = left.length ; index < indexMax ; index ++ ) {
+				for ( let index = 0 , indexMax = left.length ; index < indexMax ; index ++ ) {
 					if ( left[ index ] === right[ index ] ) { continue ; }
 
 					runtime.leftStack.push( left ) ;
 					runtime.rightStack.push( right ) ;
-					recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] , path + '.' + index ) ;
+					let recursiveTest = isEqual_( runtime , left[ index ] , right[ index ] , path + '.' + index ) ;
 					runtime.leftStack.pop() ;
 					runtime.rightStack.pop() ;
 
@@ -4902,14 +4901,14 @@ function isEqual_( runtime , left , right , path ) {
 			if ( Array.isArray( right ) ) { lastDiffPath = path ; return false ; }
 
 			if ( typeof left.valueOf === 'function' && typeof right.valueOf === 'function' ) {
-				valueOfLeft = left.valueOf() ;
-				valueOfRight = right.valueOf() ;
+				let valueOfLeft = left.valueOf() ;
+				let valueOfRight = right.valueOf() ;
 
 				if ( valueOfLeft !== left && valueOfRight !== right ) {
-					leftProto = Object.getPrototypeOf( left ) ;
-					leftConstructor = leftProto && leftProto.constructor ;
-					rightProto = Object.getPrototypeOf( right ) ;
-					rightConstructor = rightProto && rightProto.constructor ;
+					let leftProto = Object.getPrototypeOf( left ) ;
+					let leftConstructor = leftProto && leftProto.constructor ;
+					let rightProto = Object.getPrototypeOf( right ) ;
+					let rightConstructor = rightProto && rightProto.constructor ;
 
 					// We only compare .valueOf() if the prototype are compatible
 					if (
@@ -4921,8 +4920,7 @@ function isEqual_( runtime , left , right , path ) {
 
 						runtime.leftStack.push( left ) ;
 						runtime.rightStack.push( right ) ;
-						recursiveTest = isEqual_( runtime , valueOfLeft , valueOfRight , path ) ;
-						//if ( ! recursiveTest ) { return false ; }
+						let recursiveTest = isEqual_( runtime , valueOfLeft , valueOfRight , path ) ;
 						runtime.leftStack.pop() ;
 						runtime.rightStack.pop() ;
 
@@ -4932,19 +4930,19 @@ function isEqual_( runtime , left , right , path ) {
 				}
 			}
 
-			keys = Object.keys( left ) ;
+			let leftDescriptors = Object.getOwnPropertyDescriptors( left ) ;
 
-			for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
-				key = keys[ index ] ;
+			for ( let key of Reflect.ownKeys( leftDescriptors ) ) {
+				if ( ! leftDescriptors[ key ].enumerable ) { continue ; }
 
 				if ( left[ key ] === undefined ) { continue ; }			// undefined and no key are considered the same
-				if ( right[ key ] === undefined ) { lastDiffPath = path + '.' + key ; return false ; }
+				if ( right[ key ] === undefined ) { lastDiffPath = path + '.' + key.toString() ; return false ; }
 				if ( left[ key ] === right[ key ] ) { continue ; }
 
+				// We need to use key.toString(), for some reasons, symbols have .toString() but does not support: '' + symbol
 				runtime.leftStack.push( left ) ;
 				runtime.rightStack.push( right ) ;
-				recursiveTest = isEqual_( runtime , left[ key ] , right[ key ] , path + '.' + key ) ;
-				//if ( ! recursiveTest ) { return false ; }
+				let recursiveTest = isEqual_( runtime , left[ key ] , right[ key ] , path + '.' + key.toString() ) ;
 				runtime.leftStack.pop() ;
 				runtime.rightStack.pop() ;
 
@@ -4953,13 +4951,13 @@ function isEqual_( runtime , left , right , path ) {
 			}
 
 			if ( ! runtime.oneWay ) {
-				keys = Object.keys( right ) ;
+				let rightDescriptor = Object.getOwnPropertyDescriptors( right ) ;
 
-				for ( index = 0 , indexMax = keys.length ; index < indexMax ; index ++ ) {
-					key = keys[ index ] ;
+				for ( let key of Reflect.ownKeys( rightDescriptor ) ) {
+					if ( ! rightDescriptor[ key ].enumerable ) { continue ; }
 
 					if ( right[ key ] === undefined ) { continue ; }		// undefined and no key are considered the same
-					if ( left[ key ] === undefined ) { lastDiffPath = path + '.' + key ; return false ; }
+					if ( left[ key ] === undefined ) { lastDiffPath = path + '.' + key.toString() ; return false ; }
 					// No need to check equality: already done in the previous loop
 				}
 			}
@@ -4971,8 +4969,6 @@ function isEqual_( runtime , left , right , path ) {
 	lastDiffPath = path ;
 	return false ;
 }
-
-module.exports = isEqual ;
 
 
 }).call(this)}).call(this,{"isBuffer":require("../../../../../../opt/node-v16.16.0/lib/node_modules/browserify/node_modules/is-buffer/index.js")})

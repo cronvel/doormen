@@ -1,4 +1,10 @@
 
+v0.15.1
+-------
+
+Fix: .isEqual() now check enumerable Symbols
+
+
 v0.15.0
 -------
 
