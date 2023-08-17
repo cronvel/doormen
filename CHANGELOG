@@ -1,4 +1,10 @@
 
+v0.15.2
+-------
+
+IMPORTANT BUGFIX: last release introduced an .isEqual() bug that happens whenever a property is enumerable on one side and not-enumerable on the other
+
+
 v0.15.1
 -------
 
