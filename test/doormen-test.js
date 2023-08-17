@@ -163,6 +163,33 @@ describe( "Equality checker" , () => {
 		doormen.equals( { a: 2 , b: 5 , c: { d: 'titi' } } , { a: 2 , b: 5 , c: { d: 'titi' , e: undefined } } ) ;
 	} ) ;
 
+	it( "equality of properties being enumerable on one side and non-enumerable on the other side" , () => {
+		var enum_ = {} , notEnum_ = {} ;
+
+		Object.defineProperties( enum_ , {
+			key: {
+				value: 'one' ,
+				writable: true ,
+				enumerable: true
+			}
+		} ) ;
+
+		Object.defineProperties( notEnum_ , {
+			key: {
+				value: 'one' ,
+				writable: true ,
+				enumerable: false
+			}
+		} ) ;
+
+		doormen.equals( enum_ , notEnum_ ) ;
+		doormen.equals( notEnum_ , enum_ ) ;
+
+		enum_.key = 'two' ;
+		doormen.not.equals( enum_ , notEnum_ ) ;
+		doormen.not.equals( notEnum_ , enum_ ) ;
+	} ) ;
+
 	it( "Equality of functions" , () => {
 		var o = {} ;
 		var fn = function() {} ;
@@ -3480,6 +3507,25 @@ describe( "Expect BDD assertion library" , () => {
 		// not the same prototype
 		doormen.expect( { b: 2 , a: 1 } ).not.to.partially.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.partially.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
+	} ) ;
+
+	it( "expect a value to be partially equal, the expected property being non-enumerable" , () => {
+		var notEnum = {} ;
+
+		Object.defineProperties( notEnum , {
+			key: {
+				value: 'one' ,
+				writable: true ,
+				enumerable: false
+			}
+		} ) ;
+		
+		doormen.expect( notEnum ).to.be.like( { key: 'one' } ) ;
+		doormen.expect( notEnum ).not.to.be.like( { key: 'two' } ) ;
+		
+		var error = new Error( "Dang!" ) ;
+		doormen.expect( error ).to.be.like( { message: 'Dang!' } ) ;
+		doormen.expect( error ).not.to.be.like( { message: 'Argh!' } ) ;
 	} ) ;
 
 	it( "expect a value to be partially equal around" , () => {
