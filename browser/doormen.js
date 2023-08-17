@@ -4951,14 +4951,28 @@ function isEqual_( runtime , left , right , path ) {
 			}
 
 			if ( ! runtime.oneWay ) {
-				let rightDescriptor = Object.getOwnPropertyDescriptors( right ) ;
+				let rightDescriptors = Object.getOwnPropertyDescriptors( right ) ;
 
-				for ( let key of Reflect.ownKeys( rightDescriptor ) ) {
-					if ( ! rightDescriptor[ key ].enumerable ) { continue ; }
+				for ( let key of Reflect.ownKeys( rightDescriptors ) ) {
+					if ( ! rightDescriptors[ key ].enumerable ) { continue ; }
 
 					if ( right[ key ] === undefined ) { continue ; }		// undefined and no key are considered the same
 					if ( left[ key ] === undefined ) { lastDiffPath = path + '.' + key.toString() ; return false ; }
-					// No need to check equality: already done in the previous loop
+
+					// No need to check equality if it was already done onn the previous loop
+					if ( right[ key ] === left[ key ] || leftDescriptors[ key ].enumerable ) { continue ; }
+
+					// So, the left part was not enumerable, hence nothing was tested by the left-part loop...
+
+					// We need to use key.toString(), for some reasons, symbols have .toString() but does not support: '' + symbol
+					runtime.leftStack.push( left ) ;
+					runtime.rightStack.push( right ) ;
+					let recursiveTest = isEqual_( runtime , left[ key ] , right[ key ] , path + '.' + key.toString() ) ;
+					runtime.leftStack.pop() ;
+					runtime.rightStack.pop() ;
+
+					// Don't change lastDiffPath here, we preserve the recursive one
+					if ( ! recursiveTest ) { return false ; }
 				}
 			}
 		}
