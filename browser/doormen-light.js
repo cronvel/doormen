@@ -110,7 +110,14 @@ AssertionError.create = ( from , actual , expectationPath , expectationType , ..
 			} ).join( inOpt.glue ) ;
 		}
 		else {
-			message += ' ' + expectations.join( inOpt.glue ) ;
+			message += ' ' + expectations.map( e => {
+				try {
+					return '' + e ;
+				}
+				catch ( error ) {
+					return "<cant-convert-to-string>" ;
+				}
+			} ).join( inOpt.glue ) ;
 		}
 	}
 
@@ -338,8 +345,10 @@ module.exports = assert ;
 const typeCheckers = require( './typeCheckers.js' ) ;
 
 const isEqual = require( './isEqual.js' ) ;
+const IS_EQUAL_UNORDERED = { unordered: true } ;
 const IS_EQUAL_AROUND = { around: true } ;
 const IS_EQUAL_LIKE = { like: true } ;
+const IS_EQUAL_UNORDERED_LIKE = { like: true , unordered: true } ;
 const IS_EQUAL_LIKE_AROUND = { like: true , around: true } ;
 const IS_EQUAL_PARTIALLY_LIKE = { like: true , oneWay: true } ;
 const IS_EQUAL_PARTIALLY_LIKE_AROUND = { like: true , oneWay: true , around: true } ;
@@ -683,6 +692,30 @@ assert.notEqual.inspect = true ;
 
 
 
+// Unordered equal
+assert['to be equal to unordered'] =
+assert['to equal unordered'] =
+assert.unorderedEqual = ( from , actual , expected ) => {
+	if ( ! isEqual( actual , expected , IS_EQUAL_UNORDERED ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to equal unordered' , expected ) ;
+	}
+} ;
+assert.unorderedEqual.inspect = true ;
+
+
+
+// Not unordered equal
+assert['to be not equal to unordered'] = assert['to not be equal to unordered'] = assert['not to be equal to unordered'] =
+assert['to not equal unordered'] = assert['not to equal unordered'] =
+assert.notUnorderedEqual = ( from , actual , notExpected ) => {
+	if ( isEqual( actual , notExpected , IS_EQUAL_UNORDERED ) ) {
+		throw AssertionError.create( from , actual , null , 'not to equal unordered' , notExpected ) ;
+	}
+} ;
+assert.notUnorderedEqual.inspect = true ;
+
+
+
 // Equal around
 assert['to equal around'] =
 assert.equalAround = ( from , actual , expected ) => {
@@ -730,6 +763,32 @@ assert.notLike = ( from , actual , notExpected ) => {
 	}
 } ;
 assert.notLike.inspect = true ;
+
+
+
+// Unordered like
+assert['to be like unordered'] =
+assert['to be alike unordered'] =
+assert['to be alike to unordered'] =
+assert.unorderedLike = ( from , actual , expected ) => {
+	if ( ! isEqual( actual , expected , IS_EQUAL_UNORDERED_LIKE ) ) {
+		throw AssertionError.create( from , actual , isEqual.getLastPath() , 'to be like unordered' , expected ) ;
+	}
+} ;
+assert.unorderedLike.inspect = true ;
+
+
+
+// Not unordered like
+assert['to be not like unordered'] = assert['to not be like unordered'] = assert['not to be like unordered'] =
+assert['to be not alike unordered'] = assert['to not be alike unordered'] = assert['not to be alike unordered'] =
+assert['to be not alike to unordered'] = assert['to not be alike to unordered'] = assert['not to be alike to unordered'] =
+assert.notUnorderedLike = ( from , actual , notExpected ) => {
+	if ( isEqual( actual , notExpected , IS_EQUAL_UNORDERED_LIKE ) ) {
+		throw AssertionError.create( from , actual , null , 'not to be like unordered' , notExpected ) ;
+	}
+} ;
+assert.notUnorderedLike.inspect = true ;
 
 
 
