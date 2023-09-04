@@ -3458,6 +3458,21 @@ describe( "Expect BDD assertion library" , () => {
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.equal( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
 	} ) ;
 
+	it( "expect a value to be equal but unordered" , () => {
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.equal.to.unordered( [ {} , "b" , 3 ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.equal.to.unordered( [ "b" , 3 , {} ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.equal.to.unordered( [ 3 , {} , "b" ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.equal.to.unordered( [ 3 , {} , "c" ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.equal.to.unordered( [ {} , "b" , 3 , undefined ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.equal.to.unordered( [ "b" , 3 , {} , undefined ] ) ;
+
+		// prototype tests
+		doormen.expect( [ {} , "b" , 3 ] ).not.to.be.equal.to.unordered( [ Object.create( null ) , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).not.to.be.equal.to.unordered( [ {} , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).to.be.equal.to.unordered( [ Object.create( null ) , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).to.be.equal.to.unordered( [ 3 , "b" , Object.create( null ) ] ) ;
+	} ) ;
+
 	it( "expect a value to be equal around" , () => {
 		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).not.to.equal( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
 		doormen.expect( { b: 2 + 2 * Number.EPSILON , a: 1 - 2 * Number.EPSILON , nested: { c: 3 + 2 * Number.EPSILON } } ).to.equal.around( { a: 1 , b: 2 , nested: { c: 3 } } ) ;
@@ -3483,6 +3498,21 @@ describe( "Expect BDD assertion library" , () => {
 		// not the same prototype
 		doormen.expect( { b: 2 , a: 1 } ).to.be.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ;
 		doormen.shouldThrowAssertion( () => doormen.expect( { b: 2 , a: 1 } ).to.not.be.like( Object.assign( Object.create( null ) , { a: 1 , b: 2 } ) ) ) ;
+	} ) ;
+
+	it( "expect a value to be like but unordered" , () => {
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.like.unordered( [ {} , "b" , 3 ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.like.unordered( [ "b" , 3 , {} ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.like.unordered( [ 3 , {} , "b" ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.like.unordered( [ 3 , {} , "c" ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.like.unordered( [ {} , "b" , 3 , undefined ] ) ;
+		doormen.expect( [ {} , "b" , 3 ] ).to.not.be.like.unordered( [ "b" , 3 , {} , undefined ] ) ;
+
+		// prototype tests
+		doormen.expect( [ {} , "b" , 3 ] ).to.be.like.unordered( [ Object.create( null ) , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).to.be.like.unordered( [ {} , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).to.be.like.unordered( [ Object.create( null ) , "b" , 3 ] ) ;
+		doormen.expect( [ Object.create( null ) , "b" , 3 ] ).to.be.like.unordered( [ 3 , "b" , Object.create( null ) ] ) ;
 	} ) ;
 
 	it( "expect a value to be like around" , () => {
