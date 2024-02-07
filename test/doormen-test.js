@@ -2056,7 +2056,17 @@ describe( "Strings meta types" , () => {
 
 describe( "Sanitize" , () => {
 
-	it( "should sanitize to 'toString' accordingly" ) ;
+	it( "should sanitize to 'toString' accordingly" , () => {
+		doormen.equals( doormen( { sanitize: 'toString' } , "string" ) , "string" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , "123" ) , "123" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , 0 ) , "0" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , 1234 ) , "1234" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , 123.45 ) , "123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , -123.45 ) , "-123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , true ) , "true" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , false ) , "false" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , null ) , "null" ) ;
+	} ) ;
 
 	it( "should sanitize to 'toBoolean' accordingly" , () => {
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , 0 ) , false ) ;
@@ -2137,7 +2147,6 @@ describe( "Sanitize" , () => {
 	} ) ;
 
 	it( "should remove extra properties accordingly" , () => {
-
 		var schema ;
 
 		schema = {
