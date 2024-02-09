@@ -4142,41 +4142,26 @@ describe( "Expect BDD assertion library" , () => {
 
 describe( "Sub-schema path" , () => {
 
-	it( "should find the sub-schema for a path" , () => {
+	it( "should find the sub-schema for a basic path" , () => {
 		var schema = {
 			type: 'strictObject' ,
 			properties: {
-				key1: {
-					type: 'integer' ,
-					custom: 'field'
-				} ,
-				key2: {
-					type: 'string' ,
-					another: 'custom'
-				} ,
+				key1: { type: 'integer' , custom: 'field' } ,
+				key2: { type: 'string' , another: 'custom' } ,
 				key3: {
 					type: 'strictObject' ,
 					properties: {
-						subkey1: {
-							type: 'integer' ,
-							some: 'data'
-						}
+						subkey1: { type: 'integer' , some: 'data' }
 					}
 				} ,
 				key4: {
 					type: 'strictObject' ,
 					noSubmasking: true ,
-					of: {
-						type: 'string' ,
-						another: 'custom'
-					}
+					of: { type: 'string' , another: 'custom' }
 				} ,
 				key5: {
 					type: 'array' ,
-					of: {
-						type: 'string' ,
-						more: 'data'
-					}
+					of: { type: 'string' , more: 'data' }
 				} ,
 				key6: {
 					type: 'array' ,
@@ -4261,10 +4246,39 @@ describe( "Sub-schema path" , () => {
 		) ;
 		
 		doormen.shouldThrow( () => doormen.subSchema( schema , 'key6.3' ) ) ;
-		
+	} ) ;
 
-		
-		// Test the noSubmasking option
+	it( "should find the sub-schema with the 'noSubmasking' option" , () => {
+		var schema = {
+			type: 'strictObject' ,
+			properties: {
+				key1: { type: 'integer' , custom: 'field' } ,
+				key2: { type: 'string' , another: 'custom' } ,
+				key3: {
+					type: 'strictObject' ,
+					properties: {
+						subkey1: { type: 'integer' , some: 'data' }
+					}
+				} ,
+				key4: {
+					type: 'strictObject' ,
+					noSubmasking: true ,
+					of: { type: 'string' , another: 'custom' }
+				} ,
+				key5: {
+					type: 'array' ,
+					of: { type: 'string' , more: 'data' }
+				} ,
+				key6: {
+					type: 'array' ,
+					elements: [
+						{ type: 'string' , custom: '0' } ,
+						{ type: 'number' , custom: '1' } ,
+						{ type: 'boolean' , custom: '2' } ,
+					]
+				}
+			}
+		} ;
 
 		doormen.equals(
 			doormen.subSchema( schema , '' , true ) ,
@@ -4291,6 +4305,33 @@ describe( "Sub-schema path" , () => {
 		doormen.equals(
 			doormen.subSchema( schema , 'key4.anything' , true ) ,
 			null
+		) ;
+	} ) ;
+
+	it( "* has no special meaning at the moment, but in any case it should support the 'of' part of a sub-schema" , () => {
+		var schema = {
+			type: 'strictObject' ,
+			properties: {
+				key1: {
+					type: 'array' ,
+					of: { type: 'string' , more: 'data' }
+				} ,
+				key2: {
+					type: 'strictObject' ,
+					noSubmasking: true ,
+					of: { type: 'string' , another: 'custom' }
+				}
+			}
+		} ;
+
+		doormen.equals(
+			doormen.subSchema( schema , 'key1.*' ) ,
+			{ type: 'string' , more: 'data' }
+		) ;
+
+		doormen.equals(
+			doormen.subSchema( schema , 'key2.*' ) ,
+			{ type: 'string' , another: 'custom' }
 		) ;
 	} ) ;
 } ) ;
