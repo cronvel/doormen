@@ -5402,6 +5402,19 @@ sanitizers.toNumber = data => {
 	return NaN ;
 } ;
 
+// For instance, there is no difference between those 2 sanitizers, 'toReal' is still supposed
+// to return NaN on non-conforming real, thus will fail for the 'real' type-checker
+sanitizers.toFloat = sanitizers.toReal = sanitizers.toNumber ;
+
+
+
+sanitizers.toInteger = data => {
+	if ( typeof data === 'number' ) { return Math.round( data ) ; }
+	else if ( ! data ) { return NaN ; }
+	else if ( typeof data === 'string' ) { return Math.round( parseFloat( data ) ) ; }	// parseInt() is more capricious
+	return NaN ;
+} ;
+
 
 
 sanitizers.toBoolean = data => {
@@ -5435,15 +5448,6 @@ sanitizers.toBoolean = data => {
 		default :
 			return !! data ;
 	}
-} ;
-
-
-
-sanitizers.toInteger = data => {
-	if ( typeof data === 'number' ) { return Math.round( data ) ; }
-	else if ( ! data ) { return NaN ; }
-	else if ( typeof data === 'string' ) { return Math.round( parseFloat( data ) ) ; }	// parseInt() is more capricious
-	return NaN ;
 } ;
 
 
@@ -5855,8 +5859,8 @@ typeCheckers.schema = data => {
 
 
 // Meta type of numbers
-typeCheckers.real = data => typeof data === 'number' && ! isNaN( data ) && isFinite( data ) ;
-typeCheckers.integer = data => typeof data === 'number' && isFinite( data ) && data === Math.round( data ) ;
+typeCheckers.float = typeCheckers.real = data => typeof data === 'number' && Number.isFinite( data ) ;
+typeCheckers.integer = data => typeof data === 'number' && Number.isFinite( data ) && data === Math.round( data ) ;
 
 
 

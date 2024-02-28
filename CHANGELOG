@@ -1,4 +1,10 @@
 
+v0.15.5
+-------
+
+New 'float' type which is an aliase of 'real', also new sanitizers 'toFloat' / 'toReal', but they are not different from 'toNumber' (they have no reason to be different at all)
+
+
 v0.15.4
 -------
 
