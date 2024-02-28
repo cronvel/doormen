@@ -2351,6 +2351,37 @@ describe( "Sanitize + Patch reporting" , () => {
 
 
 
+describe( "Merging patch" , () => {
+	it( "xxx should merge patch, the second overriding the first, and removing overlap" , () => {
+		var patch1 = {
+			sub: {
+				a: "bob" ,
+				b: "bill"
+			}
+        } ;
+        
+        var patch2 = { "sub.a": "toto" , c: "jack" } ;
+
+		doormen.mergePatch( patch1 , patch2 ) ;
+		doormen.equals( patch1 , { sub: { a: "toto" , b: "bill" } , c: "jack" } ) ;
+
+        
+        patch1 = { "sub.a": "toto" } ;
+
+		patch2 = {
+			sub: {
+				a: "bob" ,
+				b: "bill"
+			}
+        } ;
+        
+		doormen.mergePatch( patch1 , patch2 ) ;
+		doormen.equals( patch1 , { sub: { a: "bob" , b: "bill" } } ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Full report mode" , () => {
 
 	it( "should return an object with all contained data weither it validates or not, the sanitized data, and an array of errors" , () => {

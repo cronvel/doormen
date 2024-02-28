@@ -10,8 +10,8 @@
     "test": "test"
   },
   "dependencies": {
-    "string-kit": "^0.17.10",
-    "tree-kit": "^0.8.1"
+    "string-kit": "^0.18.1",
+    "tree-kit": "^0.8.7"
   },
   "scripts": {
     "test": "tea-time -R dot"
