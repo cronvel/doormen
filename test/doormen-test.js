@@ -2352,7 +2352,8 @@ describe( "Sanitize + Patch reporting" , () => {
 
 
 describe( "Merging patch" , () => {
-	it( "xxx should merge patch, the second overriding the first, and removing overlap" , () => {
+
+	it( "should merge patch, the second overriding the first, and removing overlap" , () => {
 		var patch1 = {
 			sub: {
 				a: "bob" ,
@@ -4587,6 +4588,51 @@ describe( "Misc" , () => {
 				fax: '0142559833'
 			}
 		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "Historical bugs" , () => {
+
+	it( "should fix the bug where NaN creates useless patch" , () => {
+		var schema = {
+			properties: {
+				a: {
+					type: 'number' ,
+					sanitize: 'toNumber'
+				}
+			}
+		} ;
+
+		var patch = {} ;
+		doormen( { patch } , schema , { a: NaN } ) ;
+		//log( "Patch: %Y" , patch ) ;
+		doormen.equals( patch , {} ) ;
+	} ) ;
+
+	it( "should fix the bug where patching array create patch's path with bracket instead of dot" , () => {
+		var schema = {
+			properties: {
+				array: {
+					type: 'array' ,
+					of: {
+						type: 'strictObject' ,
+						properties: {
+							a: {
+								type: 'number' ,
+								sanitize: 'toNumber'
+							}
+						}
+					}
+				}
+			}
+		} ;
+
+		var patch = {} ;
+		doormen( { patch } , schema , { array: [ { a: "123" } ] } ) ;
+		//log( "Patch: %Y" , patch ) ;
+		doormen.equals( patch , { "array.0.a": 123 } ) ;
 	} ) ;
 } ) ;
 
