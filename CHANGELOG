@@ -1,4 +1,10 @@
 
+v0.15.4
+-------
+
+Release with: NaN bug in patch fixed, bracket in patch path bug (instead of dot) fixed, new: doormen.mergePatch()
+
+
 v0.15.3
 -------
 
