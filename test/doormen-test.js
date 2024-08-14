@@ -2618,6 +2618,27 @@ describe( "Patch validation" , () => {
 		doormen.equals( doormen.patch( schema , { 'object.a': { $unset: null } } ) , { 'object.a': { $unset: true } } ) ;
 	} ) ;
 
+	it( "immutable properties should throw when they would be patched" , () => {
+		var data , schema ;
+
+		schema = {
+			type: 'strictObject' ,
+			properties: {
+				a: { type: 'string' } ,
+				b: { type: 'string' , optional: true , immutable: true }
+			}
+		} ;
+
+		data = { a: 'one' , b: 'two' } ;
+        doormen.patch( null , schema , { a: 'one1' } , data ) ;
+		doormen.patch.not( null , schema , { a: '1' , b: '2' } , data ) ;
+		doormen.patch.not( null , schema , { a: '1' , b: { $delete: true } } , data ) ;
+
+		data = { a: 'one' } ;
+        doormen.patch( null , schema , { a: 'one1' } , data ) ;
+		doormen.patch( null , schema , { a: '1' , b: '2' } , data ) ;
+		doormen.patch( null , schema , { a: '1' , b: { $delete: true } } , data ) ;
+	} ) ;
 
 	it( "test doormen.reportPatch()" ) ;
 	it( "test doormen.exportPatch()" ) ;

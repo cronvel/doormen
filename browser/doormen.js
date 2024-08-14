@@ -3804,26 +3804,27 @@ function checkOnePatchPathByTags( schema , path , allowedTags , element ) {
 
 
 /*
-	doormen.patch( schema , patch )
-	doormen.patch( options , schema , patch )
+	doormen.patch( [options] , schema , patch , [data] )
 
-	Validate the 'patch' format
+	Validate the 'patch' format.
+	If 'data' is given, also check that immutable properties are not overwritten.
 */
 doormen.patch = function( ... args ) {
-	var patch , path , value ,
-		schema , subSchema ,
-		sanitized , options , context , patchCommandName ;
+	var options , schema , patch , data ,
+		path , value , subSchema ,
+		sanitized , context , patchCommandName ;
 
 
 	// Share a lot of code with the doormen() function
 
 
-	if ( args.length < 2 || args.length > 3 ) {
-		throw new Error( 'doormen.patch() needs at least 2 and at most 3 arguments' ) ;
+	if ( args.length < 2 || args.length > 4 ) {
+		throw new Error( 'doormen.patch() needs at least 2 and at most 4 arguments' ) ;
 	}
 
 	if ( args.length === 2 ) { schema = args[ 0 ] ; patch = args[ 1 ] ; }
-	else { options = args[ 0 ] ; schema = args[ 1 ] ; patch = args[ 2 ] ; }
+	else if ( args.length === 3 ) { options = args[ 0 ] ; schema = args[ 1 ] ; patch = args[ 2 ] ; }
+	else { options = args[ 0 ] ; schema = args[ 1 ] ; patch = args[ 2 ] ; data = args[ 3 ] ; }
 
 	if ( ! schema || typeof schema !== 'object' ) {
 		throw new doormen.SchemaError( 'Bad schema, it should be an object or an array of object!' ) ;
@@ -3859,6 +3860,12 @@ doormen.patch = function( ... args ) {
 		// Don't try-catch! Let it throw!
 		if ( context.checkAllowed ) { context.checkAllowed( schema , path , context.allowedTags , value ) ; }
 
+		let element = {
+			displayPath: 'patch.' + path ,
+			path: path ,
+			key: path
+		} ;
+
 		if ( ( patchCommandName = isPatchCommand( value ) ) ) {
 			value = value[ patchCommandName ] ;
 
@@ -3873,31 +3880,26 @@ doormen.patch = function( ... args ) {
 				subSchema = doormen.subSchema( schema , path , undefined , true ) ;
 			}
 
+			if ( subSchema?.immutable && data && dotPath.get( data , path ) !== undefined ) {
+				throw new doormen.ValidatorError( "Cannot patch an immutable property." , element ) ;
+			}
+
 			if ( patchCommands[ patchCommandName ].sanitize ) {
 				sanitized[ path ][ patchCommandName ] = patchCommands[ patchCommandName ].sanitize( value ) ;
-				context.check( subSchema , value , {
-					displayPath: 'patch.' + path ,
-					path: path ,
-					key: path
-				} , true ) ;
+				context.check( subSchema , value , element , true ) ;
 			}
 			else {
-				sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , {
-					displayPath: 'patch.' + path ,
-					path: path ,
-					key: path
-				} , true ) ;
+				sanitized[ path ][ patchCommandName ] = context.check( subSchema , value , element , true ) ;
 			}
 		}
 		else {
 			subSchema = doormen.subSchema( schema , path , undefined , true ) ;
+			if ( subSchema?.immutable && data && dotPath.get( data , path ) !== undefined ) {
+				throw new doormen.ValidatorError( "Cannot patch an immutable property." , element ) ;
+			}
 
 			//sanitized[ path ] = doormen( options , subSchema , value ) ;
-			sanitized[ path ] = context.check( subSchema , value , {
-				displayPath: 'patch.' + path ,
-				path: path ,
-				key: path
-			} , true ) ;
+			sanitized[ path ] = context.check( subSchema , value , element , true ) ;
 		}
 	}
 
@@ -3920,15 +3922,16 @@ doormen.patch.export = doormen.patch.bind( doormen , { export: true } ) ;
 
 
 
+/*
+	doormen.applyPatch( data , patch )
+	Apply the 'patch' format (does not validate).
+*/
 doormen.applyPatch = function( data , patch ) {
-	var path , value , patchCommandName ;
+	for ( let path in patch ) {
+		let value = patch[ path ] ;
+		let patchCommandName = isPatchCommand( value ) ;
 
-	if ( ! patch || typeof patch !== 'object' ) { throw new Error( 'The patch should be an object' ) ; }
-
-	for ( path in patch ) {
-		value = patch[ path ] ;
-
-		if ( ( patchCommandName = isPatchCommand( value ) ) ) {
+		if ( patchCommandName ) {
 			patchCommands[ patchCommandName ]( data , path , value[ patchCommandName ] ) ;
 		}
 		else {
@@ -5670,6 +5673,7 @@ const singleSchema = {
 		extraProperties: { optional: true , type: 'boolean' } ,
 		default: { optional: true } ,
 		value: { optional: true } ,
+		immutable: { optional: true , type: 'boolean' } ,
 		sanitize: {
 			optional: true , sanitize: 'toArray' , type: 'array' , of: { type: 'string' }
 		} ,
