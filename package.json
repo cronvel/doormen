@@ -1,6 +1,6 @@
 {
   "name": "doormen",
-  "version": "0.15.6",
+  "version": "0.15.7",
   "description": "Validate, sanitize and assert: the silver bullet of data!",
   "main": "lib/doormen.js",
   "engines": {
@@ -10,7 +10,7 @@
     "test": "test"
   },
   "dependencies": {
-    "string-kit": "^0.18.1",
+    "string-kit": "^0.19.2",
     "tree-kit": "^0.8.7"
   },
   "scripts": {
