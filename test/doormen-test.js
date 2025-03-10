@@ -2059,6 +2059,7 @@ describe( "Sanitize" , () => {
 	it( "should sanitize to 'toString' accordingly" , () => {
 		doormen.equals( doormen( { sanitize: 'toString' } , "string" ) , "string" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , "123" ) , "123" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , "" ) , "" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , 0 ) , "0" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , 1234 ) , "1234" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , 123.45 ) , "123.45" ) ;
