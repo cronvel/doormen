@@ -2084,6 +2084,20 @@ describe( "Sanitize" , () => {
 		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , undefined ) , "" ) ;
 	} ) ;
 
+	it( "should sanitize 'numberToString' accordingly" , () => {
+		doormen.equals( doormen( { sanitize: 'numberToString' } , "string" ) , "string" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , "123" ) , "123" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , "" ) , "" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , 0 ) , "0" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , 1234 ) , "1234" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , 123.45 ) , "123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , -123.45 ) , "-123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , true ) , true ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , false ) , false ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , null ) , null ) ;
+		doormen.equals( doormen( { sanitize: 'numberToString' } , undefined ) , undefined ) ;
+	} ) ;
+
 	it( "should sanitize to 'toBoolean' accordingly" , () => {
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , 0 ) , false ) ;
 		doormen.equals( doormen( { sanitize: 'toBoolean' } , '0' ) , false ) ;

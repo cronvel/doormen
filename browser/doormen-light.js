@@ -4621,6 +4621,11 @@ sanitizers.toStringEmpty = data => {
 	return sanitizers.toString( data ) ;
 } ;
 
+sanitizers.numberToString = data => {
+	if ( typeof data === 'number' ) { return '' + data ; }
+	return data ;
+} ;
+
 
 
 sanitizers.toNumber = data => {
