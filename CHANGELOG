@@ -1,4 +1,10 @@
 
+v0.15.8
+-------
+
+New sanitizer: toStringEmpty, like toString but convert undefined and null to an empty string instead of 'undefined' and 'null'
+
+
 v0.15.7
 -------
 

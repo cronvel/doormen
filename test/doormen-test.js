@@ -2067,6 +2067,21 @@ describe( "Sanitize" , () => {
 		doormen.equals( doormen( { sanitize: 'toString' } , true ) , "true" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , false ) , "false" ) ;
 		doormen.equals( doormen( { sanitize: 'toString' } , null ) , "null" ) ;
+		doormen.equals( doormen( { sanitize: 'toString' } , undefined ) , "undefined" ) ;
+	} ) ;
+
+	it( "should sanitize to 'toStringEmpty', undefined and null return an empty string" , () => {
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , "string" ) , "string" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , "123" ) , "123" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , "" ) , "" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , 0 ) , "0" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , 1234 ) , "1234" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , 123.45 ) , "123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , -123.45 ) , "-123.45" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , true ) , "true" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , false ) , "false" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , null ) , "" ) ;
+		doormen.equals( doormen( { sanitize: 'toStringEmpty' } , undefined ) , "" ) ;
 	} ) ;
 
 	it( "should sanitize to 'toBoolean' accordingly" , () => {

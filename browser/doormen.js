@@ -5396,6 +5396,12 @@ sanitizers.toString = data => {
 	}
 } ;
 
+// Same than toString, but return an empty string when the data is undefined or null
+sanitizers.toStringEmpty = data => {
+	if ( data === undefined || data === null ) { return '' ; }
+	return sanitizers.toString( data ) ;
+} ;
+
 
 
 sanitizers.toNumber = data => {
@@ -6096,15 +6102,31 @@ typeCheckers.mongoId = data => {
 
 
 
-function StringNumber( number , decimalSeparator = '.' , groupSeparator = '' , forceDecimalSeparator = false ) {
+const NUMERALS = [
+	'0' , '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' ,
+	'a' , 'b' , 'c' , 'd' , 'e' , 'f' ,
+	'g' , 'h' , 'i' , 'j' , 'k' , 'l' , 'm' , 'n' , 'o' , 'p' , 'q' , 'r' , 's' , 't' , 'u' , 'v' , 'w' , 'x' , 'y' , 'z'
+] ;
+
+//const NUMERAL_MAP = buildNumeralMap( NUMERALS ) ;
+
+
+
+function StringNumber( number , options = {} ) {
 	this.sign = 1 ;
 	this.digits = [] ;
 	this.exposant = 0 ;
-	this.special = null ;	// 'special' store special values like NaN, Infinity, etc
+	this.special = null ;	// It stores special values like NaN, Infinity, etc
 
-	this.decimalSeparator = decimalSeparator ;
-	this.forceDecimalSeparator = !! forceDecimalSeparator ;
-	this.groupSeparator = groupSeparator ;
+	this.decimalSeparator = options.decimalSeparator ?? '.' ;
+	this.forceDecimalSeparator = !! options.forceDecimalSeparator ;
+	this.groupSeparator = options.groupSeparator ?? '' ;
+
+	this.numerals = options.numerals ?? NUMERALS ;
+	this.numeralZero = options.numeralZero ?? null ;	// Special numeral when the result is EXACTLY 0 (used for Roman Numerals)
+	this.placeNumerals = options.placeNumerals ?? null ;
+	//this.numeralMap = NUMERAL_MAP ;
+	//if ( options.numerals ) { this.numeralMap = buildNumeralMap( options.numerals ) ; }
 
 	this.set( number ) ;
 }
@@ -6113,8 +6135,23 @@ module.exports = StringNumber ;
 
 
 
+/*
+function buildNumeralMap( numbers ) {
+	var map = new Map() ;
+
+	for ( let i = 0 ; i < numbers.length ; i ++ ) {
+		let number = numbers[ i ] ;
+		map.set( NUMERALS[ i ] , numbers[ i ] ) ;
+	}
+
+	return map ;
+}
+*/
+
+
+
 StringNumber.prototype.set = function( number ) {
-	var matches , digits , exposant , v , i , iMax , index , hasNonZeroHead , tailIndex ;
+	var matches , v , i , iMax , index , hasNonZeroHead , tailIndex ;
 
 	number = + number ;
 
@@ -6260,45 +6297,49 @@ StringNumber.prototype.toNoExpString = function( leadingZero = 1 , trailingZero 
 		str = this.sign < 0 ? '-' : forcePlusSign ? '+' : '' ;
 
 	if ( ! this.digits.length ) {
-		arrayFill( integerDigits , 0 , leadingZero ) ;
+		if ( leadingZero > 1 ) {
+			this.fillZeroes( integerDigits , leadingZero - 1 , leadingZero ) ;
+		}
+
+		integerDigits.push( this.numeralZero ?? this.placeNumerals?.[ 0 ]?.[ 0 ] ?? this.numerals[ 0 ] ) ;
 
 		if ( trailingZero && ! onlyIfDecimal ) {
-			arrayFill( decimalDigits , 0 , trailingZero ) ;
+			this.fillZeroes( decimalDigits , trailingZero ) ;
 		}
 	}
 	else if ( exposant <= 0 ) {
 		// This number is of type 0.[0...]xyz
-		arrayFill( integerDigits , 0 , leadingZero ) ;
+		this.fillZeroes( integerDigits , leadingZero ) ;
 
-		arrayFill( decimalDigits , 0 , -exposant ) ;
-		arrayConcatSlice( decimalDigits , this.digits ) ;
+		this.fillZeroes( decimalDigits , -exposant , trailingZero - this.digits.length ) ;
+		this.appendNumerals( decimalDigits , this.digits , undefined , undefined , -exposant - 1 ) ;
 
 		if ( trailingZero && this.digits.length - exposant < trailingZero ) {
-			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
+			this.fillZeroes( decimalDigits , trailingZero - this.digits.length + exposant ) ;
 		}
 	}
 	else if ( exposant >= this.digits.length ) {
 		// This number is of type xyz[0...]
-		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
-		arrayConcatSlice( integerDigits , this.digits ) ;
-		arrayFill( integerDigits , 0 , exposant - this.digits.length ) ;
+		if ( exposant < leadingZero ) { this.fillZeroes( integerDigits , leadingZero - exposant , exposant - 1 ) ; }
+		this.appendNumerals( integerDigits , this.digits , undefined , undefined , exposant - 1 ) ;
+		this.fillZeroes( integerDigits , exposant - this.digits.length ) ;
 
 		if ( trailingZero && ! onlyIfDecimal ) {
-			arrayFill( decimalDigits , 0 , trailingZero ) ;
+			this.fillZeroes( decimalDigits , trailingZero ) ;
 		}
 	}
 	else {
 		// Here the digits are splitted with a dot in the middle
-		if ( exposant < leadingZero ) { arrayFill( integerDigits , 0 , leadingZero - exposant ) ; }
-		arrayConcatSlice( integerDigits , this.digits , 0 , exposant ) ;
+		if ( exposant < leadingZero ) { this.fillZeroes( integerDigits , leadingZero - exposant ) ; }
+		this.appendNumerals( integerDigits , this.digits , 0 , exposant , exposant - 1 ) ;
 
-		arrayConcatSlice( decimalDigits , this.digits , exposant ) ;
+		this.appendNumerals( decimalDigits , this.digits , exposant , undefined , this.digits.length - exposant ) ;
 
 		if (
 			trailingZero && this.digits.length - exposant < trailingZero
 			&& ( ! onlyIfDecimal || this.digits.length - exposant > 0 )
 		) {
-			arrayFill( decimalDigits , 0 , trailingZero - this.digits.length + exposant ) ;
+			this.fillZeroes( decimalDigits , trailingZero - this.digits.length + exposant ) ;
 		}
 	}
 
@@ -6457,17 +6498,71 @@ StringNumber.prototype.groupDigits = function( digits , separator , inverseOrder
 
 
 
-function arrayFill( intoArray , value , repeat ) {
-	while ( repeat -- ) { intoArray[ intoArray.length ] = value ; }
+StringNumber.prototype.appendNumerals = function( intoArray , sourceArray , start = 0 , end = sourceArray.length , leftPlace = end ) {
+	//console.log( "appendNumerals:" , { intoArray , sourceArray , start , end , leftPlace } ) ;
+	for ( let i = start , place = leftPlace ; i < end ; i ++ , place -- ) {
+		let numerals = this.placeNumerals?.[ place ] ?? this.numerals ;
+		intoArray.push( numerals[ sourceArray[ i ] ] ?? sourceArray[ i ] ) ;
+	}
+
 	return intoArray ;
-}
+} ;
 
 
 
-function arrayConcatSlice( intoArray , sourceArray , start = 0 , end = sourceArray.length ) {
-	for ( let i = start ; i < end ; i ++ ) { intoArray[ intoArray.length ] = sourceArray[ i ] ; }
+StringNumber.prototype.fillZeroes = function( intoArray , count , leftPlace = count - 1 ) {
+	//console.log( "fillZeroes:" , { intoArray , count , leftPlace } ) ;
+	for ( let i = 0 , place = leftPlace ; i < count ; i ++ , place -- ) {
+		let numerals = this.placeNumerals?.[ place ] ?? this.numerals ;
+		intoArray.push( numerals[ 0 ] ?? 0 ) ;
+	}
+
 	return intoArray ;
-}
+} ;
+
+
+
+const ROMAN_OPTIONS = {
+	numeralZero: 'N' ,
+	placeNumerals: [
+		[ '' , 'I' , 'II' , 'III' , 'IV' , 'V' , 'VI' , 'VII' , 'VIII' , 'IX' ] ,
+		[ '' , 'X' , 'XX' , 'XXX' , 'XL' , 'L' , 'LX' , 'LXX' , 'LXXX' , 'XC' ] ,
+		[ '' , 'C' , 'CC' , 'CCC' , 'CD' , 'D' , 'DC' , 'DCC' , 'DCCC' , 'CM' ] ,
+		[ '' , 'M' , 'MM' , 'MMM' , 'MMMM' , 'ↁ' , 'ↁↀ' , 'ↁↀↀ' , 'ↁↀↀↀ' , 'ↁↀↀↀↀ' ]
+	]
+} ;
+
+const ADDITIVE_ROMAN_OPTIONS = {
+	numeralZero: 'N' ,
+	placeNumerals: [
+		[ '' , 'I' , 'II' , 'III' , 'IIII' , 'V' , 'VI' , 'VII' , 'VIII' , 'VIIII' ] ,
+		[ '' , 'X' , 'XX' , 'XXX' , 'XXXX' , 'L' , 'LX' , 'LXX' , 'LXXX' , 'LXXXX' ] ,
+		[ '' , 'C' , 'CC' , 'CCC' , 'CCCC' , 'D' , 'DC' , 'DCC' , 'DCCC' , 'DCCCC' ] ,
+		[ '' , 'M' , 'MM' , 'MMM' , 'MMMM' , 'ↁ' , 'ↁↀ' , 'ↁↀↀ' , 'ↁↀↀↀ' , 'ↁↀↀↀↀ' ]
+	]
+} ;
+
+const APOSTROPHUS_ROMAN_OPTIONS = {
+	numeralZero: 'N' ,
+	placeNumerals: [
+		[ '' , 'I' , 'II' , 'III' , 'IV' , 'V' , 'VI' , 'VII' , 'VIII' , 'IX' ] ,
+		[ '' , 'X' , 'XX' , 'XXX' , 'XL' , 'L' , 'LX' , 'LXX' , 'LXXX' , 'XC' ] ,
+		[ '' , 'C' , 'CC' , 'CCC' , 'CD' , 'D' , 'DC' , 'DCC' , 'DCCC' , 'CM' ] ,
+		[ '' , 'M' , 'MM' , 'MMM' , 'MMMM' , 'IↃↃ' , 'IↃↃCIↃ' , 'IↃↃCIↃCIↃ' , 'IↃↃCIↃCIↃCIↃ' , 'IↃↃCIↃCIↃCIↃCIↃ' ] ,
+		[ '' , 'CCIↃↃ' , 'CCIↃↃCCIↃↃ' , 'CCIↃↃCCIↃↃCCIↃↃ' , 'CCIↃↃCCIↃↃCCIↃↃCCIↃↃ' , 'IↃↃↃ' , 'IↃↃↃCCIↃↃ' , 'IↃↃↃCCIↃↃCCIↃↃ' , 'IↃↃↃCCIↃↃCCIↃↃCCIↃↃ' , 'IↃↃↃCCIↃↃCCIↃↃCCIↃↃCCIↃↃ' ] ,
+		[ '' , 'CCCIↃↃↃ' , 'CCCIↃↃↃCCCIↃↃↃ' , 'CCCIↃↃↃCCCIↃↃↃCCCIↃↃↃ' , 'CCCIↃↃↃCCCIↃↃↃCCCIↃↃↃCCCIↃↃↃ' , 'IↃↃↃↃ' , 'IↃↃↃↃCCCIↃↃↃ' , 'IↃↃↃↃCCCIↃↃↃCCCIↃↃↃ' , 'IↃↃↃↃCCCIↃↃↃCCCIↃↃↃCCCIↃↃↃ' , 'IↃↃↃↃCCCIↃↃↃCCCIↃↃↃCCCIↃↃↃCCCIↃↃↃ' ]
+	]
+} ;
+
+StringNumber.roman = ( number , options ) => {
+	options = options ? Object.assign( {} , options , ROMAN_OPTIONS ) : ROMAN_OPTIONS ;
+	return new StringNumber( number , options ) ;
+} ;
+
+StringNumber.additiveRoman = ( number , options ) => {
+	options = options ? Object.assign( {} , options , ADDITIVE_ROMAN_OPTIONS ) : ADDITIVE_ROMAN_OPTIONS ;
+	return new StringNumber( number , options ) ;
+} ;
 
 
 },{}],20:[function(require,module,exports){
@@ -6908,6 +7003,7 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%U		unsigned positive integer (>0)
 	%P		number to (absolute) percent (e.g.: 0.75 -> 75%)
 	%p		number to relative percent (e.g.: 1.25 -> +25% ; 0.75 -> -25%)
+	%T		date/time display, using ISO date, or Intl module
 	%t		time duration, convert ms into h min s, e.g.: 2h14min52s or 2:14:52
 	%m		convert degree into degree, minutes and seconds
 	%h		hexadecimal (input is a number)
@@ -6922,6 +7018,8 @@ const StringNumber = require( './StringNumber.js' ) ;
 	%O		object (like inspect, but with ultra minimal options)
 	%E		call string-kit's inspectError()
 	%J		JSON.stringify()
+	%v		roman numerals, additive variant (e.g. 4 is IIII instead of IV)
+	%V		roman numerals
 	%D		drop
 	%F		filter function existing in the 'this' context, e.g. %[filter:%a%a]F
 	%a		argument for a function
@@ -7391,9 +7489,12 @@ exports.format.modes = modes ;	// <-- expose modes, used by Babel-Tower for Stri
 
 
 // string
-modes.s = arg => {
+modes.s = ( arg , modeArg ) => {
+	var subModes = stringModeArg( modeArg ) ;
+
 	if ( typeof arg === 'string' ) { return arg ; }
-	if ( arg === null || arg === undefined || arg === true || arg === false ) { return '(' + arg + ')' ; }
+	if ( arg === null || arg === undefined || arg === false ) { return subModes.empty ? '' : '(' + arg + ')' ; }
+	if ( arg === true ) { return '(' + arg + ')' ; }
 	if ( typeof arg === 'number' ) { return '' + arg ; }
 	if ( typeof arg.toString === 'function' ) { return arg.toString() ; }
 	return '(' + arg + ')' ;
@@ -7406,12 +7507,15 @@ modes.r.noSanitize = true ;
 
 // string, interpret ^ formatting
 modes.S = ( arg , modeArg , options ) => {
+	var subModes = stringModeArg( modeArg ) ;
+
 	// We do the sanitizing part on our own
 	var interpret = options.escapeMarkup ? str => ( options.argumentSanitizer ? options.argumentSanitizer( str ) : str ) :
 		str => exports.markupMethod.call( options , options.argumentSanitizer ? options.argumentSanitizer( str ) : str ) ;
 
 	if ( typeof arg === 'string' ) { return interpret( arg ) ; }
-	if ( arg === null || arg === undefined || arg === true || arg === false ) { return '(' + arg + ')' ; }
+	if ( arg === null || arg === undefined || arg === false ) { return subModes.empty ? '' : '(' + arg + ')' ; }
+	if ( arg === true ) { return '(' + arg + ')' ; }
 	if ( typeof arg === 'number' ) { return '' + arg ; }
 	if ( typeof arg.toString === 'function' ) { return interpret( arg.toString() ) ; }
 	return interpret( '(' + arg + ')' ) ;
@@ -7435,7 +7539,7 @@ modes.f = ( arg , modeArg ) => {
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
 	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
@@ -7447,6 +7551,42 @@ modes.f.noSanitize = true ;
 
 
 
+// roman numeral, additive variant
+modes.v = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	var subModes = floatModeArg( modeArg ) ,
+		sn = StringNumber.additiveRoman( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
+
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
+
+	return sn.toString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
+} ;
+
+modes.v.noSanitize = true ;
+
+
+
+// roman numeral
+modes.V = ( arg , modeArg ) => {
+	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
+	if ( typeof arg !== 'number' ) { arg = 0 ; }
+
+	var subModes = floatModeArg( modeArg ) ,
+		sn = StringNumber.roman( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
+
+	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
+	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
+
+	return sn.toString( subModes.leftPadding , subModes.rightPadding , subModes.rightPaddingOnlyIfDecimal ) ;
+} ;
+
+modes.V.noSanitize = true ;
+
+
+
 // absolute percent
 modes.P = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
@@ -7455,7 +7595,7 @@ modes.P = ( arg , modeArg ) => {
 	arg *= 100 ;
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	// Force rounding to zero by default
 	if ( subModes.rounding !== null || ! subModes.precision ) { sn.round( subModes.rounding || 0 ) ; }
@@ -7476,7 +7616,7 @@ modes.p = ( arg , modeArg ) => {
 	arg = ( arg - 1 ) * 100 ;
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	// Force rounding to zero by default
 	if ( subModes.rounding !== null || ! subModes.precision ) { sn.round( subModes.rounding || 0 ) ; }
@@ -7496,7 +7636,7 @@ modes.k = ( arg , modeArg ) => {
 	if ( typeof arg !== 'number' ) { return '0' ; }
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
 	// Default to 3 numbers precision
@@ -7515,7 +7655,7 @@ modes.e = ( arg , modeArg ) => {
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
 	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
@@ -7533,7 +7673,7 @@ modes.K = ( arg , modeArg ) => {
 	if ( typeof arg !== 'number' ) { arg = 0 ; }
 
 	var subModes = floatModeArg( modeArg ) ,
-		sn = new StringNumber( arg , '.' , subModes.groupSeparator ) ;
+		sn = new StringNumber( arg , { decimalSeparator: '.' , groupSeparator: subModes.groupSeparator } ) ;
 
 	if ( subModes.rounding !== null ) { sn.round( subModes.rounding ) ; }
 	if ( subModes.precision ) { sn.precision( subModes.precision ) ; }
@@ -7608,16 +7748,89 @@ modes.m.noSanitize = true ;
 
 
 
-// time duration, transform ms into H:min:s
-// Later it should format Date as well: number=duration, date object=date
-// Note that it would not replace moment.js, but it could uses it.
+// Date/time
+// Minimal Date formating, only support sort of ISO ATM.
+// It will be improved later.
+modes.T = ( arg , modeArg ) => {
+	// Always get a copy of the arg
+	try {
+		arg = new Date( arg ) ;
+	}
+	catch ( error ) {
+		return '(invalid)' ;
+	}
+
+	if ( Number.isNaN( arg.getTime() ) ) {
+		return '(invalid)' ;
+	}
+
+	var datePart = '' ,
+		timePart = '' ,
+		str = '' ,
+		subModes = dateTimeModeArg( modeArg ) ,
+		roundingType = subModes.roundingType ,
+		forceDecimalSeparator = subModes.useAbbreviation ;
+
+	// For instance, we only support the ISO-like type
+
+	if ( subModes.years ) {
+		if ( datePart ) { datePart += '-' ; }
+		datePart += arg.getFullYear() ;
+	}
+
+	if ( subModes.months ) {
+		if ( datePart ) { datePart += '-' ; }
+		datePart += ( '' + ( arg.getMonth() + 1 ) ).padStart( 2 , '0' ) ;
+	}
+
+	if ( subModes.days ) {
+		if ( datePart ) { datePart += '-' ; }
+		datePart += ( '' + arg.getDate() ).padStart( 2 , '0' ) ;
+	}
+
+	if ( subModes.hours ) {
+		if ( timePart && ! subModes.useAbbreviation ) { timePart += ':' ; }
+		timePart += ( '' + arg.getHours() ).padStart( 2 , '0' ) ;
+		if ( subModes.useAbbreviation ) { timePart += 'h' ; }
+	}
+
+	if ( subModes.minutes ) {
+		if ( timePart && ! subModes.useAbbreviation ) { timePart += ':' ; }
+		timePart += ( '' + arg.getMinutes() ).padStart( 2 , '0' ) ;
+		if ( subModes.useAbbreviation ) { timePart += 'min' ; }
+	}
+
+	if ( subModes.seconds ) {
+		if ( timePart && ! subModes.useAbbreviation ) { timePart += ':' ; }
+		timePart += ( '' + arg.getSeconds() ).padStart( 2 , '0' ) ;
+		if ( subModes.useAbbreviation ) { timePart += 's' ; }
+	}
+
+	if ( datePart ) {
+		if ( str ) { str += ' ' ; }
+		str += datePart ;
+	}
+
+	if ( timePart ) {
+		if ( str ) { str += ' ' ; }
+		str += timePart ;
+	}
+
+	return str ;
+} ;
+
+modes.T.noSanitize = true ;
+
+
+
+// Time duration, transform ms into H:min:s
 modes.t = ( arg , modeArg ) => {
 	if ( typeof arg === 'string' ) { arg = parseFloat( arg ) ; }
 	if ( typeof arg !== 'number' ) { return '(NaN)' ; }
 
 	var h , min , s , sn , sStr ,
 		sign = '' ,
-		subModes = timeModeArg( modeArg ) ,
+		subModes = timeDurationModeArg( modeArg ) ,
 		roundingType = subModes.roundingType ,
 		hSeparator = subModes.useAbbreviation ? 'h' : ':' ,
 		minSeparator = subModes.useAbbreviation ? 'min' : ':' ,
@@ -7633,7 +7846,7 @@ modes.t = ( arg , modeArg ) => {
 	}
 
 	if ( s < 60 && ! subModes.forceMinutes ) {
-		sn = new StringNumber( s , sSeparator , undefined , forceDecimalSeparator ) ;
+		sn = new StringNumber( s , { decimalSeparator: sSeparator , forceDecimalSeparator } ) ;
 		sn.round( subModes.rounding , roundingType ) ;
 
 		// Check if rounding has made it reach 60
@@ -7649,7 +7862,7 @@ modes.t = ( arg , modeArg ) => {
 	min = Math.floor( s / 60 ) ;
 	s = s % 60 ;
 
-	sn = new StringNumber( s , sSeparator , undefined , forceDecimalSeparator ) ;
+	sn = new StringNumber( s , { decimalSeparator: sSeparator , forceDecimalSeparator } ) ;
 	sn.round( subModes.rounding , roundingType ) ;
 
 	// Check if rounding has made it reach 60
@@ -7906,7 +8119,132 @@ function floatModeArg( modeArg ) {
 
 
 
-const TIME_MODES = {
+const STRING_MODES = {
+	empty: false
+} ;
+
+// Generic number modes
+function stringModeArg( modeArg ) {
+	STRING_MODES.empty = false ;
+
+	if ( modeArg ) {
+		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
+			if ( k === 'e' ) {
+				// Empty mode:
+				STRING_MODES.empty = true ;
+			}
+		}
+	}
+
+	return STRING_MODES ;
+}
+
+
+
+const DATE_TIME_MODES = {
+	useAbbreviation: false ,
+	rightPadding: 0 ,
+	rightPaddingOnlyIfDecimal: false ,
+	years: true ,
+	months: true ,
+	days: true ,
+	hours: true ,
+	minutes: true ,
+	seconds: true
+} ;
+
+// Generic number modes
+function dateTimeModeArg( modeArg ) {
+	DATE_TIME_MODES.rightPadding = 0 ;
+	DATE_TIME_MODES.rightPaddingOnlyIfDecimal = false ;
+	DATE_TIME_MODES.rounding = 0 ;
+	DATE_TIME_MODES.roundingType = -1 ;
+	DATE_TIME_MODES.years = DATE_TIME_MODES.months = DATE_TIME_MODES.days = false ;
+	DATE_TIME_MODES.hours = DATE_TIME_MODES.minutes = DATE_TIME_MODES.seconds = false ;
+	DATE_TIME_MODES.useAbbreviation = false ;
+
+	var hasSelector = false ;
+
+	if ( modeArg ) {
+		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
+			if ( k === 'T' ) {
+				DATE_TIME_MODES.years = DATE_TIME_MODES.months = DATE_TIME_MODES.days = false ;
+				DATE_TIME_MODES.hours = DATE_TIME_MODES.minutes = DATE_TIME_MODES.seconds = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'D' ) {
+				DATE_TIME_MODES.years = DATE_TIME_MODES.months = DATE_TIME_MODES.days = true ;
+				DATE_TIME_MODES.hours = DATE_TIME_MODES.minutes = DATE_TIME_MODES.seconds = false ;
+				hasSelector = true ;
+			}
+			else if ( k === 'Y' ) {
+				DATE_TIME_MODES.years = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'M' ) {
+				DATE_TIME_MODES.months = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'd' ) {
+				DATE_TIME_MODES.days = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'h' ) {
+				DATE_TIME_MODES.hours = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'm' ) {
+				DATE_TIME_MODES.minutes = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 's' ) {
+				DATE_TIME_MODES.seconds = true ;
+				hasSelector = true ;
+			}
+			else if ( k === 'r' ) {
+				DATE_TIME_MODES.roundingType = 0 ;
+			}
+			else if ( k === 'f' ) {
+				DATE_TIME_MODES.roundingType = -1 ;
+			}
+			else if ( k === 'c' ) {
+				DATE_TIME_MODES.roundingType = 1 ;
+			}
+			else if ( k === 'a' ) {
+				DATE_TIME_MODES.useAbbreviation = true ;
+			}
+			else if ( ! k ) {
+				if ( v[ 0 ] === '.' ) {
+					// Rounding after the decimal
+					let lv = v[ v.length - 1 ] ;
+
+					// Zero-right padding?
+					if ( lv === '!' ) {
+						DATE_TIME_MODES.rounding = DATE_TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+					}
+					else if ( lv === '?' ) {
+						DATE_TIME_MODES.rounding = DATE_TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+						DATE_TIME_MODES.rightPaddingOnlyIfDecimal = true ;
+					}
+					else {
+						DATE_TIME_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
+					}
+				}
+			}
+		}
+	}
+
+	if ( ! hasSelector ) {
+		DATE_TIME_MODES.years = DATE_TIME_MODES.months = DATE_TIME_MODES.days = true ;
+		DATE_TIME_MODES.hours = DATE_TIME_MODES.minutes = DATE_TIME_MODES.seconds = true ;
+	}
+
+	return DATE_TIME_MODES ;
+}
+
+
+
+const TIME_DURATION_MODES = {
 	useAbbreviation: false ,
 	rightPadding: 0 ,
 	rightPaddingOnlyIfDecimal: false ,
@@ -7917,32 +8255,32 @@ const TIME_MODES = {
 } ;
 
 // Generic number modes
-function timeModeArg( modeArg ) {
-	TIME_MODES.rightPadding = 0 ;
-	TIME_MODES.rightPaddingOnlyIfDecimal = false ;
-	TIME_MODES.rounding = 0 ;
-	TIME_MODES.roundingType = -1 ;
-	TIME_MODES.useAbbreviation = TIME_MODES.forceHours = TIME_MODES.forceMinutes = false ;
+function timeDurationModeArg( modeArg ) {
+	TIME_DURATION_MODES.rightPadding = 0 ;
+	TIME_DURATION_MODES.rightPaddingOnlyIfDecimal = false ;
+	TIME_DURATION_MODES.rounding = 0 ;
+	TIME_DURATION_MODES.roundingType = -1 ;
+	TIME_DURATION_MODES.useAbbreviation = TIME_DURATION_MODES.forceHours = TIME_DURATION_MODES.forceMinutes = false ;
 
 	if ( modeArg ) {
 		for ( let [ , k , v ] of modeArg.matchAll( MODE_ARG_FORMAT_REGEX ) ) {
 			if ( k === 'h' ) {
-				TIME_MODES.forceHours = TIME_MODES.forceMinutes = true ;
+				TIME_DURATION_MODES.forceHours = TIME_DURATION_MODES.forceMinutes = true ;
 			}
 			else if ( k === 'm' ) {
-				TIME_MODES.forceMinutes = true ;
+				TIME_DURATION_MODES.forceMinutes = true ;
 			}
 			else if ( k === 'r' ) {
-				TIME_MODES.roundingType = 0 ;
+				TIME_DURATION_MODES.roundingType = 0 ;
 			}
 			else if ( k === 'f' ) {
-				TIME_MODES.roundingType = -1 ;
+				TIME_DURATION_MODES.roundingType = -1 ;
 			}
 			else if ( k === 'c' ) {
-				TIME_MODES.roundingType = 1 ;
+				TIME_DURATION_MODES.roundingType = 1 ;
 			}
 			else if ( k === 'a' ) {
-				TIME_MODES.useAbbreviation = true ;
+				TIME_DURATION_MODES.useAbbreviation = true ;
 			}
 			else if ( ! k ) {
 				if ( v[ 0 ] === '.' ) {
@@ -7951,21 +8289,21 @@ function timeModeArg( modeArg ) {
 
 					// Zero-right padding?
 					if ( lv === '!' ) {
-						TIME_MODES.rounding = TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+						TIME_DURATION_MODES.rounding = TIME_DURATION_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
 					}
 					else if ( lv === '?' ) {
-						TIME_MODES.rounding = TIME_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
-						TIME_MODES.rightPaddingOnlyIfDecimal = true ;
+						TIME_DURATION_MODES.rounding = TIME_DURATION_MODES.rightPadding = parseInt( v.slice( 1 , -1 ) , 10 ) || 0 ;
+						TIME_DURATION_MODES.rightPaddingOnlyIfDecimal = true ;
 					}
 					else {
-						TIME_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
+						TIME_DURATION_MODES.rounding = parseInt( v.slice( 1 ) , 10 ) || 0 ;
 					}
 				}
 			}
 		}
 	}
 
-	return TIME_MODES ;
+	return TIME_DURATION_MODES ;
 }
 
 
@@ -7995,6 +8333,8 @@ function genericNaturalModeRecursive( arg , delimiters , depthLimit , depth ) {
 	if ( typeof arg === 'number' ) {
 		return modes.f( arg , '.3g ' ) ;
 	}
+
+	if ( arg instanceof Set ) { arg = [ ... arg ] ; }
 
 	if ( Array.isArray( arg ) ) {
 		if ( depth >= depthLimit ) { return '[...]' ; }
@@ -9273,6 +9613,22 @@ unicode.length = str => {
 
 
 
+// Return a string that does not exceed the character limit
+unicode.truncateLength = unicode.truncate = ( str , limit ) => {
+	var position = 0 , length = 0 ;
+
+	for ( let char of str ) {
+		if ( length === limit ) { return str.slice( 0 , position ) ; }
+		length ++ ;
+		position += char.length ;
+	}
+
+	// The string remains unchanged
+	return str ;
+} ;
+
+
+
 // Return the width of a string in a terminal/monospace font
 unicode.width = str => {
 	// for ... of is unicode-aware
@@ -9303,9 +9659,7 @@ unicode.arrayWidth = ( array , limit ) => {
 var lastTruncateWidth = 0 ;
 unicode.getLastTruncateWidth = () => lastTruncateWidth ;
 
-
-
-// Return a string that does not exceed the limit.
+// Return a string that does not exceed the width limit (taking wide-char into considerations)
 unicode.widthLimit =	// DEPRECATED
 unicode.truncateWidth = ( str , limit ) => {
 	var char , charWidth , position = 0 ;
