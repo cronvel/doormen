@@ -4391,7 +4391,7 @@ describe( "Sub-schema path" , () => {
 		) ;
 	} ) ;
 
-	it( "* has no special meaning at the moment, but in any case it should support the 'of' part of a sub-schema" , () => {
+	it( "'*' has no special meaning at the moment, but in any case it should support the 'of' part of a sub-schema as a wildcard (wildcard are required by RestQuery)" , () => {
 		var schema = {
 			type: 'strictObject' ,
 			properties: {
