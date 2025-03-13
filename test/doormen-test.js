@@ -774,8 +774,26 @@ describe( "Built-in types" , () => {
 		doormen.not( { type: 'array' } , () => {} ) ;
 	} ) ;
 
-	it( "should validate date accordingly" , () => {
+	it( "should validate date accordingly (for instance date and datetime are the same)" , () => {
 		doormen( { type: 'date' } , new Date() ) ;
+
+		doormen.not( { type: 'date' } , undefined ) ;
+		doormen.not( { type: 'date' } , null ) ;
+		doormen.not( { type: 'date' } , false ) ;
+		doormen.not( { type: 'date' } , true ) ;
+		doormen.not( { type: 'date' } , 0 ) ;
+		doormen.not( { type: 'date' } , 1 ) ;
+		doormen.not( { type: 'date' } , '' ) ;
+		doormen.not( { type: 'date' } , 'text' ) ;
+		doormen.not( { type: 'date' } , {} ) ;
+		doormen.not( { type: 'date' } , { a: 1 , b: 2 } ) ;
+		doormen.not( { type: 'date' } , [] ) ;
+		doormen.not( { type: 'date' } , [ 1 , 2 , 3 ] ) ;
+		doormen.not( { type: 'date' } , () => {} ) ;
+	} ) ;
+
+	it( "should validate datetime accordingly (for instance date and datetime are the same)" , () => {
+		doormen( { type: 'datetime' } , new Date() ) ;
 
 		doormen.not( { type: 'date' } , undefined ) ;
 		doormen.not( { type: 'date' } , null ) ;

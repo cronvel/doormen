@@ -1,4 +1,10 @@
 
+v0.15.10
+--------
+
+New type: 'datetime', for instance it is the same than 'date' but it may differ in the future
+
+
 v0.15.9
 -------
 

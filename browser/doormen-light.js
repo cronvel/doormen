@@ -5045,7 +5045,7 @@ typeCheckers.function = data => typeof data === 'function' ;
 // Built-in type
 typeCheckers.array = data => Array.isArray( data ) ;
 typeCheckers.error = data => data instanceof Error ;
-typeCheckers.date = data => data instanceof Date ;
+typeCheckers.date = typeCheckers.datetime = data => data instanceof Date ;
 typeCheckers.arguments = data => Object.prototype.toString.call( data ) === '[object Arguments]' ;
 
 typeCheckers.buffer = data => {
