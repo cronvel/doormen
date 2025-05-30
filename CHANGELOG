@@ -1,4 +1,10 @@
 
+v0.15.11
+--------
+
+Fixing 'Invalid Date' to not pass the type checker (there are Date instance, but it doesn't make sens for them to validate)
+
+
 v0.15.10
 --------
 

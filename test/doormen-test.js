@@ -776,6 +776,9 @@ describe( "Built-in types" , () => {
 
 	it( "should validate date accordingly (for instance date and datetime are the same)" , () => {
 		doormen( { type: 'date' } , new Date() ) ;
+		doormen( { type: 'date' } , new Date( "2025-05-30T15:24:08.943Z" ) ) ;
+		doormen( { type: 'date' } , new Date( "2025-05-30" ) ) ;
+		doormen.not( { type: 'date' } , new Date( "kjlkjlkjkl" ) ) ;
 
 		doormen.not( { type: 'date' } , undefined ) ;
 		doormen.not( { type: 'date' } , null ) ;
@@ -794,20 +797,23 @@ describe( "Built-in types" , () => {
 
 	it( "should validate datetime accordingly (for instance date and datetime are the same)" , () => {
 		doormen( { type: 'datetime' } , new Date() ) ;
+		doormen( { type: 'datetime' } , new Date( "2025-05-30T15:24:08.943Z" ) ) ;
+		doormen( { type: 'datetime' } , new Date( "2025-05-30" ) ) ;
+		doormen.not( { type: 'datetime' } , new Date( "kjlkjlkjkl" ) ) ;
 
-		doormen.not( { type: 'date' } , undefined ) ;
-		doormen.not( { type: 'date' } , null ) ;
-		doormen.not( { type: 'date' } , false ) ;
-		doormen.not( { type: 'date' } , true ) ;
-		doormen.not( { type: 'date' } , 0 ) ;
-		doormen.not( { type: 'date' } , 1 ) ;
-		doormen.not( { type: 'date' } , '' ) ;
-		doormen.not( { type: 'date' } , 'text' ) ;
-		doormen.not( { type: 'date' } , {} ) ;
-		doormen.not( { type: 'date' } , { a: 1 , b: 2 } ) ;
-		doormen.not( { type: 'date' } , [] ) ;
-		doormen.not( { type: 'date' } , [ 1 , 2 , 3 ] ) ;
-		doormen.not( { type: 'date' } , () => {} ) ;
+		doormen.not( { type: 'datetime' } , undefined ) ;
+		doormen.not( { type: 'datetime' } , null ) ;
+		doormen.not( { type: 'datetime' } , false ) ;
+		doormen.not( { type: 'datetime' } , true ) ;
+		doormen.not( { type: 'datetime' } , 0 ) ;
+		doormen.not( { type: 'datetime' } , 1 ) ;
+		doormen.not( { type: 'datetime' } , '' ) ;
+		doormen.not( { type: 'datetime' } , 'text' ) ;
+		doormen.not( { type: 'datetime' } , {} ) ;
+		doormen.not( { type: 'datetime' } , { a: 1 , b: 2 } ) ;
+		doormen.not( { type: 'datetime' } , [] ) ;
+		doormen.not( { type: 'datetime' } , [ 1 , 2 , 3 ] ) ;
+		doormen.not( { type: 'datetime' } , () => {} ) ;
 	} ) ;
 
 	it( "should validate error accordingly" , () => {
